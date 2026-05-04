@@ -20,6 +20,9 @@ export class Player extends Entity {
     this.airControl = PLAYER_CONFIG.airControl;
 
     this.jumpForce = PLAYER_CONFIG.jumpForce;
+    this.jumpCutMultiplier = PLAYER_CONFIG.jumpCutMultiplier;
+
+    this.wasJumpPressed = false;
 
     this.previousX = this.x;
     this.previousY = this.y;
@@ -32,6 +35,7 @@ export class Player extends Entity {
 
     this.handleMovement(inputSystem);
     this.handleJump(inputSystem);
+    this.handleVariableJump(inputSystem);
     this.applyGravity();
   }
 
@@ -76,9 +80,22 @@ export class Player extends Entity {
   }
 
   handleJump(inputSystem) {
-    if (inputSystem.isPressed("jump") && this.isOnGround) {
+    const isJumpPressed = inputSystem.isPressed("jump");
+    const justPressedJump = isJumpPressed && !this.wasJumpPressed;
+
+    if (justPressedJump && this.isOnGround) {
       this.velocityY = -this.jumpForce;
       this.isOnGround = false;
+    }
+
+    this.wasJumpPressed = isJumpPressed;
+  }
+
+  handleVariableJump(inputSystem) {
+    const isJumpPressed = inputSystem.isPressed("jump");
+
+    if (!isJumpPressed && this.velocityY < 0) {
+      this.velocityY *= this.jumpCutMultiplier;
     }
   }
 

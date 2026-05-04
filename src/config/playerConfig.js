@@ -10,6 +10,7 @@ export const PLAYER_CONFIG = {
   airControl: 0.55,
 
   jumpForce: 13,
+  jumpCutMultiplier: 0.6,
 
   color: "#f5f5f5",
 };
