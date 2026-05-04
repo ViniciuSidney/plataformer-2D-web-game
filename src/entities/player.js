@@ -21,6 +21,8 @@ export class Player extends Entity {
 
       this.jumpForce = PLAYER_CONFIG.jumpForce;
       this.jumpCutMultiplier = PLAYER_CONFIG.jumpCutMultiplier;
+      this.coyoteTime = PLAYER_CONFIG.coyoteTime;
+      this.coyoteTimeCounter = 0;
 
       this.wasJumpPressed = false;
 
@@ -82,10 +84,12 @@ export class Player extends Entity {
    handleJump(inputSystem) {
       const isJumpPressed = inputSystem.isPressed('jump');
       const justPressedJump = isJumpPressed && !this.wasJumpPressed;
+      const canUseCoyoteTime = this.coyoteTimeCounter > 0;
 
-      if (justPressedJump && this.isOnGround) {
+      if (justPressedJump && canUseCoyoteTime) {
          this.velocityY = -this.jumpForce;
          this.isOnGround = false;
+         this.coyoteTimeCounter = 0;
       }
 
       this.wasJumpPressed = isJumpPressed;
@@ -96,6 +100,14 @@ export class Player extends Entity {
 
       if (!isJumpPressed && this.velocityY < 0) {
          this.velocityY *= this.jumpCutMultiplier;
+      }
+   }
+
+   updateCoyoteTime() {
+      if (this.isOnGround) {
+         this.coyoteTimeCounter = this.coyoteTime;
+      } else if (this.coyoteTimeCounter > 0) {
+         this.coyoteTimeCounter--;
       }
    }
 

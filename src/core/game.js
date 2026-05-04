@@ -1,75 +1,77 @@
-import { GAME_CONFIG } from "../config/gameConfig.js";
-import { Renderer } from "./renderer.js";
-import { Loop } from "./loop.js";
-import { Camera } from "./camera.js";
+import { GAME_CONFIG } from '../config/gameConfig.js';
+import { Renderer } from './renderer.js';
+import { Loop } from './loop.js';
+import { Camera } from './camera.js';
 
-import { Player } from "../entities/player.js";
+import { Player } from '../entities/player.js';
 
-import { InputSystem } from "../systems/inputSystem.js";
-import { LevelSystem } from "../systems/levelSystem.js";
-import { CollisionSystem } from "../systems/collisionSystem.js";
+import { InputSystem } from '../systems/inputSystem.js';
+import { LevelSystem } from '../systems/levelSystem.js';
+import { CollisionSystem } from '../systems/collisionSystem.js';
 
-import { level01 } from "../levels/level-01.js";
+import { level01 } from '../levels/level-01.js';
 
 export class Game {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.renderer = new Renderer(canvas);
+   constructor(canvas) {
+      this.canvas = canvas;
+      this.renderer = new Renderer(canvas);
 
-    this.inputSystem = new InputSystem();
+      this.inputSystem = new InputSystem();
 
-    this.player = new Player();
-    this.player.x = level01.playerStart.x;
-    this.player.y = level01.playerStart.y;
+      this.player = new Player();
+      this.player.x = level01.playerStart.x;
+      this.player.y = level01.playerStart.y;
 
-    this.platforms = LevelSystem.createPlatforms(level01);
+      this.platforms = LevelSystem.createPlatforms(level01);
 
-    this.camera = new Camera();
+      this.camera = new Camera();
 
-    this.loop = new Loop(
-      () => this.update(),
-      () => this.draw(),
-    );
+      this.loop = new Loop(
+         () => this.update(),
+         () => this.draw(),
+      );
 
-    this.setupCanvas();
-  }
+      this.setupCanvas();
+   }
 
-  setupCanvas() {
-    this.canvas.width = GAME_CONFIG.width;
-    this.canvas.height = GAME_CONFIG.height;
-  }
+   setupCanvas() {
+      this.canvas.width = GAME_CONFIG.width;
+      this.canvas.height = GAME_CONFIG.height;
+   }
 
-  start() {
-    this.loop.start();
-  }
+   start() {
+      this.loop.start();
+   }
 
-  update() {
-    this.player.update(this.inputSystem);
+   update() {
+      this.player.update(this.inputSystem);
 
-    this.player.moveX();
-    CollisionSystem.resolveHorizontalPlatformCollision(
-      this.player,
-      this.platforms,
-    );
+      this.player.moveX();
+      CollisionSystem.resolveHorizontalPlatformCollision(
+         this.player,
+         this.platforms,
+      );
 
-    this.player.moveY();
-    CollisionSystem.resolveVerticalPlatformCollision(
-      this.player,
-      this.platforms,
-    );
+      this.player.moveY();
+      CollisionSystem.resolveVerticalPlatformCollision(
+         this.player,
+         this.platforms,
+      );
 
-    this.camera.follow(this.player);
-  }
+      this.player.updateCoyoteTime();
 
-  draw() {
-    this.renderer.clear();
+      this.camera.follow(this.player);
+   }
 
-    this.renderer.drawWorldGrid(this.camera);
+   draw() {
+      this.renderer.clear();
 
-    for (const platform of this.platforms) {
-      platform.draw(this.renderer, this.camera);
-    }
+      this.renderer.drawWorldGrid(this.camera);
 
-    this.player.draw(this.renderer, this.camera);
-  }
+      for (const platform of this.platforms) {
+         platform.draw(this.renderer, this.camera);
+      }
+
+      this.player.draw(this.renderer, this.camera);
+   }
 }
