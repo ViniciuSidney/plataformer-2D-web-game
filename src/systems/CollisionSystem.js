@@ -8,6 +8,24 @@ export class CollisionSystem {
     );
   }
 
+  static resolveHorizontalPlatformCollision(player, platforms) {
+    for (const platform of platforms) {
+      const isColliding = this.checkAABBCollision(player, platform);
+
+      if (!isColliding) continue;
+
+      if (player.velocityX > 0) {
+        player.x = platform.x - player.width;
+        player.velocityX = 0;
+      }
+
+      if (player.velocityX < 0) {
+        player.x = platform.x + platform.width;
+        player.velocityX = 0;
+      }
+    }
+  }
+
   static resolveVerticalPlatformCollision(player, platforms) {
     player.isOnGround = false;
 
@@ -16,18 +34,15 @@ export class CollisionSystem {
 
       if (!isColliding) continue;
 
-      const playerBottom = player.y + player.height;
-      const platformTop = platform.y;
-
-      const wasAbovePlatform =
-        player.previousY + player.height <= platformTop;
-
-      const isFalling = player.velocityY >= 0;
-
-      if (wasAbovePlatform && isFalling) {
-        player.y = platformTop - player.height;
+      if (player.velocityY > 0) {
+        player.y = platform.y - player.height;
         player.velocityY = 0;
         player.isOnGround = true;
+      }
+
+      if (player.velocityY < 0) {
+        player.y = platform.y + platform.height;
+        player.velocityY = 0;
       }
     }
   }
