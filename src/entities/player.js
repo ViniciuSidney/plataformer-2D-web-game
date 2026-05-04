@@ -29,6 +29,7 @@ export class Player extends Entity {
       this.jumpBufferCounter = 0;
 
       this.wasJumpPressed = false;
+      this.previousJumpPressed = false;
 
       this.previousX = this.x;
       this.previousY = this.y;
@@ -44,6 +45,7 @@ export class Player extends Entity {
       this.handleJump();
       this.handleVariableJump(inputSystem);
       this.applyGravity();
+      this.previousJumpPressed = inputSystem.isPressed('jump');
    }
 
    savePreviousPosition() {
@@ -101,8 +103,9 @@ export class Player extends Entity {
 
    handleVariableJump(inputSystem) {
       const isJumpPressed = inputSystem.isPressed('jump');
+      const justReleasedJump = !isJumpPressed && this.previousJumpPressed;
 
-      if (!isJumpPressed && this.velocityY < 0) {
+      if (justReleasedJump && this.velocityY < 0) {
          this.velocityY *= this.jumpCutMultiplier;
       }
    }
