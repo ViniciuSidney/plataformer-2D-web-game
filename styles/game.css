@@ -1,0 +1,9 @@
+#gameCanvas {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: block;
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+}

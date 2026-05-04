@@ -1,0 +1,27 @@
+:root {
+  --color-bg: #101014;
+  --color-surface: #181820;
+  --color-border: #2a2a35;
+  --color-text: #f5f5f5;
+  --color-muted: #a5a5b5;
+
+  --font-main: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-main);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
