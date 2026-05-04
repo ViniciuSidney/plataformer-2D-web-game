@@ -15,15 +15,24 @@ export class Player extends Entity {
     });
 
     this.speed = PLAYER_CONFIG.speed;
+    this.jumpForce = PLAYER_CONFIG.jumpForce;
     this.isOnGround = false;
   }
 
   update(inputSystem) {
     this.handleMovement(inputSystem);
+    this.handleJump(inputSystem);
     this.applyGravity();
     this.updatePosition();
     this.handleWorldFloorCollision();
     this.limitToWorldHorizontal();
+  }
+
+  handleJump(inputSystem) {
+    if (inputSystem.isPressed("jump") && this.isOnGround) {
+      this.velocityY = -this.jumpForce;
+      this.isOnGround = false;
+    }
   }
 
   handleMovement(inputSystem) {
@@ -64,10 +73,6 @@ export class Player extends Entity {
   }
 
   limitToWorldHorizontal() {
-    this.x = clamp(
-      this.x,
-      0,
-      GAME_CONFIG.worldWidth - this.width
-    );
+    this.x = clamp(this.x, 0, GAME_CONFIG.worldWidth - this.width);
   }
 }

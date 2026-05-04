@@ -15,5 +15,5 @@ Criar a primeira base jogável do projeto.
 - Câmera que segue o jogador ✅
 - Plataforma/chão básico no Mundo ✅
 - Gravidade ✅
-- Pulo
+- Pulo básico ✅
 - Colisão vertical
