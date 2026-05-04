@@ -32,18 +32,4 @@ export class Renderer {
       this.context.stroke();
     }
   }
-
-  drawWorldFloor(camera) {
-    const floorHeight = 32;
-    const floorY = GAME_CONFIG.worldHeight - floorHeight;
-
-    this.drawRect(
-      0,
-      floorY,
-      GAME_CONFIG.worldWidth,
-      floorHeight,
-      "#2a2a35",
-      camera,
-    );
-  }
 }

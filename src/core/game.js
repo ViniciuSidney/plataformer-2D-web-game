@@ -2,8 +2,14 @@ import { GAME_CONFIG } from "../config/gameConfig.js";
 import { Renderer } from "./renderer.js";
 import { Loop } from "./loop.js";
 import { Camera } from "./camera.js";
+
 import { Player } from "../entities/player.js";
+
 import { InputSystem } from "../systems/inputSystem.js";
+import { LevelSystem } from "../systems/levelSystem.js";
+import { CollisionSystem } from "../systems/CollisionSystem.js";
+
+import { level01 } from "../levels/level-01.js";
 
 export class Game {
   constructor(canvas) {
@@ -11,12 +17,18 @@ export class Game {
     this.renderer = new Renderer(canvas);
 
     this.inputSystem = new InputSystem();
+
     this.player = new Player();
+    this.player.x = level01.playerStart.x;
+    this.player.y = level01.playerStart.y;
+
+    this.platforms = LevelSystem.createPlatforms(level01);
+
     this.camera = new Camera();
 
     this.loop = new Loop(
       () => this.update(),
-      () => this.draw(),
+      () => this.draw()
     );
 
     this.setupCanvas();
@@ -33,13 +45,24 @@ export class Game {
 
   update() {
     this.player.update(this.inputSystem);
+
+    CollisionSystem.resolveVerticalPlatformCollision(
+      this.player,
+      this.platforms
+    );
+
     this.camera.follow(this.player);
   }
 
   draw() {
     this.renderer.clear();
+
     this.renderer.drawWorldGrid(this.camera);
-    this.renderer.drawWorldFloor(this.camera);
+
+    for (const platform of this.platforms) {
+      platform.draw(this.renderer, this.camera);
+    }
+
     this.player.draw(this.renderer, this.camera);
   }
 }

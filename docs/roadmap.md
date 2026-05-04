@@ -16,4 +16,5 @@ Criar a primeira base jogável do projeto.
 - Plataforma/chão básico no Mundo ✅
 - Gravidade ✅
 - Pulo básico ✅
-- Colisão vertical
+- Colisão vertical ✅
+- Colisão completa

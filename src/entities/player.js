@@ -16,16 +16,26 @@ export class Player extends Entity {
 
     this.speed = PLAYER_CONFIG.speed;
     this.jumpForce = PLAYER_CONFIG.jumpForce;
+
+    this.previousX = this.x;
+    this.previousY = this.y;
+
     this.isOnGround = false;
   }
 
   update(inputSystem) {
+    this.savePreviousPosition();
+
     this.handleMovement(inputSystem);
     this.handleJump(inputSystem);
     this.applyGravity();
     this.updatePosition();
-    this.handleWorldFloorCollision();
     this.limitToWorldHorizontal();
+  }
+
+  savePreviousPosition() {
+    this.previousX = this.x;
+    this.previousY = this.y;
   }
 
   handleJump(inputSystem) {
@@ -58,18 +68,6 @@ export class Player extends Entity {
   updatePosition() {
     this.x += this.velocityX;
     this.y += this.velocityY;
-  }
-
-  handleWorldFloorCollision() {
-    const floorY = GAME_CONFIG.worldHeight - this.height;
-
-    if (this.y >= floorY) {
-      this.y = floorY;
-      this.velocityY = 0;
-      this.isOnGround = true;
-    } else {
-      this.isOnGround = false;
-    }
   }
 
   limitToWorldHorizontal() {
