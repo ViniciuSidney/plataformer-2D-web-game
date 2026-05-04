@@ -13,7 +13,7 @@ Criar a primeira base jogável do projeto.
 - Movimento lateral ✅
 - Limite de movimentação dentro do futuro Mundo ✅
 - Câmera que segue o jogador ✅
-- Plataforma/chão no Mundo
-- Gravidade
+- Plataforma/chão básico no Mundo ✅
+- Gravidade ✅
 - Pulo
-- Colisão simples
+- Colisão vertical

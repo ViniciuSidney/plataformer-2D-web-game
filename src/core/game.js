@@ -39,6 +39,7 @@ export class Game {
   draw() {
     this.renderer.clear();
     this.renderer.drawWorldGrid(this.camera);
+    this.renderer.drawWorldFloor(this.camera);
     this.player.draw(this.renderer, this.camera);
   }
 }

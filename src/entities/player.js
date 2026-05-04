@@ -1,6 +1,7 @@
 import { Entity } from "./entity.js";
 import { PLAYER_CONFIG } from "../config/playerConfig.js";
 import { GAME_CONFIG } from "../config/gameConfig.js";
+import { PHYSICS_CONFIG } from "../config/physicsConfig.js";
 import { clamp } from "../utils/math.js";
 
 export class Player extends Entity {
@@ -14,34 +15,59 @@ export class Player extends Entity {
     });
 
     this.speed = PLAYER_CONFIG.speed;
+    this.isOnGround = false;
   }
 
   update(inputSystem) {
-    this.move(inputSystem);
-    this.limitToWorld();
+    this.handleMovement(inputSystem);
+    this.applyGravity();
+    this.updatePosition();
+    this.handleWorldFloorCollision();
+    this.limitToWorldHorizontal();
   }
 
-  move(inputSystem) {
+  handleMovement(inputSystem) {
+    this.velocityX = 0;
+
     if (inputSystem.isPressed("left")) {
-      this.x -= this.speed;
+      this.velocityX = -this.speed;
     }
 
     if (inputSystem.isPressed("right")) {
-      this.x += this.speed;
+      this.velocityX = this.speed;
     }
   }
 
-  limitToWorld() {
+  applyGravity() {
+    this.velocityY += PHYSICS_CONFIG.gravity;
+
+    if (this.velocityY > PHYSICS_CONFIG.maxFallSpeed) {
+      this.velocityY = PHYSICS_CONFIG.maxFallSpeed;
+    }
+  }
+
+  updatePosition() {
+    this.x += this.velocityX;
+    this.y += this.velocityY;
+  }
+
+  handleWorldFloorCollision() {
+    const floorY = GAME_CONFIG.worldHeight - this.height;
+
+    if (this.y >= floorY) {
+      this.y = floorY;
+      this.velocityY = 0;
+      this.isOnGround = true;
+    } else {
+      this.isOnGround = false;
+    }
+  }
+
+  limitToWorldHorizontal() {
     this.x = clamp(
       this.x,
       0,
       GAME_CONFIG.worldWidth - this.width
-    );
-
-    this.y = clamp(
-      this.y,
-      0,
-      GAME_CONFIG.worldHeight - this.height
     );
   }
 }
