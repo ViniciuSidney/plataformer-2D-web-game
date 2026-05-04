@@ -14,7 +14,11 @@ export class Player extends Entity {
       color: PLAYER_CONFIG.color,
     });
 
-    this.speed = PLAYER_CONFIG.speed;
+    this.maxSpeed = PLAYER_CONFIG.maxSpeed;
+    this.acceleration = PLAYER_CONFIG.acceleration;
+    this.deceleration = PLAYER_CONFIG.deceleration;
+    this.airControl = PLAYER_CONFIG.airControl;
+
     this.jumpForce = PLAYER_CONFIG.jumpForce;
 
     this.previousX = this.x;
@@ -37,14 +41,37 @@ export class Player extends Entity {
   }
 
   handleMovement(inputSystem) {
-    this.velocityX = 0;
+    const movingLeft = inputSystem.isPressed("left");
+    const movingRight = inputSystem.isPressed("right");
 
-    if (inputSystem.isPressed("left")) {
-      this.velocityX = -this.speed;
+    const controlMultiplier = this.isOnGround ? 1 : this.airControl;
+
+    if (movingLeft && !movingRight) {
+      this.velocityX -= this.acceleration * controlMultiplier;
     }
 
-    if (inputSystem.isPressed("right")) {
-      this.velocityX = this.speed;
+    if (movingRight && !movingLeft) {
+      this.velocityX += this.acceleration * controlMultiplier;
+    }
+
+    if ((!movingLeft && !movingRight) || (movingLeft && movingRight)) {
+      this.applyDeceleration();
+    }
+
+    this.velocityX = clamp(this.velocityX, -this.maxSpeed, this.maxSpeed);
+  }
+
+  applyDeceleration() {
+    if (this.velocityX > 0) {
+      this.velocityX -= this.deceleration;
+    }
+
+    if (this.velocityX < 0) {
+      this.velocityX += this.deceleration;
+    }
+
+    if (Math.abs(this.velocityX) < this.deceleration) {
+      this.velocityX = 0;
     }
   }
 
@@ -66,20 +93,12 @@ export class Player extends Entity {
   moveX() {
     this.x += this.velocityX;
 
-    this.x = clamp(
-      this.x,
-      0,
-      GAME_CONFIG.worldWidth - this.width
-    );
+    this.x = clamp(this.x, 0, GAME_CONFIG.worldWidth - this.width);
   }
 
   moveY() {
     this.y += this.velocityY;
 
-    this.y = clamp(
-      this.y,
-      0,
-      GAME_CONFIG.worldHeight - this.height
-    );
+    this.y = clamp(this.y, 0, GAME_CONFIG.worldHeight - this.height);
   }
 }
