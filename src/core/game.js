@@ -7,7 +7,7 @@ import { Player } from "../entities/player.js";
 
 import { InputSystem } from "../systems/inputSystem.js";
 import { LevelSystem } from "../systems/levelSystem.js";
-import { CollisionSystem } from "../systems/CollisionSystem.js";
+import { CollisionSystem } from "../systems/collisionSystem.js";
 
 import { level01 } from "../levels/level-01.js";
 
@@ -28,7 +28,7 @@ export class Game {
 
     this.loop = new Loop(
       () => this.update(),
-      () => this.draw()
+      () => this.draw(),
     );
 
     this.setupCanvas();
@@ -46,9 +46,16 @@ export class Game {
   update() {
     this.player.update(this.inputSystem);
 
+    this.player.moveX();
+    CollisionSystem.resolveHorizontalPlatformCollision(
+      this.player,
+      this.platforms,
+    );
+
+    this.player.moveY();
     CollisionSystem.resolveVerticalPlatformCollision(
       this.player,
-      this.platforms
+      this.platforms,
     );
 
     this.camera.follow(this.player);

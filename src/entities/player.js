@@ -29,20 +29,11 @@ export class Player extends Entity {
     this.handleMovement(inputSystem);
     this.handleJump(inputSystem);
     this.applyGravity();
-    this.updatePosition();
-    this.limitToWorldHorizontal();
   }
 
   savePreviousPosition() {
     this.previousX = this.x;
     this.previousY = this.y;
-  }
-
-  handleJump(inputSystem) {
-    if (inputSystem.isPressed("jump") && this.isOnGround) {
-      this.velocityY = -this.jumpForce;
-      this.isOnGround = false;
-    }
   }
 
   handleMovement(inputSystem) {
@@ -57,6 +48,13 @@ export class Player extends Entity {
     }
   }
 
+  handleJump(inputSystem) {
+    if (inputSystem.isPressed("jump") && this.isOnGround) {
+      this.velocityY = -this.jumpForce;
+      this.isOnGround = false;
+    }
+  }
+
   applyGravity() {
     this.velocityY += PHYSICS_CONFIG.gravity;
 
@@ -65,12 +63,23 @@ export class Player extends Entity {
     }
   }
 
-  updatePosition() {
+  moveX() {
     this.x += this.velocityX;
-    this.y += this.velocityY;
+
+    this.x = clamp(
+      this.x,
+      0,
+      GAME_CONFIG.worldWidth - this.width
+    );
   }
 
-  limitToWorldHorizontal() {
-    this.x = clamp(this.x, 0, GAME_CONFIG.worldWidth - this.width);
+  moveY() {
+    this.y += this.velocityY;
+
+    this.y = clamp(
+      this.y,
+      0,
+      GAME_CONFIG.worldHeight - this.height
+    );
   }
 }
