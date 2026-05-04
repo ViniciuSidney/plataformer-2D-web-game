@@ -12,7 +12,8 @@ Criar a primeira base jogável do projeto.
 - Jogador básico ✅
 - Movimento lateral ✅
 - Limite de movimentação dentro do futuro Mundo ✅
+- Câmera que segue o jogador ✅
+- Plataforma/chão no Mundo
 - Gravidade
 - Pulo
-- Plataforma/chão
 - Colisão simples

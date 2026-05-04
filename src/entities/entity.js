@@ -11,7 +11,7 @@ export class Entity {
     // Método reservado para futuras atualizações da entidade.
   }
 
-  draw(renderer) {
-    renderer.drawRect(this.x, this.y, this.width, this.height, this.color);
+  draw(renderer, camera) {
+    renderer.drawRect(this.x, this.y, this.width, this.height, this.color, camera);
   }
 }

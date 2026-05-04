@@ -1,6 +1,7 @@
 import { GAME_CONFIG } from "../config/gameConfig.js";
 import { Renderer } from "./renderer.js";
 import { Loop } from "./loop.js";
+import { Camera } from "./camera.js";
 import { Player } from "../entities/player.js";
 import { InputSystem } from "../systems/inputSystem.js";
 
@@ -11,10 +12,11 @@ export class Game {
 
     this.inputSystem = new InputSystem();
     this.player = new Player();
+    this.camera = new Camera();
 
     this.loop = new Loop(
       () => this.update(),
-      () => this.draw()
+      () => this.draw(),
     );
 
     this.setupCanvas();
@@ -31,10 +33,12 @@ export class Game {
 
   update() {
     this.player.update(this.inputSystem);
+    this.camera.follow(this.player);
   }
 
   draw() {
     this.renderer.clear();
-    this.player.draw(this.renderer);
+    this.renderer.drawWorldGrid(this.camera);
+    this.player.draw(this.renderer, this.camera);
   }
 }
