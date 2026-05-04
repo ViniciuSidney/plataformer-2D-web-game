@@ -12,6 +12,7 @@ export const PLAYER_CONFIG = {
    jumpForce: 13,
    jumpCutMultiplier: 0.6,
    coyoteTime: 8,
+   jumpBufferTime: 8,
 
    color: '#f5f5f5',
 };

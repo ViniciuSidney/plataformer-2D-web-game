@@ -21,8 +21,12 @@ export class Player extends Entity {
 
       this.jumpForce = PLAYER_CONFIG.jumpForce;
       this.jumpCutMultiplier = PLAYER_CONFIG.jumpCutMultiplier;
+
       this.coyoteTime = PLAYER_CONFIG.coyoteTime;
       this.coyoteTimeCounter = 0;
+
+      this.jumpBufferTime = PLAYER_CONFIG.jumpBufferTime;
+      this.jumpBufferCounter = 0;
 
       this.wasJumpPressed = false;
 
@@ -36,7 +40,8 @@ export class Player extends Entity {
       this.savePreviousPosition();
 
       this.handleMovement(inputSystem);
-      this.handleJump(inputSystem);
+      this.updateJumpBuffer(inputSystem);
+      this.handleJump();
       this.handleVariableJump(inputSystem);
       this.applyGravity();
    }
@@ -81,18 +86,17 @@ export class Player extends Entity {
       }
    }
 
-   handleJump(inputSystem) {
-      const isJumpPressed = inputSystem.isPressed('jump');
-      const justPressedJump = isJumpPressed && !this.wasJumpPressed;
+   handleJump() {
+      const hasBufferedJump = this.jumpBufferCounter > 0;
       const canUseCoyoteTime = this.coyoteTimeCounter > 0;
 
-      if (justPressedJump && canUseCoyoteTime) {
+      if (hasBufferedJump && canUseCoyoteTime) {
          this.velocityY = -this.jumpForce;
          this.isOnGround = false;
+
+         this.jumpBufferCounter = 0;
          this.coyoteTimeCounter = 0;
       }
-
-      this.wasJumpPressed = isJumpPressed;
    }
 
    handleVariableJump(inputSystem) {
@@ -109,6 +113,19 @@ export class Player extends Entity {
       } else if (this.coyoteTimeCounter > 0) {
          this.coyoteTimeCounter--;
       }
+   }
+
+   updateJumpBuffer(inputSystem) {
+      const isJumpPressed = inputSystem.isPressed('jump');
+      const justPressedJump = isJumpPressed && !this.wasJumpPressed;
+
+      if (justPressedJump) {
+         this.jumpBufferCounter = this.jumpBufferTime;
+      } else if (this.jumpBufferCounter > 0) {
+         this.jumpBufferCounter--;
+      }
+
+      this.wasJumpPressed = isJumpPressed;
    }
 
    applyGravity() {

@@ -59,6 +59,7 @@ export class Game {
       );
 
       this.player.updateCoyoteTime();
+      this.player.handleJump();
 
       this.camera.follow(this.player);
    }
