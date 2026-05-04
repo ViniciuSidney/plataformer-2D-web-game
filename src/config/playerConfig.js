@@ -3,5 +3,6 @@ export const PLAYER_CONFIG = {
   y: 420,
   width: 32,
   height: 32,
+  speed: 5,
   color: "#f5f5f5",
 };

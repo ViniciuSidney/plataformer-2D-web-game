@@ -10,5 +10,21 @@ export class Player extends Entity {
       height: PLAYER_CONFIG.height,
       color: PLAYER_CONFIG.color,
     });
+
+    this.speed = PLAYER_CONFIG.speed;
+  }
+
+  update(inputSystem) {
+    this.move(inputSystem);
+  }
+
+  move(inputSystem) {
+    if (inputSystem.isPressed("left")) {
+      this.x -= this.speed;
+    }
+
+    if (inputSystem.isPressed("right")) {
+      this.x += this.speed;
+    }
   }
 }

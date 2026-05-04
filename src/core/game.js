@@ -2,12 +2,14 @@ import { GAME_CONFIG } from "../config/gameConfig.js";
 import { Renderer } from "./renderer.js";
 import { Loop } from "./loop.js";
 import { Player } from "../entities/player.js";
+import { InputSystem } from "../systems/inputSystem.js";
 
 export class Game {
   constructor(canvas) {
     this.canvas = canvas;
     this.renderer = new Renderer(canvas);
 
+    this.inputSystem = new InputSystem();
     this.player = new Player();
 
     this.loop = new Loop(
@@ -28,12 +30,11 @@ export class Game {
   }
 
   update() {
-    this.player.update();
+    this.player.update(this.inputSystem);
   }
 
   draw() {
     this.renderer.clear();
-
     this.player.draw(this.renderer);
   }
 }
