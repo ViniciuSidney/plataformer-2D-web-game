@@ -23,6 +23,8 @@ export class Game {
       this.player.y = level01.playerStart.y;
 
       this.platforms = LevelSystem.createPlatforms(level01);
+      this.goal = LevelSystem.createGoal(level01);
+      this.hasWon = false;
 
       this.camera = new Camera();
 
@@ -58,6 +60,11 @@ export class Game {
          this.platforms,
       );
 
+      if (CollisionSystem.checkGoalCollision(this.player, this.goal)) {
+         this.hasWon = true;
+         console.log('Fase concluída!');
+      }
+
       this.player.updateCoyoteTime();
       this.player.handleJump();
 
@@ -73,6 +80,7 @@ export class Game {
          platform.draw(this.renderer, this.camera);
       }
 
+      this.goal.draw(this.renderer, this.camera);
       this.player.draw(this.renderer, this.camera);
    }
 }

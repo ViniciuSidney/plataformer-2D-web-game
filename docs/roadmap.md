@@ -34,10 +34,10 @@ Em desenvolvimento avançado.
 
 ## Próximos passos da v0.1
 
-- Refinar a física do jogador
-- Ajustar força do pulo e gravidade
-- Melhorar sensação de controle
-- Criar objetivo final da fase
+- Refinar a física do jogador ✅
+- Ajustar força do pulo e gravidade ✅
+- Melhorar sensação de controle ✅
+- Criar objetivo final da fase ✅
 - Criar condição de vitória
 - Criar sistema simples de reinício
 - Adicionar queda/morte ao sair da área segura
