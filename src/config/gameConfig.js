@@ -1,30 +1,33 @@
 export const GAME_CONFIG = {
-   tileSize: 32,
+  tileSize: 32,
 
-   screen: {
-      width: 960,
-      height: 540,
-   },
+  screen: {
+    width: 960,
+    height: 540,
+  },
 
-   world: {
-      columns: 60,
-      rows: 34,
-   },
+  world: {
+    columns: 48,
+    rows: 32,
+  },
 
-   deathZoneOffset: 2,
+  deathZoneOffset: 2,
 
-   cameraDeadZone: {
-      width: 320,
-      height: 220,
-   },
+  cameraDeadZone: {
+    width: 320,
+    height: 220,
+  },
 
-   debug: {
-      showWorldGrid: true,
-      showCameraDeadZone: false,
-      showDebugText: true,
-   },
+  debug: {
+    showWorldGrid: true,
+    showCameraDeadZone: false,
+    showDebugText: true,
 
-   backgroundColor: '#181820',
+    gridMajorLineEvery: 4,
+    showGridRulerLabels: true,
+  },
+
+  backgroundColor: "#181820",
 };
 
 GAME_CONFIG.width = GAME_CONFIG.screen.width;
@@ -34,4 +37,4 @@ GAME_CONFIG.worldWidth = GAME_CONFIG.world.columns * GAME_CONFIG.tileSize;
 GAME_CONFIG.worldHeight = GAME_CONFIG.world.rows * GAME_CONFIG.tileSize;
 
 GAME_CONFIG.deathZoneY =
-   GAME_CONFIG.worldHeight + GAME_CONFIG.deathZoneOffset * GAME_CONFIG.tileSize;
+  GAME_CONFIG.worldHeight + GAME_CONFIG.deathZoneOffset * GAME_CONFIG.tileSize;
