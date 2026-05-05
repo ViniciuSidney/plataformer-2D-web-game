@@ -1,3 +1,6 @@
+
+import { GAME_CONFIG } from '../config/gameConfig.js';
+
 export const level01 = {
    playerStart: {
       x: 80,
@@ -8,7 +11,13 @@ export const level01 = {
       {
          x: 0,
          y: 508,
-         width: 2400,
+         width: GAME_CONFIG.worldWidth / 2,
+         height: 32,
+      },
+      {
+         x: GAME_CONFIG.worldWidth / 1.5 ,
+         y: 508,
+         width: GAME_CONFIG.worldWidth / 2,
          height: 32,
       },
       {

@@ -25,6 +25,7 @@ export class Game {
       this.platforms = LevelSystem.createPlatforms(level01);
       this.goal = LevelSystem.createGoal(level01);
       this.hasWon = false;
+      this.hasLost = false;
 
       this.camera = new Camera();
 
@@ -46,7 +47,11 @@ export class Game {
    }
 
    update() {
-      if (this.hasWon) return;
+      if (this.inputSystem.isPressed('restart')) {
+         this.restartLevel();
+      }
+
+      if (this.hasWon || this.hasLost) return;
 
       this.player.update(this.inputSystem);
 
@@ -69,6 +74,8 @@ export class Game {
          this.hasWon = true;
       }
 
+      this.checkPlayerDeath();
+
       this.camera.follow(this.player);
    }
 
@@ -88,7 +95,30 @@ export class Game {
          this.renderer.drawOverlayMessage(
             'Fase concluída!',
             'Você chegou ao objetivo final.',
+            'Pressione R para jogar novamente',
          );
+      }
+
+      if (this.hasLost) {
+         this.renderer.drawOverlayMessage(
+            'Game Over!',
+            'Você caiu na zona de morte.',
+            'Pressione R para tentar novamente',
+         );
+      }
+   }
+
+   restartLevel() {
+      this.hasWon = false;
+      this.hasLost = false;
+
+      this.player.reset(level01.playerStart);
+      this.camera.follow(this.player);
+   }
+
+   checkPlayerDeath() {
+      if (this.player.y > GAME_CONFIG.deathZoneY) {
+         this.hasLost = true;
       }
    }
 }

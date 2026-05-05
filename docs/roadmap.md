@@ -39,7 +39,7 @@ Em desenvolvimento avançado.
 - Melhorar sensação de controle ✅
 - Criar objetivo final da fase ✅
 - Criar condição de vitória ✅ 
-- Criar sistema simples de reinício
+- Criar sistema simples de reinício ✅
 - Adicionar queda/morte ao sair da área segura
 - Criar primeira fase de teste completa
 - Remover ou controlar elementos de debug visual

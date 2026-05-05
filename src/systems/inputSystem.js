@@ -1,45 +1,48 @@
 export class InputSystem {
-  constructor() {
-    this.keys = {
-      left: false,
-      right: false,
-      jump: false,
-    };
+   constructor() {
+      this.keys = {
+         left: false,
+         right: false,
+         jump: false,
+         restart: false,
+      };
 
-    this.bindEvents();
-  }
+      this.bindEvents();
+   }
 
-  bindEvents() {
-    window.addEventListener("keydown", (event) => {
-      this.handleKey(event.code, true);
-    });
+   bindEvents() {
+      window.addEventListener('keydown', (event) => {
+         this.handleKey(event.code, true);
+      });
 
-    window.addEventListener("keyup", (event) => {
-      this.handleKey(event.code, false);
-    });
-  }
+      window.addEventListener('keyup', (event) => {
+         this.handleKey(event.code, false);
+      });
+   }
 
-  handleKey(code, isPressed) {
-    const keyMap = {
-      ArrowLeft: "left",
-      KeyA: "left",
+   handleKey(code, isPressed) {
+      const keyMap = {
+         ArrowLeft: 'left',
+         KeyA: 'left',
 
-      ArrowRight: "right",
-      KeyD: "right",
+         ArrowRight: 'right',
+         KeyD: 'right',
 
-      Space: "jump",
-      ArrowUp: "jump",
-      KeyW: "jump",
-    };
+         Space: 'jump',
+         ArrowUp: 'jump',
+         KeyW: 'jump',
 
-    const action = keyMap[code];
+         KeyR: 'restart',
+      };
 
-    if (action) {
-      this.keys[action] = isPressed;
-    }
-  }
+      const action = keyMap[code];
 
-  isPressed(action) {
-    return Boolean(this.keys[action]);
-  }
+      if (action) {
+         this.keys[action] = isPressed;
+      }
+   }
+
+   isPressed(action) {
+      return Boolean(this.keys[action]);
+   }
 }

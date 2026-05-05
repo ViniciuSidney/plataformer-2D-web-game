@@ -153,6 +153,24 @@ export class Player extends Entity {
    moveY() {
       this.y += this.velocityY;
 
-      this.y = clamp(this.y, 0, GAME_CONFIG.worldHeight - this.height);
+      this.y = Math.max(this.y, 0);
+   }
+
+   reset(position) {
+      this.x = position.x;
+      this.y = position.y;
+
+      this.velocityX = 0;
+      this.velocityY = 0;
+
+      this.previousX = this.x;
+      this.previousY = this.y;
+
+      this.isOnGround = false;
+
+      this.coyoteTimeCounter = 0;
+      this.jumpBufferCounter = 0;
+
+      this.wasJumpPressed = false;
    }
 }

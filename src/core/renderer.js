@@ -33,7 +33,7 @@ export class Renderer {
       }
    }
 
-   drawOverlayMessage(title, subtitle, restartText = 'Pressione R para reiniciar') {
+   drawOverlayMessage(title, subtitle, restartText) {
       const { context, canvas } = this;
 
       context.save();
