@@ -46,6 +46,8 @@ export class Game {
    }
 
    update() {
+      if (this.hasWon) return;
+
       this.player.update(this.inputSystem);
 
       this.player.moveX();
@@ -60,13 +62,12 @@ export class Game {
          this.platforms,
       );
 
-      if (CollisionSystem.checkGoalCollision(this.player, this.goal)) {
-         this.hasWon = true;
-         console.log('Fase concluída!');
-      }
-
       this.player.updateCoyoteTime();
       this.player.handleJump();
+
+      if (CollisionSystem.checkGoalCollision(this.player, this.goal)) {
+         this.hasWon = true;
+      }
 
       this.camera.follow(this.player);
    }
@@ -82,5 +83,12 @@ export class Game {
 
       this.goal.draw(this.renderer, this.camera);
       this.player.draw(this.renderer, this.camera);
+
+      if (this.hasWon) {
+         this.renderer.drawOverlayMessage(
+            'Fase concluída!',
+            'Você chegou ao objetivo final.',
+         );
+      }
    }
 }
