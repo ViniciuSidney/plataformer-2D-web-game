@@ -1,4 +1,5 @@
 import { GAME_CONFIG } from '../config/gameConfig.js';
+import { LEVEL_CONFIG } from '../config/levelConfig.js';
 
 export class Renderer {
    constructor(canvas) {
@@ -18,10 +19,12 @@ export class Renderer {
    }
 
    drawWorldGrid(camera) {
-      const spacing = 120;
+      const spacing = LEVEL_CONFIG.tileSize;
 
       this.context.strokeStyle = '#2a2a35';
       this.context.lineWidth = 1;
+      this.context.setLineDash([4, 4]);
+      this.context.lineDashOffset = (performance.now() / 120) % 8;
 
       for (let x = 0; x <= GAME_CONFIG.worldWidth; x += spacing) {
          const screenX = x - camera.x;
@@ -31,6 +34,32 @@ export class Renderer {
          this.context.lineTo(screenX, this.canvas.height);
          this.context.stroke();
       }
+
+      for (let y = 0; y <= GAME_CONFIG.worldHeight; y += spacing) {
+         const screenY = y - camera.y;
+
+         this.context.beginPath();
+         this.context.moveTo(0, screenY);
+         this.context.lineTo(this.canvas.width, screenY);
+         this.context.stroke();
+      }
+   }
+
+   drawDebugText(lines) {
+      this.context.save();
+
+      this.context.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      this.context.fillRect(16, 24, 140, 88);
+
+      this.context.fillStyle = '#f5f5f5';
+      this.context.font = '14px JetBrains Mono';
+      this.context.textAlign = 'left';
+
+      lines.forEach((line, index) => {
+         this.context.fillText(line, 32, 42 + index * 20);
+      });
+
+      this.context.restore();
    }
 
    drawOverlayMessage(title, subtitle, restartText) {

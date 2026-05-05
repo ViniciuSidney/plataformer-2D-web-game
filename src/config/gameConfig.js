@@ -15,6 +15,7 @@ export const GAME_CONFIG = {
    debug: {
       showWorldGrid: true,
       showCameraDeadZone: true,
+      showDebugText: true,
    },
 
    backgroundColor: '#181820',

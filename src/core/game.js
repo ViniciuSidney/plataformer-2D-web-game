@@ -81,13 +81,15 @@ export class Game {
 
    draw() {
       this.renderer.clear();
-
-      this.renderer.drawWorldGrid(this.camera);
-
+      
       for (const platform of this.platforms) {
          platform.draw(this.renderer, this.camera);
       }
 
+      if (GAME_CONFIG.debug.showWorldGrid) {
+         this.renderer.drawWorldGrid(this.camera);
+      }
+      
       this.goal.draw(this.renderer, this.camera);
       this.player.draw(this.renderer, this.camera);
 
@@ -107,13 +109,22 @@ export class Game {
          );
       }
 
-      if (GAME_CONFIG.debug.showWorldGrid) {
-         this.renderer.drawWorldGrid(this.camera);
-      }
+
 
       if (GAME_CONFIG.debug.showCameraDeadZone) {
          this.renderer.drawCameraDeadZone(this.camera);
       }
+
+      if (GAME_CONFIG.debug.showDebugText) {
+         this.renderer.drawDebugText([
+            `Player X: ${Math.round(this.player.x)}`,
+            `Player Y: ${Math.round(this.player.y)}`,
+            `Tile X: ${Math.floor(this.player.x / 32)}`,
+            `Tile Y: ${Math.floor(this.player.y / 32)}`,
+         ]);
+      }
+
+
    }
 
    restartLevel() {
