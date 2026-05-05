@@ -106,6 +106,14 @@ export class Game {
             'Pressione R para tentar novamente',
          );
       }
+
+      if (GAME_CONFIG.debug.showWorldGrid) {
+         this.renderer.drawWorldGrid(this.camera);
+      }
+
+      if (GAME_CONFIG.debug.showCameraDeadZone) {
+         this.renderer.drawCameraDeadZone(this.camera);
+      }
    }
 
    restartLevel() {

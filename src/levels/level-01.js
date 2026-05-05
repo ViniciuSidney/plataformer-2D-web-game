@@ -10,31 +10,31 @@ export const level01 = {
    platforms: [
       {
          x: 0,
-         y: 508,
+         y: 608,
          width: GAME_CONFIG.worldWidth / 2,
-         height: 32,
+         height: GAME_CONFIG.worldHeight - 508,
       },
       {
          x: GAME_CONFIG.worldWidth / 1.5 ,
          y: 508,
          width: GAME_CONFIG.worldWidth / 2,
-         height: 32,
+         height: GAME_CONFIG.worldHeight - 508,
       },
       {
          x: 260,
-         y: 420,
+         y: 520,
          width: 160,
          height: 24,
       },
       {
          x: 520,
-         y: 350,
+         y: 450,
          width: 160,
          height: 24,
       },
       {
-         x: 740,
-         y: 250,
+         x: 1100,
+         y: 550,
          width: 80,
          height: 24,
       },

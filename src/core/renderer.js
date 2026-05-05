@@ -58,4 +58,19 @@ export class Renderer {
 
       context.restore();
    }
+
+   drawCameraDeadZone(camera) {
+      const deadZone = GAME_CONFIG.cameraDeadZone;
+
+      const x = (this.canvas.width - deadZone.width) / 2;
+      const y = (this.canvas.height - deadZone.height) / 2;
+
+      this.context.save();
+
+      this.context.strokeStyle = 'rgba(139, 233, 253, 0.35)';
+      this.context.lineWidth = 2;
+      this.context.strokeRect(x, y, deadZone.width, deadZone.height);
+
+      this.context.restore();
+   }
 }
