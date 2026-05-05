@@ -11,16 +11,28 @@ export class Renderer {
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  drawRect(x, y, width, height, color, camera = { x: 0, y: 0 }) {
+  drawRect(x, y, width, height, color, camera = { x: 0, y: 0, zoom: 1 }) {
+    const zoom = camera.zoom || 1;
+
     this.context.fillStyle = color;
 
-    this.context.fillRect(x - camera.x, y - camera.y, width, height);
+    this.context.fillRect(
+      (x - camera.x) * zoom,
+      (y - camera.y) * zoom,
+      width * zoom,
+      height * zoom,
+    );
   }
 
   drawWorldGrid(camera) {
     const spacing = GAME_CONFIG.tileSize;
+    const zoom = camera.zoom || 1;
+
     const majorEvery = GAME_CONFIG.debug.gridMajorLineEvery || 4;
     const showLabels = GAME_CONFIG.debug.showGridRulerLabels;
+
+    const visibleWidth = this.canvas.width / zoom;
+    const visibleHeight = this.canvas.height / zoom;
 
     const totalColumns = Math.ceil(GAME_CONFIG.worldWidth / spacing);
     const totalRows = Math.ceil(GAME_CONFIG.worldHeight / spacing);
@@ -28,23 +40,20 @@ export class Renderer {
     const startColumn = Math.max(0, Math.floor(camera.x / spacing) - 1);
     const endColumn = Math.min(
       totalColumns,
-      Math.ceil((camera.x + this.canvas.width) / spacing) + 1,
+      Math.ceil((camera.x + visibleWidth) / spacing) + 1,
     );
 
     const startRow = Math.max(0, Math.floor(camera.y / spacing) - 1);
     const endRow = Math.min(
       totalRows,
-      Math.ceil((camera.y + this.canvas.height) / spacing) + 1,
+      Math.ceil((camera.y + visibleHeight) / spacing) + 1,
     );
 
     this.context.save();
 
-    const majorStrokeColor = "rgba(79, 131, 143, 0.25)";
-
-    // linhas verticais
     for (let column = startColumn; column <= endColumn; column++) {
       const worldX = column * spacing;
-      const screenX = worldX - camera.x;
+      const screenX = (worldX - camera.x) * zoom;
 
       const isMajorLine = column % majorEvery === 0;
 
@@ -53,7 +62,7 @@ export class Renderer {
       this.context.lineTo(screenX, this.canvas.height);
 
       if (isMajorLine) {
-        this.context.strokeStyle = majorStrokeColor;
+        this.context.strokeStyle = "rgba(139, 233, 253, 0.22)";
         this.context.lineWidth = 1.25;
         this.context.setLineDash([]);
       } else {
@@ -70,10 +79,9 @@ export class Renderer {
       }
     }
 
-    // linhas horizontais
     for (let row = startRow; row <= endRow; row++) {
       const worldY = row * spacing;
-      const screenY = worldY - camera.y;
+      const screenY = (worldY - camera.y) * zoom;
 
       const isMajorLine = row % majorEvery === 0;
 
@@ -82,7 +90,7 @@ export class Renderer {
       this.context.lineTo(this.canvas.width, screenY);
 
       if (isMajorLine) {
-        this.context.strokeStyle = majorStrokeColor;
+        this.context.strokeStyle = "rgba(139, 233, 253, 0.22)";
         this.context.lineWidth = 1.25;
         this.context.setLineDash([]);
       } else {

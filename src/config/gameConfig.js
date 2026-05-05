@@ -25,6 +25,15 @@ export const GAME_CONFIG = {
 
     gridMajorLineEvery: 4,
     showGridRulerLabels: true,
+
+    levelEditMode: false,
+    hidePlayerInEditMode: true,
+
+    editCamera: {
+      x: 0,
+      y: 520,
+      zoom: 0.6,
+    },
   },
 
   backgroundColor: "#181820",

@@ -1,51 +1,64 @@
-import { GAME_CONFIG } from '../config/gameConfig.js';
-import { clamp } from '../utils/math.js';
+import { GAME_CONFIG } from "../config/gameConfig.js";
+import { clamp } from "../utils/math.js";
 
 export class Camera {
-   constructor() {
-      this.x = 0;
-      this.y = 0;
+  constructor() {
+    this.x = 0;
+    this.y = 0;
 
-      this.width = GAME_CONFIG.width;
-      this.height = GAME_CONFIG.height;
+    this.width = GAME_CONFIG.width;
+    this.height = GAME_CONFIG.height;
 
-      this.worldWidth = GAME_CONFIG.worldWidth;
-      this.worldHeight = GAME_CONFIG.worldHeight;
+    this.worldWidth = GAME_CONFIG.worldWidth;
+    this.worldHeight = GAME_CONFIG.worldHeight;
 
-      this.deadZone = GAME_CONFIG.cameraDeadZone;
-   }
+    this.deadZone = GAME_CONFIG.cameraDeadZone;
 
-   follow(target) {
-      const targetScreenX = target.x - this.x;
-      const targetScreenY = target.y - this.y;
+    this.zoom = 1;
+  }
 
-      const deadZoneLeft = (this.width - this.deadZone.width) / 2;
-      const deadZoneRight = deadZoneLeft + this.deadZone.width;
+  setView({ x = 0, y = 0, zoom = 1 }) {
+    this.x = x;
+    this.y = y;
+    this.zoom = zoom;
 
-      const deadZoneTop = (this.height - this.deadZone.height) / 2;
-      const deadZoneBottom = deadZoneTop + this.deadZone.height;
+    this.limitToWorld();
+  }
 
-      if (targetScreenX < deadZoneLeft) {
-         this.x = target.x - deadZoneLeft;
-      }
+  follow(target) {
+    const targetScreenX = target.x - this.x;
+    const targetScreenY = target.y - this.y;
 
-      if (targetScreenX + target.width > deadZoneRight) {
-         this.x = target.x + target.width - deadZoneRight;
-      }
+    const deadZoneLeft = (this.width - this.deadZone.width) / 2;
+    const deadZoneRight = deadZoneLeft + this.deadZone.width;
 
-      if (targetScreenY < deadZoneTop) {
-         this.y = target.y - deadZoneTop;
-      }
+    const deadZoneTop = (this.height - this.deadZone.height) / 2;
+    const deadZoneBottom = deadZoneTop + this.deadZone.height;
 
-      if (targetScreenY + target.height > deadZoneBottom) {
-         this.y = target.y + target.height - deadZoneBottom;
-      }
+    if (targetScreenX < deadZoneLeft) {
+      this.x = target.x - deadZoneLeft;
+    }
 
-      this.limitToWorld();
-   }
+    if (targetScreenX + target.width > deadZoneRight) {
+      this.x = target.x + target.width - deadZoneRight;
+    }
 
-   limitToWorld() {
-      this.x = clamp(this.x, 0, this.worldWidth - this.width);
-      this.y = clamp(this.y, 0, this.worldHeight - this.height);
-   }
+    if (targetScreenY < deadZoneTop) {
+      this.y = target.y - deadZoneTop;
+    }
+
+    if (targetScreenY + target.height > deadZoneBottom) {
+      this.y = target.y + target.height - deadZoneBottom;
+    }
+
+    this.limitToWorld();
+  }
+
+  limitToWorld() {
+    const visibleWidth = this.width / this.zoom;
+    const visibleHeight = this.height / this.zoom;
+
+    this.x = clamp(this.x, 0, this.worldWidth - visibleWidth);
+    this.y = clamp(this.y, 0, this.worldHeight - visibleHeight);
+  }
 }
