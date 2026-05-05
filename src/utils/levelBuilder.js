@@ -1,6 +1,6 @@
-import { LEVEL_CONFIG } from '../config/levelConfig.js';
+import { GAME_CONFIG } from '../config/gameConfig.js';
 
-const TILE_SIZE = LEVEL_CONFIG.tileSize;
+const TILE_SIZE = GAME_CONFIG.tileSize;
 
 export function toPixels(value) {
    return value * TILE_SIZE;

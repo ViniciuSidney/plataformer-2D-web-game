@@ -19,7 +19,9 @@ export class Renderer {
    }
 
    drawWorldGrid(camera) {
-      const spacing = LEVEL_CONFIG.tileSize;
+      const spacing = GAME_CONFIG.tileSize;
+
+      this.context.save();
 
       this.context.strokeStyle = '#2a2a35';
       this.context.lineWidth = 1;
@@ -43,6 +45,8 @@ export class Renderer {
          this.context.lineTo(this.canvas.width, screenY);
          this.context.stroke();
       }
+
+      this.context.restore();
    }
 
    drawDebugText(lines) {
