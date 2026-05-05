@@ -135,16 +135,15 @@ export class Renderer {
     this.context.save();
 
     this.context.fillStyle = "rgba(0, 0, 0, 0.55)";
-    this.context.fillRect(16, 24, 140, 88);
+    this.context.fillRect(40, 44, 100, 88);
 
     this.context.fillStyle = "#f5f5f5";
     this.context.font = "14px JetBrains Mono";
     this.context.textAlign = "left";
 
     lines.forEach((line, index) => {
-      this.context.fillText(line, 32, 42 + index * 20);
+      this.context.fillText(line, 52, 62 + index * 20);
     });
-
     this.context.restore();
   }
 

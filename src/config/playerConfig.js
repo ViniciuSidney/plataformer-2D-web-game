@@ -1,6 +1,6 @@
 export const PLAYER_CONFIG = {
-   x: 80,
-   y: 200,
+   x: 100,
+   y: 700,
    width: 32,
    height: 32,
 
