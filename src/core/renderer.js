@@ -167,14 +167,14 @@ export class Renderer {
     context.textAlign = "center";
     context.textBaseline = "middle";
 
-    context.font = "700 42px Lexend";
+    context.font = "700 42px JetBrains Mono";
     context.fillText(title, canvas.width / 2, canvas.height / 2 - 24);
 
-    context.font = "400 18px Lexend";
+    context.font = "400 18px JetBrains Mono";
     context.fillStyle = "#a5a5b5";
     context.fillText(subtitle, canvas.width / 2, canvas.height / 2 + 24);
 
-    context.font = "400 14px Lexend";
+    context.font = "400 14px JetBrains Mono";
     context.fillStyle = "#a5a5b5";
     context.fillText(restartText, canvas.width / 2, canvas.height / 2 + 140);
 
