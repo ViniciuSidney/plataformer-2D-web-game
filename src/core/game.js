@@ -34,6 +34,8 @@ export class Game {
          : GAME_STATES.MENU;
 
       this.wasPausePressed = false;
+      this.wasPreviousLevelPressed = false;
+      this.wasNextLevelEditPressed = false;
 
       this.camera = new Camera();
 
@@ -120,6 +122,7 @@ export class Game {
 
    update() {
       if (GAME_CONFIG.debug.levelEditMode) {
+         this.handleEditModeLevelInput();
          return;
       }
 
@@ -251,22 +254,58 @@ export class Game {
    drawDebugInfo() {
       if (!GAME_CONFIG.debug.levelEditMode) {
          this.renderer.drawDebugText([
-            'Modo: edição',
             `Fase: ${this.currentLevelIndex + 1}/${levels.length}`,
             `Nome: ${this.currentLevel.name}`,
-            `Camera X: ${Math.round(this.camera.x)}`,
-            `Camera Y: ${Math.round(this.camera.y)}`,
-            `Zoom: ${this.camera.zoom.toFixed(2)}`,
+            `Tile X: ${Math.floor(this.player.x / GAME_CONFIG.tileSize)}`,
+            `Tile Y: ${Math.floor(this.player.y / GAME_CONFIG.tileSize)}`,
          ]);
 
          return;
       }
       this.renderer.drawDebugText([
+         'Modo: Edição',
          `Fase: ${this.currentLevelIndex + 1}/${levels.length}`,
          `Nome: ${this.currentLevel.name}`,
-         `Tile X: ${Math.floor(this.player.x / GAME_CONFIG.tileSize)}`,
-         `Tile Y: ${Math.floor(this.player.y / GAME_CONFIG.tileSize)}`,
+         `Camera X: ${Math.round(this.camera.x)}`,
+         `Camera Y: ${Math.round(this.camera.y)}`,
+         `Zoom: ${this.camera.zoom.toFixed(2)}`,
+         '"," fase anterior ', '"." próxima fase'
+         ,
       ]);
+   }
+
+   handleEditModeLevelInput() {
+      const isPreviousPressed = this.inputSystem.isPressed('previousLevel');
+      const isNextPressed = this.inputSystem.isPressed('nextLevelEdit');
+
+      const justPressedPrevious =
+         isPreviousPressed && !this.wasPreviousLevelPressed;
+
+      const justPressedNext = isNextPressed && !this.wasNextLevelEditPressed;
+
+      if (justPressedPrevious) {
+         this.goToEditLevel(this.currentLevelIndex - 1);
+      }
+
+      if (justPressedNext) {
+         this.goToEditLevel(this.currentLevelIndex + 1);
+      }
+
+      this.wasPreviousLevelPressed = isPreviousPressed;
+      this.wasNextLevelEditPressed = isNextPressed;
+   }
+
+   goToEditLevel(levelIndex) {
+      const lastLevelIndex = levels.length - 1;
+
+      const safeLevelIndex = Math.min(Math.max(levelIndex, 0), lastLevelIndex);
+
+      if (safeLevelIndex === this.currentLevelIndex) {
+         return;
+      }
+
+      this.loadLevel(safeLevelIndex);
+      this.state = GAME_STATES.PLAYING;
    }
 
    checkPlayerDeath() {

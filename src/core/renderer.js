@@ -29,7 +29,11 @@ export class Renderer {
       const baselineOffset = -((lines.length - 1) * lineHeight) / 2;
 
       lines.forEach((line, index) => {
-         this.context.fillText(line, x, y + baselineOffset + index * lineHeight);
+         this.context.fillText(
+            line,
+            x,
+            y + baselineOffset + index * lineHeight,
+         );
       });
    }
 
@@ -240,10 +244,16 @@ export class Renderer {
    }
 
    drawDebugText(lines) {
+      const lineHeight = 20;
+      const padding = 12;
+
+      const boxWidth = 260;
+      const boxHeight = lines.length * lineHeight + padding * 2;
+
       this.context.save();
 
       this.context.fillStyle = 'rgba(0, 0, 0, 0.55)';
-      this.context.fillRect(40, 44, 230, 88);
+      this.context.fillRect(40, 44, boxWidth, boxHeight);
 
       this.context.fillStyle = '#f5f5f5';
       this.context.font = '14px JetBrains Mono';
@@ -251,7 +261,7 @@ export class Renderer {
       this.context.textBaseline = 'top';
 
       lines.forEach((line, index) => {
-         this.context.fillText(line, 52, 52 + index * 20);
+         this.context.fillText(line, 52, 56 + index * lineHeight);
       });
 
       this.context.restore();
@@ -277,12 +287,18 @@ export class Renderer {
       this.drawMultilineText(
          subtitle,
          canvas.width / 2,
-         canvas.height / 2 + 48, 28
+         canvas.height / 2 + 48,
+         28,
       );
 
       context.font = '400 14px JetBrains Mono';
       context.fillStyle = '#a5a5b5';
-      this.drawMultilineText(anotherLine, canvas.width / 2, canvas.height / 2 + 140, 28);
+      this.drawMultilineText(
+         anotherLine,
+         canvas.width / 2,
+         canvas.height / 2 + 140,
+         28,
+      );
 
       context.restore();
    }

@@ -8,6 +8,9 @@ export class InputSystem {
          start: false,
          pause: false,
          next: false,
+
+         previousLevel: false,
+         nextLevelEdit: false,
       };
 
       this.bindEvents();
@@ -15,16 +18,16 @@ export class InputSystem {
 
    bindEvents() {
       window.addEventListener('keydown', (event) => {
-         this.handleKey(event.code, true);
+         this.handleKey(event.code, event.key, true);
       });
 
       window.addEventListener('keyup', (event) => {
-         this.handleKey(event.code, false);
+         this.handleKey(event.code, event.key, false);
       });
    }
 
-   handleKey(code, isPressed) {
-      const keyMap = {
+   handleKey(code, key, isPressed) {
+      const codeMap = {
          ArrowLeft: 'left',
          KeyA: 'left',
 
@@ -40,15 +43,22 @@ export class InputSystem {
          Escape: 'pause',
 
          KeyN: 'next',
+
+         Comma: 'previousLevel',
+         Period: 'nextLevelEdit',
       };
 
-      const action = keyMap[code];
+      const keyMap = {
+         ',': 'previousLevel',
+         '.': 'nextLevelEdit',
+      };
+
+      const action = codeMap[code] || keyMap[key];
 
       if (action) {
          this.keys[action] = isPressed;
       }
    }
-
    isPressed(action) {
       return Boolean(this.keys[action]);
    }
