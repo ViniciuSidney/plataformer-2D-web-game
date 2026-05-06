@@ -3,6 +3,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
+  font-family: "JetBrains Mono";
 }
 
 .game-shell {
@@ -21,4 +22,10 @@
 .game-header p {
   color: var(--color-muted);
   font-size: 0.95rem;
+}
+
+#author {
+  font-weight: 800;
+  font-size: 10px;
+  color: #2a2a35;
 }
