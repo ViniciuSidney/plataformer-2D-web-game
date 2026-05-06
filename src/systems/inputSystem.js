@@ -6,6 +6,7 @@ export class InputSystem {
          jump: false,
          restart: false,
          start: false,
+         pause: false,
       };
 
       this.bindEvents();
@@ -34,8 +35,9 @@ export class InputSystem {
          KeyW: 'jump',
 
          KeyR: 'restart',
-
          Enter: 'start',
+
+         Escape: 'pause',
       };
 
       const action = keyMap[code];

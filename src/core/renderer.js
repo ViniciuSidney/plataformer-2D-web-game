@@ -229,6 +229,44 @@ export class Renderer {
       context.restore();
    }
 
+   drawPauseScreen() {
+      const { context, canvas } = this;
+
+      context.save();
+
+      context.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+
+      context.fillStyle = '#f5f5f5';
+      context.font = '700 42px JetBrains Mono';
+      context.fillText(
+         'Jogo pausado',
+         canvas.width / 2,
+         canvas.height / 2 - 36,
+      );
+
+      context.fillStyle = '#a5a5b5';
+      context.font = '400 18px JetBrains Mono';
+      context.fillText(
+         'Pressione Esc para continuar',
+         canvas.width / 2,
+         canvas.height / 2 + 18,
+      );
+
+      context.fillStyle = '#a5a5b5';
+      context.font = '400 14px JetBrains Mono';
+      context.fillText(
+         'Pressione R para reiniciar a fase',
+         canvas.width / 2,
+         canvas.height / 2 + 58,
+      );
+
+      context.restore();
+   }
+
    drawCameraDeadZone(camera) {
       const deadZone = GAME_CONFIG.cameraDeadZone;
       const zoom = camera.zoom || 1;

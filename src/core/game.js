@@ -28,7 +28,7 @@ export class Game {
       this.state = GAME_STATES.MENU;
 
       this.camera = new Camera();
-
+      this.wasPausePressed = false;
       if (GAME_CONFIG.debug.levelEditMode) {
          this.camera.setView(GAME_CONFIG.debug.editCamera);
       }
@@ -50,6 +50,21 @@ export class Game {
       this.loop.start();
    }
 
+   handlePauseInput() {
+      const isPausePressed = this.inputSystem.isPressed('pause');
+      const justPressedPause = isPausePressed && !this.wasPausePressed;
+
+      if (justPressedPause) {
+         if (this.state === GAME_STATES.PLAYING) {
+            this.state = GAME_STATES.PAUSED;
+         } else if (this.state === GAME_STATES.PAUSED) {
+            this.state = GAME_STATES.PLAYING;
+         }
+      }
+
+      this.wasPausePressed = isPausePressed;
+   }
+
    update() {
       if (GAME_CONFIG.debug.levelEditMode) {
          return;
@@ -63,11 +78,17 @@ export class Game {
          return;
       }
 
+      this.handlePauseInput();
+
       if (this.inputSystem.isPressed('restart')) {
          this.restartLevel();
       }
 
-      if (this.state === GAME_STATES.WON || this.state === GAME_STATES.LOST) {
+      if (
+         this.state === GAME_STATES.PAUSED ||
+         this.state === GAME_STATES.WON ||
+         this.state === GAME_STATES.LOST
+      ) {
          return;
       }
 
@@ -134,6 +155,10 @@ export class Game {
 
       if (this.state === GAME_STATES.MENU && !GAME_CONFIG.debug.levelEditMode) {
          this.renderer.drawMenuScreen();
+      }
+
+      if (this.state === GAME_STATES.PAUSED) {
+         this.renderer.drawPauseScreen();
       }
 
       if (this.state === GAME_STATES.WON) {
