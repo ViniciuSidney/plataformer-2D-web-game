@@ -29,6 +29,10 @@ export class Game {
 
       this.camera = new Camera();
 
+      if (GAME_CONFIG.debug.levelEditMode) {
+         this.camera.setView(GAME_CONFIG.debug.editCamera);
+      }
+
       this.loop = new Loop(
          () => this.update(),
          () => this.draw(),
@@ -47,6 +51,10 @@ export class Game {
    }
 
    update() {
+      if (GAME_CONFIG.debug.levelEditMode) {
+         return;
+      }
+
       if (this.inputSystem.isPressed('restart')) {
          this.restartLevel();
       }
@@ -81,7 +89,7 @@ export class Game {
 
    draw() {
       this.renderer.clear();
-      
+
       for (const platform of this.platforms) {
          platform.draw(this.renderer, this.camera);
       }
@@ -89,9 +97,16 @@ export class Game {
       if (GAME_CONFIG.debug.showWorldGrid) {
          this.renderer.drawWorldGrid(this.camera);
       }
-      
+
       this.goal.draw(this.renderer, this.camera);
-      this.player.draw(this.renderer, this.camera);
+      if (
+         !(
+            GAME_CONFIG.debug.levelEditMode &&
+            GAME_CONFIG.debug.hidePlayerInEditMode
+         )
+      ) {
+         this.player.draw(this.renderer, this.camera);
+      }
 
       if (this.hasWon) {
          this.renderer.drawOverlayMessage(
@@ -109,22 +124,27 @@ export class Game {
          );
       }
 
-
-
       if (GAME_CONFIG.debug.showCameraDeadZone) {
          this.renderer.drawCameraDeadZone(this.camera);
       }
 
       if (GAME_CONFIG.debug.showDebugText) {
-         this.renderer.drawDebugText([
-            `Player X: ${Math.round(this.player.x)}`,
-            `Player Y: ${Math.round(this.player.y)}`,
-            `Tile X: ${Math.floor(this.player.x / 32)}`,
-            `Tile Y: ${Math.floor(this.player.y / 32)}`,
-         ]);
+         if (!GAME_CONFIG.debug.levelEditMode) {
+            this.renderer.drawDebugText([
+               `Player X: ${Math.round(this.player.x)}`,
+               `Player Y: ${Math.round(this.player.y)}`,
+               `Tile X: ${Math.floor(this.player.x / 32)}`,
+               `Tile Y: ${Math.floor(this.player.y / 32)}`,
+            ]);
+         } else {
+            this.renderer.drawDebugText([
+               GAME_CONFIG.debug.levelEditMode ? 'Modo: edição' : 'Modo: jogo',
+               `Camera X: ${Math.round(this.camera.x)}`,
+               `Camera Y: ${Math.round(this.camera.y)}`,
+               `Zoom: ${this.camera.zoom}`,
+            ]);
+         }
       }
-
-
    }
 
    restartLevel() {

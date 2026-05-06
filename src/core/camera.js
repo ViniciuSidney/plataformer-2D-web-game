@@ -13,16 +13,28 @@ export class Camera {
       this.worldHeight = GAME_CONFIG.worldHeight;
 
       this.deadZone = GAME_CONFIG.cameraDeadZone;
+
+      this.zoom = 1;
+   }
+
+   setView({ x = 0, y = 0, zoom = 1 }) {
+      this.zoom = zoom;
+      this.applyZoomLimits();
+
+      this.x = x;
+      this.y = y;
+
+      this.limitToWorld();
    }
 
    follow(target) {
       const targetScreenX = target.x - this.x;
       const targetScreenY = target.y - this.y;
 
-      const deadZoneLeft = (this.width - this.deadZone.width) / 2;
+      const deadZoneLeft = (this.width / this.zoom - this.deadZone.width) / 2;
       const deadZoneRight = deadZoneLeft + this.deadZone.width;
 
-      const deadZoneTop = (this.height - this.deadZone.height) / 2;
+      const deadZoneTop = (this.height / this.zoom - this.deadZone.height) / 2;
       const deadZoneBottom = deadZoneTop + this.deadZone.height;
 
       if (targetScreenX < deadZoneLeft) {
@@ -44,8 +56,34 @@ export class Camera {
       this.limitToWorld();
    }
 
+   applyZoomLimits() {
+      const minZoom = Math.max(
+         this.width / this.worldWidth,
+         this.height / this.worldHeight,
+      );
+
+      const maxZoom = 2;
+
+      this.zoom = clamp(this.zoom, minZoom, maxZoom);
+   }
+
    limitToWorld() {
-      this.x = clamp(this.x, 0, this.worldWidth - this.width);
-      this.y = clamp(this.y, 0, this.worldHeight - this.height);
+      const visibleWidth = this.width / this.zoom;
+      const visibleHeight = this.height / this.zoom;
+
+      const maxX = this.worldWidth - visibleWidth;
+      const maxY = this.worldHeight - visibleHeight;
+
+      if (maxX <= 0) {
+         this.x = 0;
+      } else {
+         this.x = clamp(this.x, 0, maxX);
+      }
+
+      if (maxY <= 0) {
+         this.y = 0;
+      } else {
+         this.y = clamp(this.y, 0, maxY);
+      }
    }
 }
