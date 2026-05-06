@@ -19,7 +19,7 @@ export class Game {
 
       this.inputSystem = new InputSystem();
 
-      this.currentLevelIndex = 0;
+      this.currentLevelIndex = this.getInitialLevelIndex();
       this.currentLevel = levels[this.currentLevelIndex];
 
       this.player = new Player();
@@ -29,9 +29,12 @@ export class Game {
       this.platforms = LevelSystem.createPlatforms(this.currentLevel);
       this.goal = LevelSystem.createGoal(this.currentLevel);
 
-      this.state = GAME_STATES.MENU;
+      this.state = GAME_CONFIG.debug.levelEditMode
+         ? GAME_STATES.PLAYING
+         : GAME_STATES.MENU;
+
       this.wasPausePressed = false;
-      
+
       this.camera = new Camera();
 
       if (GAME_CONFIG.debug.levelEditMode) {
@@ -53,6 +56,17 @@ export class Game {
 
    start() {
       this.loop.start();
+   }
+
+   getInitialLevelIndex() {
+      if (!GAME_CONFIG.debug.levelEditMode) {
+         return 0;
+      }
+
+      const requestedLevelIndex = GAME_CONFIG.debug.editLevelIndex ?? 0;
+      const lastLevelIndex = levels.length - 1;
+
+      return Math.min(Math.max(requestedLevelIndex, 0), lastLevelIndex);
    }
 
    loadLevel(levelIndex) {
@@ -233,22 +247,21 @@ export class Game {
    drawDebugInfo() {
       if (!GAME_CONFIG.debug.levelEditMode) {
          this.renderer.drawDebugText([
-            `Fase: ${this.currentLevel.name}`,
-            `Player X: ${Math.round(this.player.x)}`,
-            `Player Y: ${Math.round(this.player.y)}`,
-            `Tile X: ${Math.floor(this.player.x / GAME_CONFIG.tileSize)}`,
-            `Tile Y: ${Math.floor(this.player.y / GAME_CONFIG.tileSize)}`,
+            'Modo: edição',
+            `Fase: ${this.currentLevelIndex + 1}/${levels.length}`,
+            `Nome: ${this.currentLevel.name}`,
+            `Camera X: ${Math.round(this.camera.x)}`,
+            `Camera Y: ${Math.round(this.camera.y)}`,
+            `Zoom: ${this.camera.zoom.toFixed(2)}`,
          ]);
 
          return;
       }
-
       this.renderer.drawDebugText([
-         'Modo: edição',
-         `Fase: ${this.currentLevel.name}`,
-         `Camera X: ${Math.round(this.camera.x)}`,
-         `Camera Y: ${Math.round(this.camera.y)}`,
-         `Zoom: ${this.camera.zoom.toFixed(2)}`,
+         `Fase: ${this.currentLevelIndex + 1}/${levels.length}`,
+         `Nome: ${this.currentLevel.name}`,
+         `Tile X: ${Math.floor(this.player.x / GAME_CONFIG.tileSize)}`,
+         `Tile Y: ${Math.floor(this.player.y / GAME_CONFIG.tileSize)}`,
       ]);
    }
 

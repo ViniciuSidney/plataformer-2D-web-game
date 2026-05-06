@@ -11,7 +11,7 @@ import { GAME_CONFIG } from "../config/gameConfig.js";
 const worldColumns = GAME_CONFIG.world.columns;
 
 export const level01 = {
-   name: 'Level 01',
+   name: 'Level 01 - Introdução',
 
    playerStart: position(2, 26),
 
