@@ -205,6 +205,10 @@ export class Game {
          this.player.draw(this.renderer, this.camera);
       }
 
+      if (GAME_CONFIG.debug.showWorldGrid) {
+         this.renderer.drawWorldGridLabels(this.camera);
+      }
+
       if (GAME_CONFIG.debug.showCameraDeadZone) {
          this.renderer.drawCameraDeadZone(this.camera);
       }
@@ -228,7 +232,7 @@ export class Game {
             hasNextLevel ? 'Fase concluída!' : 'Jogo concluído!',
             hasNextLevel
                ? 'Você chegou ao objetivo final.'
-               : 'Você concluiu todas as fases disponíveis!<br>Relaxa que logo tem mais!',
+               : 'Você concluiu todas as fases disponíveis!\nRelaxa que logo tem mais!',
             hasNextLevel
                ? 'Pressione N para próxima fase ou R para reiniciar'
                : 'Pressione R para jogar novamente',

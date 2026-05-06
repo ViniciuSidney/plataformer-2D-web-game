@@ -24,6 +24,15 @@ export class Renderer {
       );
    }
 
+   drawMultilineText(text, x, y, lineHeight = 24) {
+      const lines = text.split('\n');
+      const baselineOffset = -((lines.length - 1) * lineHeight) / 2;
+
+      lines.forEach((line, index) => {
+         this.context.fillText(line, x, y + baselineOffset + index * lineHeight);
+      });
+   }
+
    drawMenuScreen() {
       const { context, canvas } = this;
 
@@ -75,7 +84,6 @@ export class Renderer {
       const zoom = camera.zoom || 1;
 
       const majorEvery = GAME_CONFIG.debug.gridMajorLineEvery || 4;
-      const showLabels = GAME_CONFIG.debug.showGridRulerLabels;
 
       const visibleWidth = this.canvas.width / zoom;
       const visibleHeight = this.canvas.height / zoom;
@@ -119,10 +127,6 @@ export class Renderer {
          }
 
          this.context.stroke();
-
-         if (showLabels && isMajorLine) {
-            this.drawGridLabel(`${column}`, screenX + 4, 14, 'top');
-         }
       }
 
       for (let row = startRow; row <= endRow; row++) {
@@ -147,10 +151,60 @@ export class Renderer {
          }
 
          this.context.stroke();
+      }
 
-         if (showLabels && isMajorLine) {
-            this.drawGridLabel(`${row}`, 6, screenY - 4, 'left');
+      this.context.restore();
+   }
+
+   drawWorldGridLabels(camera) {
+      if (!GAME_CONFIG.debug.showGridRulerLabels) {
+         return;
+      }
+
+      const spacing = GAME_CONFIG.tileSize;
+      const zoom = camera.zoom || 1;
+      const majorEvery = GAME_CONFIG.debug.gridMajorLineEvery || 4;
+
+      const visibleWidth = this.canvas.width / zoom;
+      const visibleHeight = this.canvas.height / zoom;
+
+      const totalColumns = Math.ceil(GAME_CONFIG.worldWidth / spacing);
+      const totalRows = Math.ceil(GAME_CONFIG.worldHeight / spacing);
+
+      const startColumn = Math.max(0, Math.floor(camera.x / spacing) - 1);
+      const endColumn = Math.min(
+         totalColumns,
+         Math.ceil((camera.x + visibleWidth) / spacing) + 1,
+      );
+
+      const startRow = Math.max(0, Math.floor(camera.y / spacing) - 1);
+      const endRow = Math.min(
+         totalRows,
+         Math.ceil((camera.y + visibleHeight) / spacing) + 1,
+      );
+
+      this.context.save();
+
+      for (let column = startColumn; column <= endColumn; column++) {
+         if (column % majorEvery !== 0) {
+            continue;
          }
+
+         const worldX = column * spacing;
+         const screenX = (worldX - camera.x) * zoom;
+
+         this.drawGridLabel(`${column}`, screenX + 4, 14, 'top');
+      }
+
+      for (let row = startRow; row <= endRow; row++) {
+         if (row % majorEvery !== 0) {
+            continue;
+         }
+
+         const worldY = row * spacing;
+         const screenY = (worldY - camera.y) * zoom;
+
+         this.drawGridLabel(`${row}`, 6, screenY - 4, 'left');
       }
 
       this.context.restore();
@@ -189,7 +243,7 @@ export class Renderer {
       this.context.save();
 
       this.context.fillStyle = 'rgba(0, 0, 0, 0.55)';
-      this.context.fillRect(40, 44, 180, 88);
+      this.context.fillRect(40, 44, 230, 88);
 
       this.context.fillStyle = '#f5f5f5';
       this.context.font = '14px JetBrains Mono';
@@ -197,13 +251,13 @@ export class Renderer {
       this.context.textBaseline = 'top';
 
       lines.forEach((line, index) => {
-         this.context.fillText(line, 52, 62 + index * 20);
+         this.context.fillText(line, 52, 52 + index * 20);
       });
 
       this.context.restore();
    }
 
-   drawOverlayMessage(title, subtitle, restartText) {
+   drawOverlayMessage(title, subtitle, anotherLine = '') {
       const { context, canvas } = this;
 
       context.save();
@@ -220,11 +274,15 @@ export class Renderer {
 
       context.font = '400 18px JetBrains Mono';
       context.fillStyle = '#a5a5b5';
-      context.fillText(subtitle, canvas.width / 2, canvas.height / 2 + 24);
+      this.drawMultilineText(
+         subtitle,
+         canvas.width / 2,
+         canvas.height / 2 + 48, 28
+      );
 
       context.font = '400 14px JetBrains Mono';
       context.fillStyle = '#a5a5b5';
-      context.fillText(restartText, canvas.width / 2, canvas.height / 2 + 140);
+      this.drawMultilineText(anotherLine, canvas.width / 2, canvas.height / 2 + 140, 28);
 
       context.restore();
    }
