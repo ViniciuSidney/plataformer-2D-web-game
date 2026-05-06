@@ -19,9 +19,9 @@ export const GAME_CONFIG = {
   },
 
   debug: {
-    showWorldGrid: true,
+    showWorldGrid: false,
     showCameraDeadZone: false,
-    showDebugText: true,
+    showDebugText: false,
 
     gridMajorLineEvery: 4,
     showGridRulerLabels: true,

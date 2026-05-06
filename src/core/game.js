@@ -1,162 +1,176 @@
-import { GAME_CONFIG } from "../config/gameConfig.js";
-import { Renderer } from "./renderer.js";
-import { Loop } from "./loop.js";
-import { Camera } from "./camera.js";
+import { GAME_CONFIG } from '../config/gameConfig.js';
+import { Renderer } from './renderer.js';
+import { Loop } from './loop.js';
+import { Camera } from './camera.js';
 
-import { Player } from "../entities/player.js";
+import { Player } from '../entities/player.js';
 
-import { InputSystem } from "../systems/inputSystem.js";
-import { LevelSystem } from "../systems/levelSystem.js";
-import { CollisionSystem } from "../systems/collisionSystem.js";
+import { InputSystem } from '../systems/inputSystem.js';
+import { LevelSystem } from '../systems/levelSystem.js';
+import { CollisionSystem } from '../systems/collisionSystem.js';
 
-import { level01 } from "../levels/level-01.js";
+import { level01 } from '../levels/level-01.js';
 
 export class Game {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.renderer = new Renderer(canvas);
+   constructor(canvas) {
+      this.canvas = canvas;
+      this.renderer = new Renderer(canvas);
 
-    this.inputSystem = new InputSystem();
+      this.inputSystem = new InputSystem();
 
-    this.player = new Player();
-    this.player.x = level01.playerStart.x;
-    this.player.y = level01.playerStart.y;
+      this.player = new Player();
+      this.player.x = level01.playerStart.x;
+      this.player.y = level01.playerStart.y;
 
-    this.platforms = LevelSystem.createPlatforms(level01);
-    this.goal = LevelSystem.createGoal(level01);
-    this.hasWon = false;
-    this.hasLost = false;
+      this.platforms = LevelSystem.createPlatforms(level01);
+      this.goal = LevelSystem.createGoal(level01);
 
-    this.camera = new Camera();
+      this.hasWon = false;
+      this.hasLost = false;
 
-    if (GAME_CONFIG.debug.levelEditMode) {
-      this.camera.setView(GAME_CONFIG.debug.editCamera);
-    }
+      this.camera = new Camera();
 
-    this.loop = new Loop(
-      () => this.update(),
-      () => this.draw(),
-    );
-
-    this.setupCanvas();
-  }
-
-  setupCanvas() {
-    this.canvas.width = GAME_CONFIG.width;
-    this.canvas.height = GAME_CONFIG.height;
-  }
-
-  start() {
-    this.loop.start();
-  }
-
-  update() {
-    if (GAME_CONFIG.debug.levelEditMode) {
-      return;
-    }
-
-    if (this.inputSystem.isPressed("restart")) {
-      this.restartLevel();
-    }
-
-    if (this.hasWon || this.hasLost) return;
-
-    this.player.update(this.inputSystem);
-
-    this.player.moveX();
-    CollisionSystem.resolveHorizontalPlatformCollision(
-      this.player,
-      this.platforms,
-    );
-
-    this.player.moveY();
-    CollisionSystem.resolveVerticalPlatformCollision(
-      this.player,
-      this.platforms,
-    );
-
-    this.player.updateCoyoteTime();
-    this.player.handleJump();
-
-    if (CollisionSystem.checkGoalCollision(this.player, this.goal)) {
-      this.hasWon = true;
-    }
-
-    this.checkPlayerDeath();
-
-    this.camera.follow(this.player);
-  }
-
-  draw() {
-    this.renderer.clear();
-
-    for (const platform of this.platforms) {
-      platform.draw(this.renderer, this.camera);
-    }
-
-    if (GAME_CONFIG.debug.showWorldGrid) {
-      this.renderer.drawWorldGrid(this.camera);
-    }
-
-    this.goal.draw(this.renderer, this.camera);
-    if (
-      !(
-        GAME_CONFIG.debug.levelEditMode &&
-        GAME_CONFIG.debug.hidePlayerInEditMode
-      )
-    ) {
-      this.player.draw(this.renderer, this.camera);
-    }
-    if (this.hasWon) {
-      this.renderer.drawOverlayMessage(
-        "Fase concluída!",
-        "Você chegou ao objetivo final.",
-        "Pressione R para jogar novamente",
-      );
-    }
-
-    if (this.hasLost) {
-      this.renderer.drawOverlayMessage(
-        "Game Over!",
-        "Você caiu na zona de morte.",
-        "Pressione R para tentar novamente",
-      );
-    }
-
-    if (GAME_CONFIG.debug.showCameraDeadZone) {
-      this.renderer.drawCameraDeadZone(this.camera);
-    }
-
-    if (GAME_CONFIG.debug.showDebugText) {
-      if (!GAME_CONFIG.debug.levelEditMode) {
-        this.renderer.drawDebugText([
-          `Player X: ${Math.round(this.player.x)}`,
-          `Player Y: ${Math.round(this.player.y)}`,
-          `Tile X: ${Math.floor(this.player.x / 32)}`,
-          `Tile Y: ${Math.floor(this.player.y / 32)}`,
-        ]);
-      } else {
-        this.renderer.drawDebugText([
-          GAME_CONFIG.debug.levelEditMode ? "Modo: edição" : "Modo: jogo",
-          `Camera X: ${Math.round(this.camera.x)}`,
-          `Camera Y: ${Math.round(this.camera.y)}`,
-          `Zoom: ${this.camera.zoom}`,
-        ]);
+      if (GAME_CONFIG.debug.levelEditMode) {
+         this.camera.setView(GAME_CONFIG.debug.editCamera);
       }
-    }
-  }
 
-  restartLevel() {
-    this.hasWon = false;
-    this.hasLost = false;
+      this.loop = new Loop(
+         () => this.update(),
+         () => this.draw()
+      );
 
-    this.player.reset(level01.playerStart);
-    this.camera.follow(this.player);
-  }
+      this.setupCanvas();
+   }
 
-  checkPlayerDeath() {
-    if (this.player.y > GAME_CONFIG.deathZoneY) {
-      this.hasLost = true;
-    }
-  }
+   setupCanvas() {
+      this.canvas.width = GAME_CONFIG.width;
+      this.canvas.height = GAME_CONFIG.height;
+   }
+
+   start() {
+      this.loop.start();
+   }
+
+   update() {
+      if (GAME_CONFIG.debug.levelEditMode) {
+         return;
+      }
+
+      if (this.inputSystem.isPressed('restart')) {
+         this.restartLevel();
+      }
+
+      if (this.hasWon || this.hasLost) return;
+
+      this.player.update(this.inputSystem);
+
+      this.player.moveX();
+      CollisionSystem.resolveHorizontalPlatformCollision(
+         this.player,
+         this.platforms
+      );
+
+      this.player.moveY();
+      CollisionSystem.resolveVerticalPlatformCollision(
+         this.player,
+         this.platforms
+      );
+
+      this.player.updateCoyoteTime();
+      this.player.handleJump();
+
+      if (CollisionSystem.checkGoalCollision(this.player, this.goal)) {
+         this.hasWon = true;
+      }
+
+      this.checkPlayerDeath();
+
+      this.camera.follow(this.player);
+   }
+
+   draw() {
+      this.renderer.clear();
+
+      if (GAME_CONFIG.debug.showWorldGrid) {
+         this.renderer.drawWorldGrid(this.camera);
+      }
+
+      for (const platform of this.platforms) {
+         platform.draw(this.renderer, this.camera);
+      }
+
+      this.goal.draw(this.renderer, this.camera);
+
+      if (
+         !(
+            GAME_CONFIG.debug.levelEditMode &&
+            GAME_CONFIG.debug.hidePlayerInEditMode
+         )
+      ) {
+         this.player.draw(this.renderer, this.camera);
+      }
+
+      if (GAME_CONFIG.debug.showCameraDeadZone) {
+         this.renderer.drawCameraDeadZone(this.camera);
+      }
+
+      if (GAME_CONFIG.debug.showDebugText) {
+         this.drawDebugInfo();
+      }
+
+      if (this.hasWon) {
+         this.renderer.drawOverlayMessage(
+            'Fase concluída!',
+            'Você chegou ao objetivo final.',
+            'Pressione R para reiniciar'
+         );
+      }
+
+      if (this.hasLost) {
+         this.renderer.drawOverlayMessage(
+            'Game Over!',
+            'Você caiu na zona de morte.',
+            'Pressione R para tentar novamente'
+         );
+      }
+   }
+
+   drawDebugInfo() {
+      if (!GAME_CONFIG.debug.levelEditMode) {
+         this.renderer.drawDebugText([
+            `Player X: ${Math.round(this.player.x)}`,
+            `Player Y: ${Math.round(this.player.y)}`,
+            `Tile X: ${Math.floor(this.player.x / GAME_CONFIG.tileSize)}`,
+            `Tile Y: ${Math.floor(this.player.y / GAME_CONFIG.tileSize)}`,
+         ]);
+
+         return;
+      }
+
+      this.renderer.drawDebugText([
+         'Modo: edição',
+         `Camera X: ${Math.round(this.camera.x)}`,
+         `Camera Y: ${Math.round(this.camera.y)}`,
+         `Zoom: ${this.camera.zoom.toFixed(2)}`,
+      ]);
+   }
+
+   restartLevel() {
+      this.hasWon = false;
+      this.hasLost = false;
+
+      this.player.reset(level01.playerStart);
+
+      if (GAME_CONFIG.debug.levelEditMode) {
+         this.camera.setView(GAME_CONFIG.debug.editCamera);
+      } else {
+         this.camera.follow(this.player);
+      }
+   }
+
+   checkPlayerDeath() {
+      if (this.player.y > GAME_CONFIG.deathZoneY) {
+         this.hasLost = true;
+      }
+   }
 }

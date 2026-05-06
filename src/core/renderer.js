@@ -143,7 +143,7 @@ export class Renderer {
     this.context.save();
 
     this.context.fillStyle = "rgba(0, 0, 0, 0.55)";
-    this.context.fillRect(40, 44, 100, 88);
+    this.context.fillRect(40, 44, 140, 88);
 
     this.context.fillStyle = "#f5f5f5";
     this.context.font = "14px JetBrains Mono";
@@ -183,15 +183,19 @@ export class Renderer {
 
   drawCameraDeadZone(camera) {
     const deadZone = GAME_CONFIG.cameraDeadZone;
+    const zoom = camera.zoom || 1;
 
-    const x = (this.canvas.width - deadZone.width) / 2;
-    const y = (this.canvas.height - deadZone.height) / 2;
+    const deadZoneWidth = deadZone.width * zoom;
+    const deadZoneHeight = deadZone.height * zoom;
+
+    const x = (this.canvas.width - deadZoneWidth) / 2;
+    const y = (this.canvas.height - deadZoneHeight) / 2;
 
     this.context.save();
 
     this.context.strokeStyle = "rgba(139, 233, 253, 0.35)";
     this.context.lineWidth = 2;
-    this.context.strokeRect(x, y, deadZone.width, deadZone.height);
+    this.context.strokeRect(x, y, deadZoneWidth, deadZoneHeight);
 
     this.context.restore();
   }
