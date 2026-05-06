@@ -24,6 +24,52 @@ export class Renderer {
       );
    }
 
+   drawMenuScreen() {
+      const { context, canvas } = this;
+
+      context.save();
+
+      context.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+
+      context.fillStyle = '#f5f5f5';
+      context.font = '700 42px JetBrains Mono';
+      context.fillText(
+         'Joguinho Web Platformer 2D',
+         canvas.width / 2,
+         canvas.height / 2 - 80,
+      );
+
+      context.fillStyle = '#a5a5b5';
+      context.font = '400 18px JetBrains Mono';
+      context.fillText(
+         'Um protótipo minimalista de plataforma 2D.',
+         canvas.width / 2,
+         canvas.height / 2 - 36,
+      );
+
+      context.fillStyle = '#f5f5f5';
+      context.font = '600 18px JetBrains Mono';
+      context.fillText(
+         'Pressione Enter para jogar',
+         canvas.width / 2,
+         canvas.height / 2 + 36,
+      );
+
+      context.fillStyle = '#a5a5b5';
+      context.font = '400 14px JetBrains Mono';
+      context.fillText(
+         'A/D ou setas para mover • Espaço/W/seta para cima para pular',
+         canvas.width / 2,
+         canvas.height / 2 + 78,
+      );
+
+      context.restore();
+   }
+
    drawWorldGrid(camera) {
       const spacing = GAME_CONFIG.tileSize;
       const zoom = camera.zoom || 1;
@@ -167,14 +213,14 @@ export class Renderer {
       context.textAlign = 'center';
       context.textBaseline = 'middle';
 
-      context.font = '700 42px Lexend';
+      context.font = '700 42px JetBrains Mono';
       context.fillText(title, canvas.width / 2, canvas.height / 2 - 24);
 
-      context.font = '400 18px Lexend';
+      context.font = '400 18px JetBrains Mono';
       context.fillStyle = '#a5a5b5';
       context.fillText(subtitle, canvas.width / 2, canvas.height / 2 + 24);
 
-      context.font = '400 14px Lexend';
+      context.font = '400 14px JetBrains Mono';
       context.fillStyle = '#a5a5b5';
       context.fillText(restartText, canvas.width / 2, canvas.height / 2 + 140);
 

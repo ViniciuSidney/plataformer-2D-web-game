@@ -1,4 +1,5 @@
 import { GAME_CONFIG } from '../config/gameConfig.js';
+import { GAME_STATES } from '../utils/constants.js';
 import { Renderer } from './renderer.js';
 import { Loop } from './loop.js';
 import { Camera } from './camera.js';
@@ -24,8 +25,7 @@ export class Game {
 
       this.platforms = LevelSystem.createPlatforms(level01);
       this.goal = LevelSystem.createGoal(level01);
-      this.hasWon = false;
-      this.hasLost = false;
+      this.state = GAME_STATES.MENU;
 
       this.camera = new Camera();
 
@@ -55,11 +55,21 @@ export class Game {
          return;
       }
 
+      if (this.state === GAME_STATES.MENU) {
+         if (this.inputSystem.isPressed('start')) {
+            this.startGame();
+         }
+
+         return;
+      }
+
       if (this.inputSystem.isPressed('restart')) {
          this.restartLevel();
       }
 
-      if (this.hasWon || this.hasLost) return;
+      if (this.state === GAME_STATES.WON || this.state === GAME_STATES.LOST) {
+         return;
+      }
 
       this.player.update(this.inputSystem);
 
@@ -79,12 +89,17 @@ export class Game {
       this.player.handleJump();
 
       if (CollisionSystem.checkGoalCollision(this.player, this.goal)) {
-         this.hasWon = true;
+         this.state = GAME_STATES.WON;
       }
 
       this.checkPlayerDeath();
 
       this.camera.follow(this.player);
+   }
+
+   startGame() {
+      this.state = GAME_STATES.PLAYING;
+      this.restartLevel();
    }
 
    draw() {
@@ -108,15 +123,19 @@ export class Game {
          this.player.draw(this.renderer, this.camera);
       }
 
-      if (this.hasWon) {
+      if (this.state === GAME_STATES.MENU) {
+         this.renderer.drawMenuScreen();
+      }
+
+      if (this.state === GAME_STATES.WON) {
          this.renderer.drawOverlayMessage(
             'Fase concluída!',
             'Você chegou ao objetivo final.',
-            'Pressione R para jogar novamente',
+            'Pressione R para reiniciar',
          );
       }
 
-      if (this.hasLost) {
+      if (this.state === GAME_STATES.LOST) {
          this.renderer.drawOverlayMessage(
             'Game Over!',
             'Você caiu na zona de morte.',
@@ -148,16 +167,20 @@ export class Game {
    }
 
    restartLevel() {
-      this.hasWon = false;
-      this.hasLost = false;
+      this.state = GAME_STATES.PLAYING;
 
       this.player.reset(level01.playerStart);
-      this.camera.follow(this.player);
+
+      if (GAME_CONFIG.debug.levelEditMode) {
+         this.camera.setView(GAME_CONFIG.debug.editCamera);
+      } else {
+         this.camera.follow(this.player);
+      }
    }
 
    checkPlayerDeath() {
       if (this.player.y > GAME_CONFIG.deathZoneY) {
-         this.hasLost = true;
+         this.state = GAME_STATES.LOST;
       }
    }
 }
