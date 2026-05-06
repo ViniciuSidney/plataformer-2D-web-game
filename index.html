@@ -1,27 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Platformer 2D Web Game</title>
+    <title>Platformer 2D Web Game</title>
 
-  <link rel="stylesheet" href="./styles/global.css" />
-  <link rel="stylesheet" href="./styles/layout.css" />
-  <link rel="stylesheet" href="./styles/game.css" />
+    <link rel="stylesheet" href="./styles/global.css" />
+    <link rel="stylesheet" href="./styles/layout.css" />
+    <link rel="stylesheet" href="./styles/game.css" />
 
-  <script type="module" src="./src/main.js" defer></script>
-</head>
-<body>
-  <main class="page">
-    <section class="game-shell">
-      <header class="game-header">
-        <h1>Joguinho Web Plataformer 2D</h1>
-        <p>Protótipo inicial do meu jogo plataforma 2D web - <strong>v0.1</strong></p>
-      </header>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap"
+      rel="stylesheet"
+    />
 
-      <canvas id="gameCanvas"></canvas>
-    </section>
-  </main>
-</body>
+    <script type="module" src="./src/main.js" defer></script>
+  </head>
+  <body>
+    <main class="page">
+      <section class="game-shell">
+        <header class="game-header">
+          <h1>Joguinho Web Plataformer 2D</h1>
+          <p>
+            Protótipo inicial do meu jogo plataforma 2D -
+            <strong>v0.2</strong>
+          </p>
+        </header>
+
+        <canvas id="gameCanvas"></canvas>
+      </section>
+      <footer>
+        <p id="author">Por: Vinícius Sidney, 2026</p>
+      </footer>
+    </main>
+  </body>
 </html>

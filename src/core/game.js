@@ -35,7 +35,7 @@ export class Game {
 
       this.loop = new Loop(
          () => this.update(),
-         () => this.draw(),
+         () => this.draw()
       );
 
       this.setupCanvas();
@@ -76,13 +76,13 @@ export class Game {
       this.player.moveX();
       CollisionSystem.resolveHorizontalPlatformCollision(
          this.player,
-         this.platforms,
+         this.platforms
       );
 
       this.player.moveY();
       CollisionSystem.resolveVerticalPlatformCollision(
          this.player,
-         this.platforms,
+         this.platforms
       );
 
       this.player.updateCoyoteTime();
@@ -105,15 +105,16 @@ export class Game {
    draw() {
       this.renderer.clear();
 
-      for (const platform of this.platforms) {
-         platform.draw(this.renderer, this.camera);
-      }
-
       if (GAME_CONFIG.debug.showWorldGrid) {
          this.renderer.drawWorldGrid(this.camera);
       }
 
+      for (const platform of this.platforms) {
+         platform.draw(this.renderer, this.camera);
+      }
+
       this.goal.draw(this.renderer, this.camera);
+
       if (
          !(
             GAME_CONFIG.debug.levelEditMode &&
@@ -139,31 +140,29 @@ export class Game {
          this.renderer.drawOverlayMessage(
             'Game Over!',
             'Você caiu na zona de morte.',
-            'Pressione R para tentar novamente',
+            'Pressione R para tentar novamente'
          );
       }
+   }
 
-      if (GAME_CONFIG.debug.showCameraDeadZone) {
-         this.renderer.drawCameraDeadZone(this.camera);
+   drawDebugInfo() {
+      if (!GAME_CONFIG.debug.levelEditMode) {
+         this.renderer.drawDebugText([
+            `Player X: ${Math.round(this.player.x)}`,
+            `Player Y: ${Math.round(this.player.y)}`,
+            `Tile X: ${Math.floor(this.player.x / GAME_CONFIG.tileSize)}`,
+            `Tile Y: ${Math.floor(this.player.y / GAME_CONFIG.tileSize)}`,
+         ]);
+
+         return;
       }
 
-      if (GAME_CONFIG.debug.showDebugText) {
-         if (!GAME_CONFIG.debug.levelEditMode) {
-            this.renderer.drawDebugText([
-               `Player X: ${Math.round(this.player.x)}`,
-               `Player Y: ${Math.round(this.player.y)}`,
-               `Tile X: ${Math.floor(this.player.x / 32)}`,
-               `Tile Y: ${Math.floor(this.player.y / 32)}`,
-            ]);
-         } else {
-            this.renderer.drawDebugText([
-               GAME_CONFIG.debug.levelEditMode ? 'Modo: edição' : 'Modo: jogo',
-               `Camera X: ${Math.round(this.camera.x)}`,
-               `Camera Y: ${Math.round(this.camera.y)}`,
-               `Zoom: ${this.camera.zoom}`,
-            ]);
-         }
-      }
+      this.renderer.drawDebugText([
+         'Modo: edição',
+         `Camera X: ${Math.round(this.camera.x)}`,
+         `Camera Y: ${Math.round(this.camera.y)}`,
+         `Zoom: ${this.camera.zoom.toFixed(2)}`,
+      ]);
    }
 
    restartLevel() {

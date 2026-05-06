@@ -59,7 +59,7 @@ export class Camera {
    applyZoomLimits() {
       const minZoom = Math.max(
          this.width / this.worldWidth,
-         this.height / this.worldHeight,
+         this.height / this.worldHeight
       );
 
       const maxZoom = 2;

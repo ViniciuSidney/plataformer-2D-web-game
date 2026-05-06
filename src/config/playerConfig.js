@@ -4,7 +4,7 @@ export const PLAYER_CONFIG = {
    width: 32,
    height: 32,
 
-   maxSpeed: 4.5,
+   maxSpeed: 5,
    acceleration: 0.65,
    deceleration: 0.75,
    airControl: 0.55,
