@@ -35,7 +35,7 @@ export class Game {
 
       this.loop = new Loop(
          () => this.update(),
-         () => this.draw()
+         () => this.draw(),
       );
 
       this.setupCanvas();
@@ -76,13 +76,13 @@ export class Game {
       this.player.moveX();
       CollisionSystem.resolveHorizontalPlatformCollision(
          this.player,
-         this.platforms
+         this.platforms,
       );
 
       this.player.moveY();
       CollisionSystem.resolveVerticalPlatformCollision(
          this.player,
-         this.platforms
+         this.platforms,
       );
 
       this.player.updateCoyoteTime();
@@ -124,7 +124,15 @@ export class Game {
          this.player.draw(this.renderer, this.camera);
       }
 
-      if (this.state === GAME_STATES.MENU) {
+      if (GAME_CONFIG.debug.showCameraDeadZone) {
+         this.renderer.drawCameraDeadZone(this.camera);
+      }
+
+      if (GAME_CONFIG.debug.showDebugText) {
+         this.drawDebugInfo();
+      }
+
+      if (this.state === GAME_STATES.MENU && !GAME_CONFIG.debug.levelEditMode) {
          this.renderer.drawMenuScreen();
       }
 
@@ -140,7 +148,7 @@ export class Game {
          this.renderer.drawOverlayMessage(
             'Game Over!',
             'Você caiu na zona de morte.',
-            'Pressione R para tentar novamente'
+            'Pressione R para tentar novamente',
          );
       }
    }
