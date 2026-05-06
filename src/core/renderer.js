@@ -38,7 +38,7 @@ export class Renderer {
       context.fillStyle = '#f5f5f5';
       context.font = '700 42px JetBrains Mono';
       context.fillText(
-         'Joguinho Web Platformer 2D',
+         'Pulando e Caindo: O Jogo',
          canvas.width / 2,
          canvas.height / 2 - 80,
       );

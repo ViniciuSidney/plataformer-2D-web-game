@@ -10,7 +10,7 @@ import { InputSystem } from '../systems/inputSystem.js';
 import { LevelSystem } from '../systems/levelSystem.js';
 import { CollisionSystem } from '../systems/collisionSystem.js';
 
-import { level01 } from '../levels/level-01.js';
+import { levels } from '../levels/index.js';
 
 export class Game {
    constructor(canvas) {
@@ -19,16 +19,21 @@ export class Game {
 
       this.inputSystem = new InputSystem();
 
+      this.currentLevelIndex = 0;
+      this.currentLevel = levels[this.currentLevelIndex];
+
       this.player = new Player();
-      this.player.x = level01.playerStart.x;
-      this.player.y = level01.playerStart.y;
+      this.player.x = this.currentLevel.playerStart.x;
+      this.player.y = this.currentLevel.playerStart.y;
 
-      this.platforms = LevelSystem.createPlatforms(level01);
-      this.goal = LevelSystem.createGoal(level01);
+      this.platforms = LevelSystem.createPlatforms(this.currentLevel);
+      this.goal = LevelSystem.createGoal(this.currentLevel);
+
       this.state = GAME_STATES.MENU;
-
-      this.camera = new Camera();
       this.wasPausePressed = false;
+      
+      this.camera = new Camera();
+
       if (GAME_CONFIG.debug.levelEditMode) {
          this.camera.setView(GAME_CONFIG.debug.editCamera);
       }
@@ -48,6 +53,40 @@ export class Game {
 
    start() {
       this.loop.start();
+   }
+
+   loadLevel(levelIndex) {
+      this.currentLevelIndex = levelIndex;
+      this.currentLevel = levels[this.currentLevelIndex];
+
+      this.platforms = LevelSystem.createPlatforms(this.currentLevel);
+      this.goal = LevelSystem.createGoal(this.currentLevel);
+
+      this.player.reset(this.currentLevel.playerStart);
+
+      if (GAME_CONFIG.debug.levelEditMode) {
+         this.camera.setView(GAME_CONFIG.debug.editCamera);
+      } else {
+         this.camera.follow(this.player);
+      }
+   }
+
+   restartLevel() {
+      this.state = GAME_STATES.PLAYING;
+      this.loadLevel(this.currentLevelIndex);
+   }
+
+   goToNextLevel() {
+      const nextLevelIndex = this.currentLevelIndex + 1;
+      const hasNextLevel = nextLevelIndex < levels.length;
+
+      if (!hasNextLevel) {
+         this.state = GAME_STATES.WON;
+         return;
+      }
+
+      this.state = GAME_STATES.PLAYING;
+      this.loadLevel(nextLevelIndex);
    }
 
    handlePauseInput() {
@@ -82,6 +121,13 @@ export class Game {
 
       if (this.inputSystem.isPressed('restart')) {
          this.restartLevel();
+      }
+
+      if (
+         this.state === GAME_STATES.WON &&
+         this.inputSystem.isPressed('next')
+      ) {
+         this.goToNextLevel();
       }
 
       if (
@@ -162,10 +208,16 @@ export class Game {
       }
 
       if (this.state === GAME_STATES.WON) {
+         const hasNextLevel = this.currentLevelIndex < levels.length - 1;
+
          this.renderer.drawOverlayMessage(
-            'Fase concluída!',
-            'Você chegou ao objetivo final.',
-            'Pressione R para reiniciar',
+            hasNextLevel ? 'Fase concluída!' : 'Jogo concluído!',
+            hasNextLevel
+               ? 'Você chegou ao objetivo final.'
+               : 'Você concluiu todas as fases disponíveis!<br>Relaxa que logo tem mais!',
+            hasNextLevel
+               ? 'Pressione N para próxima fase ou R para reiniciar'
+               : 'Pressione R para jogar novamente',
          );
       }
 
@@ -181,6 +233,7 @@ export class Game {
    drawDebugInfo() {
       if (!GAME_CONFIG.debug.levelEditMode) {
          this.renderer.drawDebugText([
+            `Fase: ${this.currentLevel.name}`,
             `Player X: ${Math.round(this.player.x)}`,
             `Player Y: ${Math.round(this.player.y)}`,
             `Tile X: ${Math.floor(this.player.x / GAME_CONFIG.tileSize)}`,
@@ -192,22 +245,11 @@ export class Game {
 
       this.renderer.drawDebugText([
          'Modo: edição',
+         `Fase: ${this.currentLevel.name}`,
          `Camera X: ${Math.round(this.camera.x)}`,
          `Camera Y: ${Math.round(this.camera.y)}`,
          `Zoom: ${this.camera.zoom.toFixed(2)}`,
       ]);
-   }
-
-   restartLevel() {
-      this.state = GAME_STATES.PLAYING;
-
-      this.player.reset(level01.playerStart);
-
-      if (GAME_CONFIG.debug.levelEditMode) {
-         this.camera.setView(GAME_CONFIG.debug.editCamera);
-      } else {
-         this.camera.follow(this.player);
-      }
    }
 
    checkPlayerDeath() {
