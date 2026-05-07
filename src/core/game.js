@@ -3,6 +3,7 @@ import { GAME_STATES } from "../utils/constants.js";
 import { Renderer } from "./renderer.js";
 import { Loop } from "./loop.js";
 import { Camera } from "./camera.js";
+import { createScreenData } from "../ui/screens.js";
 
 import { Player } from "../entities/player.js";
 
@@ -53,6 +54,10 @@ export class Game {
     );
 
     this.setupCanvas();
+  }
+
+  get totalLevels() {
+    return levels.length;
   }
 
   setupCanvas() {
@@ -253,38 +258,10 @@ export class Game {
       ]);
     }
 
-    // Menu!
-    if (this.state === GAME_STATES.MENU && !GAME_CONFIG.debug.levelEditMode) {
-      this.renderer.drawMenuScreen();
-    }
+    const screenData = createScreenData(this);
 
-    // Pausa!
-    if (this.state === GAME_STATES.PAUSED) {
-      this.renderer.drawPauseScreen();
-    }
-
-    // Tela de vitória!
-    if (this.state === GAME_STATES.WON) {
-      const hasNextLevel = this.currentLevelIndex < levels.length - 1;
-
-      this.renderer.drawOverlayMessage(
-        hasNextLevel ? "Fase concluída!" : "Jogo concluído!",
-        hasNextLevel
-          ? "Você chegou ao objetivo final."
-          : "Você concluiu todas as fases disponíveis!\nRelaxa que logo tem mais!",
-        hasNextLevel
-          ? "Pressione N para próxima fase ou R para reiniciar"
-          : "Pressione R para jogar novamente",
-      );
-    }
-
-    // Tela de derrota!
-    if (this.state === GAME_STATES.LOST) {
-      this.renderer.drawOverlayMessage(
-        "Game Over!",
-        "Você foi dessa pra melhor, continue tentando!",
-        "Pressione R para tentar novamente",
-      );
+    if (screenData && !GAME_CONFIG.debug.levelEditMode) {
+      this.renderer.drawPanelScreen(screenData);
     }
   }
 

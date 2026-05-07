@@ -259,6 +259,90 @@ export class Renderer {
     this.context.restore();
   }
 
+    drawPanelScreen({
+    title,
+    subtitle = "",
+    lines = [],
+    accentColor = "#f5f5f5",
+    backgroundOpacity = 0.55,
+  }) {
+    const { context, canvas } = this;
+
+    const titleFont = "700 42px JetBrains Mono";
+    const subtitleFont = "400 18px JetBrains Mono";
+    const lineFont = "400 14px JetBrains Mono";
+
+    const panelWidth = 620;
+    const paddingX = 36;
+    const paddingY = 32;
+
+    const subtitleLines = subtitle ? subtitle.split("\n") : [];
+    const totalLines = subtitleLines.length + lines.length;
+
+    const titleHeight = 52;
+    const subtitleLineHeight = 28;
+    const instructionLineHeight = 24;
+    const gapAfterTitle = subtitleLines.length > 0 ? 18 : 0;
+    const gapAfterSubtitle = lines.length > 0 ? 28 : 0;
+
+    const panelHeight =
+      paddingY * 2 +
+      titleHeight +
+      gapAfterTitle +
+      subtitleLines.length * subtitleLineHeight +
+      gapAfterSubtitle +
+      lines.length * instructionLineHeight;
+
+    const panelX = (canvas.width - panelWidth) / 2;
+    const panelY = (canvas.height - panelHeight) / 2;
+
+    context.save();
+
+    context.fillStyle = `rgba(0, 0, 0, ${backgroundOpacity})`;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.fillStyle = "rgba(24, 24, 32, 0.92)";
+    context.fillRect(panelX, panelY, panelWidth, panelHeight);
+
+    context.fillStyle = accentColor;
+    context.fillRect(panelX, panelY, panelWidth, 4);
+
+    context.textAlign = "center";
+    context.textBaseline = "top";
+
+    let currentY = panelY + paddingY;
+
+    context.fillStyle = "#f5f5f5";
+    context.font = titleFont;
+    context.fillText(title, canvas.width / 2, currentY);
+
+    currentY += titleHeight + gapAfterTitle;
+
+    if (subtitleLines.length > 0) {
+      context.fillStyle = "#a5a5b5";
+      context.font = subtitleFont;
+
+      subtitleLines.forEach((line) => {
+        context.fillText(line, canvas.width / 2, currentY);
+        currentY += subtitleLineHeight;
+      });
+
+      currentY += gapAfterSubtitle;
+    }
+
+    if (lines.length > 0) {
+      context.font = lineFont;
+
+      lines.forEach((line, index) => {
+        context.fillStyle = index === 0 ? accentColor : "#a5a5b5";
+        context.fillText(line, canvas.width / 2, currentY);
+        currentY += instructionLineHeight;
+      });
+    }
+
+    context.restore();
+  }
+
   drawHUD(lines) {
     const { context, canvas } = this;
 
