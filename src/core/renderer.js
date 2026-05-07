@@ -259,11 +259,13 @@ export class Renderer {
     this.context.restore();
   }
 
-    drawPanelScreen({
+  drawPanelScreen({
+    variant = "panel",
     title,
     subtitle = "",
     lines = [],
     accentColor = "#f5f5f5",
+    backgroundColor = "#000000",
     backgroundOpacity = 0.55,
   }) {
     const { context, canvas } = this;
@@ -272,49 +274,63 @@ export class Renderer {
     const subtitleFont = "400 18px JetBrains Mono";
     const lineFont = "400 14px JetBrains Mono";
 
-    const panelWidth = 620;
-    const paddingX = 36;
-    const paddingY = 32;
-
     const subtitleLines = subtitle ? subtitle.split("\n") : [];
-    const totalLines = subtitleLines.length + lines.length;
 
     const titleHeight = 52;
     const subtitleLineHeight = 28;
     const instructionLineHeight = 24;
+
     const gapAfterTitle = subtitleLines.length > 0 ? 18 : 0;
     const gapAfterSubtitle = lines.length > 0 ? 28 : 0;
 
-    const panelHeight =
-      paddingY * 2 +
-      titleHeight +
-      gapAfterTitle +
-      subtitleLines.length * subtitleLineHeight +
-      gapAfterSubtitle +
-      lines.length * instructionLineHeight;
+    const paddingX = variant === "fullscreen" ? 56 : 36;
+    const paddingY = variant === "fullscreen" ? 48 : 32;
 
-    const panelX = (canvas.width - panelWidth) / 2;
-    const panelY = (canvas.height - panelHeight) / 2;
+    const panelWidth = variant === "fullscreen" ? canvas.width : 620;
+
+    const panelHeight =
+      variant === "fullscreen"
+        ? canvas.height
+        : paddingY * 2 +
+          titleHeight +
+          gapAfterTitle +
+          subtitleLines.length * subtitleLineHeight +
+          gapAfterSubtitle +
+          lines.length * instructionLineHeight;
+
+    const panelX =
+      variant === "fullscreen" ? 0 : (canvas.width - panelWidth) / 2;
+    const panelY =
+      variant === "fullscreen" ? 0 : (canvas.height - panelHeight) / 2;
 
     context.save();
 
-    context.fillStyle = `rgba(0, 0, 0, ${backgroundOpacity})`;
+    context.fillStyle = this.hexToRgba(backgroundColor, backgroundOpacity);
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    context.fillStyle = "rgba(24, 24, 32, 0.92)";
-    context.fillRect(panelX, panelY, panelWidth, panelHeight);
+    if (variant === "panel") {
+      context.fillStyle = "rgba(24, 24, 32, 0.92)";
+      context.fillRect(panelX, panelY, panelWidth, panelHeight);
 
-    context.fillStyle = accentColor;
-    context.fillRect(panelX, panelY, panelWidth, 4);
+      context.fillStyle = accentColor;
+      context.fillRect(panelX, panelY, panelWidth, 4);
+    }
+
+    if (variant === "fullscreen") {
+      this.drawMenuDecoration(accentColor);
+    }
 
     context.textAlign = "center";
     context.textBaseline = "top";
 
-    let currentY = panelY + paddingY;
+    const contentCenterX = canvas.width / 2;
+
+    let currentY =
+      variant === "fullscreen" ? canvas.height / 2 - 130 : panelY + paddingY;
 
     context.fillStyle = "#f5f5f5";
     context.font = titleFont;
-    context.fillText(title, canvas.width / 2, currentY);
+    context.fillText(title, contentCenterX, currentY);
 
     currentY += titleHeight + gapAfterTitle;
 
@@ -323,7 +339,7 @@ export class Renderer {
       context.font = subtitleFont;
 
       subtitleLines.forEach((line) => {
-        context.fillText(line, canvas.width / 2, currentY);
+        context.fillText(line, contentCenterX, currentY);
         currentY += subtitleLineHeight;
       });
 
@@ -335,10 +351,56 @@ export class Renderer {
 
       lines.forEach((line, index) => {
         context.fillStyle = index === 0 ? accentColor : "#a5a5b5";
-        context.fillText(line, canvas.width / 2, currentY);
+        context.fillText(line, contentCenterX, currentY);
         currentY += instructionLineHeight;
       });
     }
+
+    context.restore();
+  }
+
+  hexToRgba(hex, opacity = 1) {
+    const normalizedHex = hex.replace("#", "");
+
+    const r = parseInt(normalizedHex.substring(0, 2), 16);
+    const g = parseInt(normalizedHex.substring(2, 4), 16);
+    const b = parseInt(normalizedHex.substring(4, 6), 16);
+
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
+  drawMenuDecoration(accentColor = "#f5f5f5") {
+    const { context, canvas } = this;
+
+    context.save();
+
+    /*
+    context.strokeStyle = "rgba(0, 77, 119, 0.1)";
+    context.lineWidth = 1;
+
+    const spacing = 48;
+
+    for (let x = 0; x <= canvas.width; x += spacing) {
+      context.beginPath();
+      context.moveTo(x, 0);
+      context.lineTo(x, canvas.height);
+      context.stroke();
+    }
+
+    for (let y = 0; y <= canvas.height; y += spacing) {
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(canvas.width, y);
+      context.stroke();
+    }
+   */
+
+    context.fillStyle = this.hexToRgba(accentColor, 0.12);
+    context.fillRect(0, canvas.height - 56, canvas.width, 56);
+
+    context.fillStyle = this.hexToRgba(accentColor, 0.28);
+    context.fillRect(80, canvas.height - 96, 120, 40);
+    context.fillRect(canvas.width - 240, canvas.height - 128, 160, 72);
 
     context.restore();
   }
