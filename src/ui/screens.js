@@ -24,6 +24,7 @@ function createMenuScreen() {
     subtitle: "Um jogo plataforma minimalista.",
 
     primaryAction: "'Enter' — Jogar!",
+    primaryActionEffect: "pulse",
 
     lines: ["A/D ou ←/→ — Mover", "Espaço/W/↑ — Pular", "Esc — Pausar"],
     accentColor: "#f5f5f5",
@@ -75,8 +76,13 @@ function createPauseScreen() {
   return {
     variant: "panel",
     title: "Jogo pausado",
-    subtitle: "Respira um pouco e volta no ritmo.",
-    lines: ["Esc — continuar", "R — reiniciar fase"],
+    subtitle: "Parou por quê? Joga aí!",
+
+    primaryAction: "Esc — continuar",
+    primaryActionEffect: "glow",
+
+    lines: ["R — reiniciar fase"],
+
     accentColor: "#8be9fd",
     backgroundColor: "#000000",
     backgroundOpacity: 0.55,
@@ -87,24 +93,37 @@ function createWinScreen(game) {
   const hasNextLevel = game.currentLevelIndex < game.totalLevels - 1;
 
   return {
+    variant: "panel",
     title: hasNextLevel ? "Fase concluída!" : "Jogo concluído!",
     subtitle: hasNextLevel
       ? `Moedas coletadas: ${game.collectedCount}/${game.collectibles.length}`
-      : `Você concluiu todas as fases disponíveis.\nMoedas da fase: ${game.collectedCount}/${game.collectibles.length}`,
-    lines: hasNextLevel
-      ? ["N — próxima fase", "R — repetir fase"]
-      : ["R — jogar novamente"],
+      : `Você jogou o jogo todo! Aí sim!\nMoedas da fase: ${game.collectedCount}/${game.collectibles.length}`,
+
+    primaryAction: hasNextLevel ? "N — próxima fase" : "R — jogar novamente",
+
+    primaryActionEffect: "glow",
+
+    lines: hasNextLevel ? ["R — repetir fase"] : [],
+
     accentColor: "#ffd166",
+    backgroundColor: "#000000",
     backgroundOpacity: 0.55,
   };
 }
 
 function createGameOverScreen() {
   return {
+    variant: "panel",
     title: "Game Over!",
-    subtitle: "Você caiu ou tocou em um perigo.",
-    lines: ["R — tentar novamente"],
+    subtitle: "Vish, você perdeu de algum jeito aí...",
+
+    primaryAction: "R — tentar novamente",
+    primaryActionEffect: "glow",
+
+    lines: [],
+
     accentColor: "#ff5c7a",
+    backgroundColor: "#000000",
     backgroundOpacity: 0.55,
   };
 }

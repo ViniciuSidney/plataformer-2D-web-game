@@ -264,6 +264,7 @@ export class Renderer {
     title,
     subtitle = "",
     primaryAction = "",
+    primaryActionEffect = "none",
     lines = [],
     accentColor = "#f5f5f5",
     backgroundColor = "#000000",
@@ -283,7 +284,7 @@ export class Renderer {
     const instructionLineHeight = 24;
 
     const gapAfterTitle = subtitleLines.length > 0 ? 18 : 0;
-    const gapAfterSubtitle = lines.length > 0 ? 28 : 0;
+    const gapAfterSubtitle = (lines.length > 0 || primaryAction) ? 28 : 0;
 
     const paddingX = variant === "fullscreen" ? 56 : 36;
     const paddingY = variant === "fullscreen" ? 48 : 32;
@@ -355,10 +356,15 @@ export class Renderer {
 
     if (primaryAction) {
       const time = performance.now() / 1000;
-      const pulse = (Math.sin(time * 4) + 1) / 2;
 
-      const fontSize = 20 + pulse * 1.45;
-      const glowOpacity = 0.25 + pulse * 0.30;
+      const isPulse = primaryActionEffect === "pulse";
+      const isGlow = primaryActionEffect === "glow";
+
+      const pulse = isPulse ? (Math.sin(time * 3) + 1) / 2 : 0;
+
+      const fontSize = isPulse ? 18 + pulse * 1.5 : 17;
+      const glowBlur = isPulse ? 8 + pulse * 10 : isGlow ? 8 : 0;
+      const glowOpacity = isPulse ? 0.85 + pulse * 0.15 : 0.95;
 
       context.save();
 
@@ -366,13 +372,12 @@ export class Renderer {
       context.textAlign = "center";
       context.textBaseline = "top";
 
-      context.shadowColor = accentColor;
-      context.shadowBlur = 8 + pulse * 10;
+      if (isPulse || isGlow) {
+        context.shadowColor = accentColor;
+        context.shadowBlur = glowBlur;
+      }
 
-      context.fillStyle = this.hexToRgba(
-        accentColor,
-        0.75 + glowOpacity * 0.15,
-      );
+      context.fillStyle = this.hexToRgba(accentColor, glowOpacity);
       context.fillText(primaryAction, contentCenterX, currentY);
 
       context.restore();
@@ -528,27 +533,6 @@ export class Renderer {
 
     context.save();
 
-    /*
-    context.strokeStyle = "rgba(0, 77, 119, 0.1)";
-    context.lineWidth = 1;
-
-    const spacing = 48;
-
-    for (let x = 0; x <= canvas.width; x += spacing) {
-      context.beginPath();
-      context.moveTo(x, 0);
-      context.lineTo(x, canvas.height);
-      context.stroke();
-    }
-
-    for (let y = 0; y <= canvas.height; y += spacing) {
-      context.beginPath();
-      context.moveTo(0, y);
-      context.lineTo(canvas.width, y);
-      context.stroke();
-    }
-   */
-
     context.fillStyle = this.hexToRgba("#2a2a35", 0.6);
     context.fillRect(0, canvas.height - 56, canvas.width, 56);
 
@@ -637,11 +621,10 @@ export class Renderer {
 
     context.font = "400 18px JetBrains Mono";
     context.fillStyle = "#a5a5b5";
-    this.drawMultilineText(
+    context.fillText(
       subtitle,
       canvas.width / 2,
       canvas.height / 2 + 48,
-      28,
     );
 
     context.font = "400 14px JetBrains Mono";
