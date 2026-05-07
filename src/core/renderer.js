@@ -522,6 +522,60 @@ export class Renderer {
     context.restore();
   }
 
+  drawGoalPortal(x, y, width, height, color, camera = { x: 0, y: 0, zoom: 1 }) {
+    const zoom = camera.zoom || 1;
+
+    const screenX = (x - camera.x) * zoom;
+    const screenY = (y - camera.y) * zoom;
+    const screenWidth = width * zoom;
+    const screenHeight = height * zoom;
+
+    const time = performance.now() / 1000;
+    const pulse = (Math.sin(time * 3) + 1) / 2;
+
+    const glowOpacity = 0.18 + pulse * 0.16;
+    const coreOpacity = 0.65 + pulse * 0.25;
+
+    this.context.save();
+
+    // brilho externo
+    this.context.fillStyle = this.hexToRgba(color, glowOpacity);
+    this.context.shadowColor = color;
+    this.context.shadowBlur = 14 + pulse * 10;
+    this.context.fillRect(
+      screenX - 6 * zoom,
+      screenY - 6 * zoom,
+      screenWidth + 12 * zoom,
+      screenHeight + 8 * zoom,
+    );
+
+    // corpo principal
+    this.context.shadowBlur = 8 + pulse * 6;
+    this.context.fillStyle = this.hexToRgba(color, 0.85);
+    this.context.fillRect(screenX, screenY, screenWidth, screenHeight);
+
+    // núcleo interno
+    this.context.shadowBlur = 0;
+    this.context.fillStyle = this.hexToRgba("#d6fff8", coreOpacity);
+    this.context.fillRect(
+      screenX + screenWidth * 0.20,
+      screenY + screenHeight * 0.08,
+      screenWidth * 0.6,
+      screenHeight * 0.84,
+    );
+
+    // base
+    this.context.fillStyle = this.hexToRgba(color, 1);
+    this.context.fillRect(
+      screenX - 9 * zoom,
+      screenY + screenHeight - 3,
+      screenWidth + 18 * zoom,
+      5 * zoom,
+    );
+
+    this.context.restore();
+  }
+
   drawHazardStrip({ x, y, width, height, color = "#ff5c7a" }) {
     const { context } = this;
 

@@ -33,7 +33,7 @@ export const GAME_CONFIG = {
       editCamera: {
          x: 0,
          y: 520,
-         zoom: 0.6,
+         zoom: 1,
       },
    },
 
