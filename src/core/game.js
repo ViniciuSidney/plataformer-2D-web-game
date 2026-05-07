@@ -39,6 +39,7 @@ export class Game {
       : GAME_STATES.MENU;
 
     this.wasPausePressed = false;
+    this.wasMenuPressed = false;
     this.wasPreviousLevelPressed = false;
     this.wasNextLevelEditPressed = false;
 
@@ -105,6 +106,28 @@ export class Game {
     this.loadLevel(this.currentLevelIndex);
   }
 
+  goToMenu() {
+    this.state = GAME_STATES.MENU;
+    this.currentLevelIndex = 0;
+    this.loadLevel(this.currentLevelIndex);
+  }
+
+  handleMenuInput() {
+    const isMenuPressed = this.inputSystem.isPressed("menu");
+    const justPressedMenu = isMenuPressed && !this.wasMenuPressed;
+
+    const canReturnToMenu =
+      this.state === GAME_STATES.PAUSED ||
+      this.state === GAME_STATES.WON ||
+      this.state === GAME_STATES.LOST;
+
+    if (justPressedMenu && canReturnToMenu) {
+      this.goToMenu();
+    }
+
+    this.wasMenuPressed = isMenuPressed;
+  }
+
   goToNextLevel() {
     const nextLevelIndex = this.currentLevelIndex + 1;
     const hasNextLevel = nextLevelIndex < levels.length;
@@ -148,6 +171,7 @@ export class Game {
     }
 
     this.handlePauseInput();
+    this.handleMenuInput();
 
     if (this.inputSystem.isPressed("restart")) {
       this.restartLevel();
@@ -202,7 +226,8 @@ export class Game {
 
   startGame() {
     this.state = GAME_STATES.PLAYING;
-    this.restartLevel();
+    this.currentLevelIndex = 0;
+    this.loadLevel(this.currentLevelIndex);
   }
 
   draw() {

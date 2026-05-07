@@ -81,7 +81,7 @@ function createPauseScreen() {
     primaryAction: "Esc — continuar",
     primaryActionEffect: "glow",
 
-    lines: ["R — reiniciar fase"],
+    lines: ["R — reiniciar fase", "M — menu inicial"],
 
     accentColor: "#8be9fd",
     backgroundColor: "#000000",
@@ -95,35 +95,40 @@ function createWinScreen(game) {
   return {
     variant: "panel",
     title: hasNextLevel ? "Fase concluída!" : "Jogo concluído!",
+
     subtitle: hasNextLevel
-      ? `Moedas coletadas: ${game.collectedCount}/${game.collectibles.length}`
+      ? `Moedas da fase: ${game.collectedCount}/${game.collectibles.length}`
       : `Você jogou o jogo todo! Aí sim!\nMoedas da fase: ${game.collectedCount}/${game.collectibles.length}`,
 
     primaryAction: hasNextLevel ? "N — próxima fase" : "R — jogar novamente",
 
     primaryActionEffect: "glow",
 
-    lines: hasNextLevel ? ["R — repetir fase"] : [],
+    lines: hasNextLevel
+      ? ["R — repetir fase", "M — menu inicial"]
+      : ["M — menu inicial"],
 
-    accentColor: "#ffd166",
+    accentColor: hasNextLevel ? "#2dd4bf" : "#ffd166",
     backgroundColor: "#000000",
     backgroundOpacity: 0.55,
   };
 }
 
 function createGameOverScreen() {
-  return {
-    variant: "panel",
-    title: "Game Over!",
-    subtitle: "Vish, você perdeu de algum jeito aí...",
+   return {
+      variant: 'panel',
+      title: 'Game Over!',
+      subtitle: "Vish, você perdeu de algum jeito aí...",
 
-    primaryAction: "R — tentar novamente",
-    primaryActionEffect: "glow",
+      primaryAction: 'R — tentar novamente',
+      primaryActionEffect: 'glow',
 
-    lines: [],
+      lines: [
+         'M — menu inicial',
+      ],
 
-    accentColor: "#ff5c7a",
-    backgroundColor: "#000000",
-    backgroundOpacity: 0.55,
-  };
+      accentColor: '#ff5c7a',
+      backgroundColor: '#000000',
+      backgroundOpacity: 0.55,
+   };
 }
