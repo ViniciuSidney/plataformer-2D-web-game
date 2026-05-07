@@ -263,6 +263,7 @@ export class Renderer {
     variant = "panel",
     title,
     subtitle = "",
+    primaryAction = "",
     lines = [],
     accentColor = "#f5f5f5",
     backgroundColor = "#000000",
@@ -289,6 +290,9 @@ export class Renderer {
 
     const panelWidth = variant === "fullscreen" ? canvas.width : 620;
 
+    const primaryActionHeight = primaryAction ? 34 : 0;
+    const gapAfterPrimaryAction = primaryAction && lines.length > 0 ? 18 : 0;
+
     const panelHeight =
       variant === "fullscreen"
         ? canvas.height
@@ -297,6 +301,8 @@ export class Renderer {
           gapAfterTitle +
           subtitleLines.length * subtitleLineHeight +
           gapAfterSubtitle +
+          primaryActionHeight +
+          gapAfterPrimaryAction +
           lines.length * instructionLineHeight;
 
     const panelX =
@@ -347,11 +353,38 @@ export class Renderer {
       currentY += gapAfterSubtitle;
     }
 
+    if (primaryAction) {
+      const time = performance.now() / 1000;
+      const pulse = (Math.sin(time * 4) + 1) / 2;
+
+      const fontSize = 20 + pulse * 1.45;
+      const glowOpacity = 0.25 + pulse * 0.30;
+
+      context.save();
+
+      context.font = `700 ${fontSize}px JetBrains Mono`;
+      context.textAlign = "center";
+      context.textBaseline = "top";
+
+      context.shadowColor = accentColor;
+      context.shadowBlur = 8 + pulse * 10;
+
+      context.fillStyle = this.hexToRgba(
+        accentColor,
+        0.75 + glowOpacity * 0.15,
+      );
+      context.fillText(primaryAction, contentCenterX, currentY);
+
+      context.restore();
+
+      currentY += primaryActionHeight + gapAfterPrimaryAction;
+    }
+
     if (lines.length > 0) {
       context.font = lineFont;
 
-      lines.forEach((line, index) => {
-        context.fillStyle = index === 0 ? accentColor : "#a5a5b5";
+      lines.forEach((line) => {
+        context.fillStyle = "#a5a5b5";
         context.fillText(line, contentCenterX, currentY);
         currentY += instructionLineHeight;
       });

@@ -22,12 +22,10 @@ function createMenuScreen() {
     variant: "fullscreen",
     title: "Pulando e Caindo",
     subtitle: "Um jogo plataforma minimalista.",
-    lines: [
-      "Enter — jogar",
-      "A/D ou ←/→ — mover",
-      "Espaço/W/↑ — pular",
-      "Esc — pausar",
-    ],
+
+    primaryAction: "'Enter' — Jogar!",
+
+    lines: ["A/D ou ←/→ — Mover", "Espaço/W/↑ — Pular", "Esc — Pausar"],
     accentColor: "#f5f5f5",
     backgroundColor: "#101014",
     backgroundOpacity: 1,
@@ -54,7 +52,7 @@ function createMenuScreen() {
       hazards: [{ x: 318, y: 496, width: 64, height: 18, color: "#ff5c7a" }],
 
       goal: {
-        x: 748,
+        x: 848,
         y: 438,
         width: 12,
         height: 58,
