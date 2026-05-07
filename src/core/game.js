@@ -40,6 +40,8 @@ export class Game {
 
     this.wasPausePressed = false;
     this.wasMenuPressed = false;
+    this.wasRestartPressed = false;
+
     this.wasPreviousLevelPressed = false;
     this.wasNextLevelEditPressed = false;
 
@@ -156,6 +158,22 @@ export class Game {
     this.wasPausePressed = isPausePressed;
   }
 
+  handleRestartInput() {
+    const isRestartPressed = this.inputSystem.isPressed("restart");
+    const justPressedRestart = isRestartPressed && !this.wasRestartPressed;
+
+    const canRestartLevel =
+      this.state === GAME_STATES.PAUSED ||
+      this.state === GAME_STATES.WON ||
+      this.state === GAME_STATES.LOST;
+
+    if (justPressedRestart && canRestartLevel) {
+      this.restartLevel();
+    }
+
+    this.wasRestartPressed = isRestartPressed;
+  }
+
   update() {
     if (GAME_CONFIG.debug.levelEditMode) {
       this.handleEditModeLevelInput();
@@ -172,10 +190,7 @@ export class Game {
 
     this.handlePauseInput();
     this.handleMenuInput();
-
-    if (this.inputSystem.isPressed("restart")) {
-      this.restartLevel();
-    }
+    this.handleRestartInput();
 
     if (this.state === GAME_STATES.WON && this.inputSystem.isPressed("next")) {
       this.goToNextLevel();
