@@ -5,6 +5,7 @@ import {
   hole,
   groundWithHoles,
   hazard,
+  collectible,
 } from "../utils/levelBuilder.js";
 
 import { GAME_CONFIG } from "../config/gameConfig.js";
@@ -47,9 +48,13 @@ export const level01 = {
       platform(32, 22, 6),
    ],
 
-   hazards: [
-      hazard(23, 27.5, 2, .5), 
-      hazard(46, 27.5, 2, .5)
+   hazards: [hazard(23, 27.5, 2, 0.5), hazard(46, 27.5, 2, 0.5)],
+
+   collectibles: [
+      collectible(8, 25),
+      collectible(12, 23),
+      collectible(18, 21),
+      collectible(34, 19),
    ],
 
    goal: goal(34, 20, 1, 2),

@@ -29,6 +29,9 @@ export class Game {
       this.platforms = LevelSystem.createPlatforms(this.currentLevel);
       this.goal = LevelSystem.createGoal(this.currentLevel);
       this.hazards = LevelSystem.createHazards(this.currentLevel);
+      this.collectibles = LevelSystem.createCollectibles(this.currentLevel);
+
+      this.collectedCount = 0;
 
       this.state = GAME_CONFIG.debug.levelEditMode
          ? GAME_STATES.PLAYING
@@ -79,6 +82,9 @@ export class Game {
       this.platforms = LevelSystem.createPlatforms(this.currentLevel);
       this.goal = LevelSystem.createGoal(this.currentLevel);
       this.hazards = LevelSystem.createHazards(this.currentLevel);
+      this.collectibles = LevelSystem.createCollectibles(this.currentLevel);
+
+      this.collectedCount = 0;
 
       this.player.reset(this.currentLevel.playerStart);
 
@@ -174,6 +180,11 @@ export class Game {
       this.player.updateCoyoteTime();
       this.player.handleJump();
 
+      this.collectedCount += CollisionSystem.collectItems(
+         this.player,
+         this.collectibles,
+      );
+
       if (CollisionSystem.checkGoalCollision(this.player, this.goal)) {
          this.state = GAME_STATES.WON;
       }
@@ -203,18 +214,23 @@ export class Game {
          platform.draw(this.renderer, this.camera);
       }
 
-      for (const platform of this.platforms) {
-         platform.draw(this.renderer, this.camera);
-      }
-
-      for (const hazard of this.hazards) {
-         hazard.draw(this.renderer, this.camera);
+      for (const collectible of this.collectibles) {
+         collectible.draw(this.renderer, this.camera);
       }
 
       this.goal.draw(this.renderer, this.camera);
 
-      if (!(GAME_CONFIG.debug.levelEditMode && GAME_CONFIG.debug.hidePlayerInEditMode)) {
+      if (
+         !(
+            GAME_CONFIG.debug.levelEditMode &&
+            GAME_CONFIG.debug.hidePlayerInEditMode
+         )
+      ) {
          this.player.draw(this.renderer, this.camera);
+      }
+
+      for (const hazard of this.hazards) {
+         hazard.draw(this.renderer, this.camera);
       }
 
       if (GAME_CONFIG.debug.showWorldGrid) {
@@ -229,14 +245,24 @@ export class Game {
          this.drawDebugInfo();
       }
 
+      if (!GAME_CONFIG.debug.levelEditMode) {
+         this.renderer.drawHUD({
+            collectedCount: this.collectedCount,
+            totalCollectibles: this.collectibles.length,
+         });
+      }
+
+      // Menu!
       if (this.state === GAME_STATES.MENU && !GAME_CONFIG.debug.levelEditMode) {
          this.renderer.drawMenuScreen();
       }
 
+      // Pausa!
       if (this.state === GAME_STATES.PAUSED) {
          this.renderer.drawPauseScreen();
       }
 
+      // Tela de vitória!
       if (this.state === GAME_STATES.WON) {
          const hasNextLevel = this.currentLevelIndex < levels.length - 1;
 
@@ -251,6 +277,7 @@ export class Game {
          );
       }
 
+      // Tela de derrota!
       if (this.state === GAME_STATES.LOST) {
          this.renderer.drawOverlayMessage(
             'Game Over!',

@@ -86,3 +86,12 @@ export function hazard(column, row, widthInTiles = 1, heightInTiles = 1) {
       height: toPixels(heightInTiles),
    };
 }
+
+export function collectible(column, row, sizeInTiles = 0.5) {
+   return {
+      x: toPixels(column),
+      y: toPixels(row),
+      width: toPixels(sizeInTiles),
+      height: toPixels(sizeInTiles),
+   };
+}

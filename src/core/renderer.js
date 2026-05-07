@@ -24,6 +24,26 @@ export class Renderer {
       );
    }
 
+   drawCircle(x, y, radius, color, camera = { x: 0, y: 0, zoom: 1 }) {
+      const zoom = camera.zoom || 1;
+
+      this.context.save();
+
+      this.context.fillStyle = color;
+
+      this.context.beginPath();
+      this.context.arc(
+         (x - camera.x) * zoom,
+         (y - camera.y) * zoom,
+         radius * zoom,
+         0,
+         Math.PI * 2,
+      );
+      this.context.fill();
+
+      this.context.restore();
+   }
+
    drawMultilineText(text, x, y, lineHeight = 24) {
       const lines = text.split('\n');
       const baselineOffset = -((lines.length - 1) * lineHeight) / 2;
@@ -42,7 +62,7 @@ export class Renderer {
 
       context.save();
 
-      context.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      context.fillStyle = 'rgba(20, 20, 20)';
       context.fillRect(0, 0, canvas.width, canvas.height);
 
       context.textAlign = 'center';
@@ -239,6 +259,26 @@ export class Renderer {
 
       this.context.fillStyle = 'rgba(139, 233, 253, 0.45)';
       this.context.fillText(text, boxX + paddingX, boxY + paddingY);
+
+      this.context.restore();
+   }
+
+   drawHUD({ collectedCount, totalCollectibles }) {
+      this.context.save();
+
+      this.context.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      this.context.fillRect(776, 24, 150, 40);
+
+      this.context.fillStyle = '#ffd166';
+      this.context.font = '600 16px JetBrains Mono';
+      this.context.textAlign = 'left';
+      this.context.textBaseline = 'middle';
+
+      this.context.fillText(
+         `Moedas: ${collectedCount}/${totalCollectibles}`,
+         800,
+         46,
+      );
 
       this.context.restore();
    }

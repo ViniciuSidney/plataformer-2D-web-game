@@ -56,4 +56,19 @@ export class CollisionSystem {
          return this.checkAABBCollision(player, hazard);
       });
    }
+
+   static collectItems(player, collectibles) {
+      let collectedAmount = 0;
+
+      for (const collectible of collectibles) {
+         if (collectible.isCollected) continue;
+
+         if (this.checkAABBCollision(player, collectible)) {
+            collectible.collect();
+            collectedAmount++;
+         }
+      }
+
+      return collectedAmount;
+   }
 }
