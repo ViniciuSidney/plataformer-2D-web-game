@@ -31,6 +31,45 @@ function createMenuScreen() {
     accentColor: "#f5f5f5",
     backgroundColor: "#101014",
     backgroundOpacity: 1,
+
+    decoration: {
+      type: "menu-scene",
+
+      grounds: [
+        { x: 0, y: 496, width: 440, height: 44, color: "#242432" },
+        { x: 540, y: 496, width: 420, height: 44, color: "#242432" },
+      ],
+
+      platforms: [
+        { x: 86, y: 464, width: 96, height: 32, color: "#2b2b3a" },
+        { x: 592, y: 439, width: 128, height: 57, color: "#2b2b3a" },
+      ],
+
+      collectibles: [
+        { x: 134, y: 446, radius: 7, color: "#ffd166" },
+        { x: 625, y: 421, radius: 7, color: "#ffd166" },
+        { x: 695, y: 421, radius: 7, color: "#ffd166" },
+      ],
+
+      hazards: [{ x: 318, y: 496, width: 64, height: 18, color: "#ff5c7a" }],
+
+      goal: {
+        x: 748,
+        y: 438,
+        width: 12,
+        height: 58,
+        poleColor: "#6ee7b7",
+        flagColor: "#db3567",
+      },
+
+      player: {
+        x: 236,
+        y: 468,
+        width: 28,
+        height: 28,
+        color: "#f5f5f5",
+      },
+    },
   };
 }
 

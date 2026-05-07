@@ -267,6 +267,7 @@ export class Renderer {
     accentColor = "#f5f5f5",
     backgroundColor = "#000000",
     backgroundOpacity = 0.55,
+    decoration = null,
   }) {
     const { context, canvas } = this;
 
@@ -308,6 +309,10 @@ export class Renderer {
     context.fillStyle = this.hexToRgba(backgroundColor, backgroundOpacity);
     context.fillRect(0, 0, canvas.width, canvas.height);
 
+    if (variant === "fullscreen" && decoration?.type === "menu-scene") {
+      this.drawMenuScene(decoration);
+    }
+
     if (variant === "panel") {
       context.fillStyle = "rgba(24, 24, 32, 0.92)";
       context.fillRect(panelX, panelY, panelWidth, panelHeight);
@@ -316,17 +321,13 @@ export class Renderer {
       context.fillRect(panelX, panelY, panelWidth, 4);
     }
 
-    if (variant === "fullscreen") {
-      this.drawMenuDecoration(accentColor);
-    }
-
     context.textAlign = "center";
     context.textBaseline = "top";
 
     const contentCenterX = canvas.width / 2;
 
     let currentY =
-      variant === "fullscreen" ? canvas.height / 2 - 130 : panelY + paddingY;
+      variant === "fullscreen" ? canvas.height / 2 - 110 : panelY + paddingY;
 
     context.fillStyle = "#f5f5f5";
     context.font = titleFont;
@@ -354,6 +355,126 @@ export class Renderer {
         context.fillText(line, contentCenterX, currentY);
         currentY += instructionLineHeight;
       });
+    }
+
+    context.restore();
+  }
+
+  drawMenuScene(scene) {
+    const { context, canvas } = this;
+
+    context.save();
+
+    // grade de fundo bem sutil
+    context.strokeStyle = "rgba(255, 255, 255, 0.04)";
+    context.lineWidth = 1;
+
+    const spacing = 48;
+
+    for (let x = 0; x <= canvas.width; x += spacing) {
+      context.beginPath();
+      context.moveTo(x, 0);
+      context.lineTo(x, canvas.height);
+      context.stroke();
+    }
+
+    for (let y = 0; y <= canvas.height; y += spacing) {
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(canvas.width, y);
+      context.stroke();
+    }
+
+    // chão
+    if (scene.grounds) {
+      scene.grounds.forEach((ground) => {
+        context.fillStyle = ground.color;
+        context.fillRect(ground.x, ground.y, ground.width, ground.height);
+      });
+    }
+
+    // plataformas
+    if (scene.platforms) {
+      scene.platforms.forEach((platform) => {
+        context.fillStyle = platform.color;
+        context.fillRect(
+          platform.x,
+          platform.y,
+          platform.width,
+          platform.height,
+        );
+      });
+    }
+
+    // perigos
+    if (scene.hazards) {
+      scene.hazards.forEach((hazard) => {
+        this.drawHazardStrip(hazard);
+      });
+    }
+
+    // coletáveis
+    if (scene.collectibles) {
+      scene.collectibles.forEach((collectible) => {
+        context.fillStyle = collectible.color;
+        context.beginPath();
+        context.arc(
+          collectible.x,
+          collectible.y,
+          collectible.radius,
+          0,
+          Math.PI * 2,
+        );
+        context.fill();
+      });
+    }
+
+    // objetivo
+    if (scene.goal) {
+      context.fillStyle = scene.goal.poleColor;
+      context.fillRect(
+        scene.goal.x,
+        scene.goal.y,
+        scene.goal.width,
+        scene.goal.height,
+      );
+
+      context.fillStyle = scene.goal.flagColor;
+      context.fillRect(scene.goal.x + scene.goal.width, scene.goal.y, 24, 24);
+    }
+
+    // player decorativo
+    if (scene.player) {
+      context.fillStyle = scene.player.color;
+      context.fillRect(
+        scene.player.x,
+        scene.player.y,
+        scene.player.width,
+        scene.player.height,
+      );
+    }
+
+    context.restore();
+  }
+
+  drawHazardStrip({ x, y, width, height, color = "#ff5c7a" }) {
+    const { context } = this;
+
+    const spikeCount = Math.max(1, Math.floor(width / 16));
+    const spikeWidth = width / spikeCount;
+
+    context.save();
+    context.fillStyle = color;
+
+    for (let i = 0; i < spikeCount; i++) {
+      const spikeX = x + i * spikeWidth;
+
+      context.beginPath();
+      context.moveTo(spikeX, y);
+      context.lineTo(spikeX + spikeWidth / 2, y - height);
+      context.lineTo(spikeX + spikeWidth, y);
+      context.closePath();
+      context.fill();
     }
 
     context.restore();
@@ -395,10 +516,10 @@ export class Renderer {
     }
    */
 
-    context.fillStyle = this.hexToRgba(accentColor, 0.12);
+    context.fillStyle = this.hexToRgba("#2a2a35", 0.6);
     context.fillRect(0, canvas.height - 56, canvas.width, 56);
 
-    context.fillStyle = this.hexToRgba(accentColor, 0.28);
+    context.fillStyle = this.hexToRgba("#2a2a35", 0.9);
     context.fillRect(80, canvas.height - 96, 120, 40);
     context.fillRect(canvas.width - 240, canvas.height - 128, 160, 72);
 
