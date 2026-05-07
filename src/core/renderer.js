@@ -24,12 +24,33 @@ export class Renderer {
     );
   }
 
-  drawCircle(x, y, radius, color, camera = { x: 0, y: 0, zoom: 1 }) {
+  drawCircle(
+    x,
+    y,
+    radius,
+    color,
+    camera = { x: 0, y: 0, zoom: 1 },
+    options = {},
+  ) {
     const zoom = camera.zoom || 1;
+
+    const {
+      strokeColor = null,
+      lineWidth = 0,
+      shadowColor = null,
+      shadowBlur = 0,
+      opacity = 1,
+    } = options;
 
     this.context.save();
 
+    this.context.globalAlpha = opacity;
     this.context.fillStyle = color;
+
+    if (shadowColor) {
+      this.context.shadowColor = shadowColor;
+      this.context.shadowBlur = shadowBlur;
+    }
 
     this.context.beginPath();
     this.context.arc(
@@ -40,6 +61,12 @@ export class Renderer {
       Math.PI * 2,
     );
     this.context.fill();
+
+    if (strokeColor && lineWidth > 0) {
+      this.context.strokeStyle = strokeColor;
+      this.context.lineWidth = lineWidth;
+      this.context.stroke();
+    }
 
     this.context.restore();
   }
@@ -284,7 +311,7 @@ export class Renderer {
     const instructionLineHeight = 24;
 
     const gapAfterTitle = subtitleLines.length > 0 ? 18 : 0;
-    const gapAfterSubtitle = (lines.length > 0 || primaryAction) ? 28 : 0;
+    const gapAfterSubtitle = lines.length > 0 || primaryAction ? 28 : 0;
 
     const paddingX = variant === "fullscreen" ? 56 : 36;
     const paddingY = variant === "fullscreen" ? 48 : 32;
@@ -621,11 +648,7 @@ export class Renderer {
 
     context.font = "400 18px JetBrains Mono";
     context.fillStyle = "#a5a5b5";
-    context.fillText(
-      subtitle,
-      canvas.width / 2,
-      canvas.height / 2 + 48,
-    );
+    context.fillText(subtitle, canvas.width / 2, canvas.height / 2 + 48);
 
     context.font = "400 14px JetBrains Mono";
     context.fillStyle = "#a5a5b5";
