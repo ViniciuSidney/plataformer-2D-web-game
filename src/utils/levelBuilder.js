@@ -43,7 +43,7 @@ export function groundWithHoles(
    row,
    widthInTiles,
    heightInTiles = 1,
-   holes = []
+   holes = [],
 ) {
    const sortedHoles = [...holes].sort((a, b) => a.column - b.column);
 
@@ -61,8 +61,8 @@ export function groundWithHoles(
                currentColumn,
                row,
                holeStart - currentColumn,
-               heightInTiles
-            )
+               heightInTiles,
+            ),
          );
       }
 
@@ -71,14 +71,18 @@ export function groundWithHoles(
 
    if (currentColumn < endColumn) {
       platforms.push(
-         platform(
-            currentColumn,
-            row,
-            endColumn - currentColumn,
-            heightInTiles
-         )
+         platform(currentColumn, row, endColumn - currentColumn, heightInTiles),
       );
    }
 
    return platforms;
+}
+
+export function hazard(column, row, widthInTiles = 1, heightInTiles = 1) {
+   return {
+      x: toPixels(column),
+      y: toPixels(row),
+      width: toPixels(widthInTiles),
+      height: toPixels(heightInTiles),
+   };
 }

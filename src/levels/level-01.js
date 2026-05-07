@@ -4,6 +4,7 @@ import {
   goal,
   hole,
   groundWithHoles,
+  hazard,
 } from "../utils/levelBuilder.js";
 
 import { GAME_CONFIG } from "../config/gameConfig.js";
@@ -44,6 +45,11 @@ export const level01 = {
 
       // fim da fase
       platform(32, 22, 6),
+   ],
+
+   hazards: [
+      hazard(23, 27.5, 2, .5), 
+      hazard(46, 27.5, 2, .5)
    ],
 
    goal: goal(34, 20, 1, 2),

@@ -50,4 +50,10 @@ export class CollisionSystem {
    static checkGoalCollision(player, goal) {
       return this.checkAABBCollision(player, goal);
    }
+
+   static checkHazardCollision(player, hazards) {
+      return hazards.some((hazard) => {
+         return this.checkAABBCollision(player, hazard);
+      });
+   }
 }

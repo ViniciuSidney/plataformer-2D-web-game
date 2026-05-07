@@ -28,6 +28,7 @@ export class Game {
 
       this.platforms = LevelSystem.createPlatforms(this.currentLevel);
       this.goal = LevelSystem.createGoal(this.currentLevel);
+      this.hazards = LevelSystem.createHazards(this.currentLevel);
 
       this.state = GAME_CONFIG.debug.levelEditMode
          ? GAME_STATES.PLAYING
@@ -77,6 +78,7 @@ export class Game {
 
       this.platforms = LevelSystem.createPlatforms(this.currentLevel);
       this.goal = LevelSystem.createGoal(this.currentLevel);
+      this.hazards = LevelSystem.createHazards(this.currentLevel);
 
       this.player.reset(this.currentLevel.playerStart);
 
@@ -176,6 +178,10 @@ export class Game {
          this.state = GAME_STATES.WON;
       }
 
+      if (CollisionSystem.checkHazardCollision(this.player, this.hazards)) {
+         this.state = GAME_STATES.LOST;
+      }
+
       this.checkPlayerDeath();
 
       this.camera.follow(this.player);
@@ -197,14 +203,17 @@ export class Game {
          platform.draw(this.renderer, this.camera);
       }
 
+      for (const platform of this.platforms) {
+         platform.draw(this.renderer, this.camera);
+      }
+
+      for (const hazard of this.hazards) {
+         hazard.draw(this.renderer, this.camera);
+      }
+
       this.goal.draw(this.renderer, this.camera);
 
-      if (
-         !(
-            GAME_CONFIG.debug.levelEditMode &&
-            GAME_CONFIG.debug.hidePlayerInEditMode
-         )
-      ) {
+      if (!(GAME_CONFIG.debug.levelEditMode && GAME_CONFIG.debug.hidePlayerInEditMode)) {
          this.player.draw(this.renderer, this.camera);
       }
 
@@ -245,7 +254,7 @@ export class Game {
       if (this.state === GAME_STATES.LOST) {
          this.renderer.drawOverlayMessage(
             'Game Over!',
-            'Você caiu na zona de morte.',
+            'Você foi dessa pra melhor, continue tentando!',
             'Pressione R para tentar novamente',
          );
       }
@@ -269,8 +278,8 @@ export class Game {
          `Camera X: ${Math.round(this.camera.x)}`,
          `Camera Y: ${Math.round(this.camera.y)}`,
          `Zoom: ${this.camera.zoom.toFixed(2)}`,
-         '"," fase anterior ', '"." próxima fase'
-         ,
+         '"," fase anterior ',
+         '"." próxima fase',
       ]);
    }
 
