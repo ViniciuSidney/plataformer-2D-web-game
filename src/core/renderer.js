@@ -1,402 +1,411 @@
-import { GAME_CONFIG } from '../config/gameConfig.js';
+import { GAME_CONFIG } from "../config/gameConfig.js";
 
 export class Renderer {
-   constructor(canvas) {
-      this.canvas = canvas;
-      this.context = canvas.getContext('2d');
-   }
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.context = canvas.getContext("2d");
+  }
 
-   clear() {
-      this.context.fillStyle = GAME_CONFIG.backgroundColor;
-      this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-   }
+  clear() {
+    this.context.fillStyle = GAME_CONFIG.backgroundColor;
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  }
 
-   drawRect(x, y, width, height, color, camera = { x: 0, y: 0, zoom: 1 }) {
-      const zoom = camera.zoom || 1;
+  drawRect(x, y, width, height, color, camera = { x: 0, y: 0, zoom: 1 }) {
+    const zoom = camera.zoom || 1;
 
-      this.context.fillStyle = color;
+    this.context.fillStyle = color;
 
-      this.context.fillRect(
-         (x - camera.x) * zoom,
-         (y - camera.y) * zoom,
-         width * zoom,
-         height * zoom,
-      );
-   }
+    this.context.fillRect(
+      (x - camera.x) * zoom,
+      (y - camera.y) * zoom,
+      width * zoom,
+      height * zoom,
+    );
+  }
 
-   drawCircle(x, y, radius, color, camera = { x: 0, y: 0, zoom: 1 }) {
-      const zoom = camera.zoom || 1;
+  drawCircle(x, y, radius, color, camera = { x: 0, y: 0, zoom: 1 }) {
+    const zoom = camera.zoom || 1;
 
-      this.context.save();
+    this.context.save();
 
-      this.context.fillStyle = color;
+    this.context.fillStyle = color;
+
+    this.context.beginPath();
+    this.context.arc(
+      (x - camera.x) * zoom,
+      (y - camera.y) * zoom,
+      radius * zoom,
+      0,
+      Math.PI * 2,
+    );
+    this.context.fill();
+
+    this.context.restore();
+  }
+
+  drawMultilineText(text, x, y, lineHeight = 24) {
+    const lines = text.split("\n");
+    const baselineOffset = -((lines.length - 1) * lineHeight) / 2;
+
+    lines.forEach((line, index) => {
+      this.context.fillText(line, x, y + baselineOffset + index * lineHeight);
+    });
+  }
+
+  drawMenuScreen() {
+    const { context, canvas } = this;
+
+    context.save();
+
+    context.fillStyle = "rgba(20, 20, 20)";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+
+    context.fillStyle = "#f5f5f5";
+    context.font = "700 42px JetBrains Mono";
+    context.fillText(
+      "Pulando e Caindo: O Jogo",
+      canvas.width / 2,
+      canvas.height / 2 - 80,
+    );
+
+    context.fillStyle = "#a5a5b5";
+    context.font = "400 18px JetBrains Mono";
+    context.fillText(
+      "Um protótipo minimalista de plataforma 2D.",
+      canvas.width / 2,
+      canvas.height / 2 - 36,
+    );
+
+    context.fillStyle = "#f5f5f5";
+    context.font = "600 18px JetBrains Mono";
+    context.fillText(
+      "Pressione Enter para jogar",
+      canvas.width / 2,
+      canvas.height / 2 + 36,
+    );
+
+    context.fillStyle = "#a5a5b5";
+    context.font = "400 14px JetBrains Mono";
+    context.fillText(
+      "A/D ou setas para mover • Espaço/W/seta para cima para pular",
+      canvas.width / 2,
+      canvas.height / 2 + 78,
+    );
+
+    context.restore();
+  }
+
+  drawWorldGrid(camera) {
+    const spacing = GAME_CONFIG.tileSize;
+    const zoom = camera.zoom || 1;
+
+    const majorEvery = GAME_CONFIG.debug.gridMajorLineEvery || 4;
+
+    const visibleWidth = this.canvas.width / zoom;
+    const visibleHeight = this.canvas.height / zoom;
+
+    const totalColumns = Math.ceil(GAME_CONFIG.worldWidth / spacing);
+    const totalRows = Math.ceil(GAME_CONFIG.worldHeight / spacing);
+
+    const startColumn = Math.max(0, Math.floor(camera.x / spacing) - 1);
+    const endColumn = Math.min(
+      totalColumns,
+      Math.ceil((camera.x + visibleWidth) / spacing) + 1,
+    );
+
+    const startRow = Math.max(0, Math.floor(camera.y / spacing) - 1);
+    const endRow = Math.min(
+      totalRows,
+      Math.ceil((camera.y + visibleHeight) / spacing) + 1,
+    );
+
+    this.context.save();
+
+    for (let column = startColumn; column <= endColumn; column++) {
+      const worldX = column * spacing;
+      const screenX = (worldX - camera.x) * zoom;
+
+      const isMajorLine = column % majorEvery === 0;
 
       this.context.beginPath();
-      this.context.arc(
-         (x - camera.x) * zoom,
-         (y - camera.y) * zoom,
-         radius * zoom,
-         0,
-         Math.PI * 2,
-      );
-      this.context.fill();
+      this.context.moveTo(screenX, 0);
+      this.context.lineTo(screenX, this.canvas.height);
 
-      this.context.restore();
-   }
-
-   drawMultilineText(text, x, y, lineHeight = 24) {
-      const lines = text.split('\n');
-      const baselineOffset = -((lines.length - 1) * lineHeight) / 2;
-
-      lines.forEach((line, index) => {
-         this.context.fillText(
-            line,
-            x,
-            y + baselineOffset + index * lineHeight,
-         );
-      });
-   }
-
-   drawMenuScreen() {
-      const { context, canvas } = this;
-
-      context.save();
-
-      context.fillStyle = 'rgba(20, 20, 20)';
-      context.fillRect(0, 0, canvas.width, canvas.height);
-
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-
-      context.fillStyle = '#f5f5f5';
-      context.font = '700 42px JetBrains Mono';
-      context.fillText(
-         'Pulando e Caindo: O Jogo',
-         canvas.width / 2,
-         canvas.height / 2 - 80,
-      );
-
-      context.fillStyle = '#a5a5b5';
-      context.font = '400 18px JetBrains Mono';
-      context.fillText(
-         'Um protótipo minimalista de plataforma 2D.',
-         canvas.width / 2,
-         canvas.height / 2 - 36,
-      );
-
-      context.fillStyle = '#f5f5f5';
-      context.font = '600 18px JetBrains Mono';
-      context.fillText(
-         'Pressione Enter para jogar',
-         canvas.width / 2,
-         canvas.height / 2 + 36,
-      );
-
-      context.fillStyle = '#a5a5b5';
-      context.font = '400 14px JetBrains Mono';
-      context.fillText(
-         'A/D ou setas para mover • Espaço/W/seta para cima para pular',
-         canvas.width / 2,
-         canvas.height / 2 + 78,
-      );
-
-      context.restore();
-   }
-
-   drawWorldGrid(camera) {
-      const spacing = GAME_CONFIG.tileSize;
-      const zoom = camera.zoom || 1;
-
-      const majorEvery = GAME_CONFIG.debug.gridMajorLineEvery || 4;
-
-      const visibleWidth = this.canvas.width / zoom;
-      const visibleHeight = this.canvas.height / zoom;
-
-      const totalColumns = Math.ceil(GAME_CONFIG.worldWidth / spacing);
-      const totalRows = Math.ceil(GAME_CONFIG.worldHeight / spacing);
-
-      const startColumn = Math.max(0, Math.floor(camera.x / spacing) - 1);
-      const endColumn = Math.min(
-         totalColumns,
-         Math.ceil((camera.x + visibleWidth) / spacing) + 1,
-      );
-
-      const startRow = Math.max(0, Math.floor(camera.y / spacing) - 1);
-      const endRow = Math.min(
-         totalRows,
-         Math.ceil((camera.y + visibleHeight) / spacing) + 1,
-      );
-
-      this.context.save();
-
-      for (let column = startColumn; column <= endColumn; column++) {
-         const worldX = column * spacing;
-         const screenX = (worldX - camera.x) * zoom;
-
-         const isMajorLine = column % majorEvery === 0;
-
-         this.context.beginPath();
-         this.context.moveTo(screenX, 0);
-         this.context.lineTo(screenX, this.canvas.height);
-
-         if (isMajorLine) {
-            this.context.strokeStyle = 'rgba(139, 233, 253, 0.22)';
-            this.context.lineWidth = 1.25;
-            this.context.setLineDash([]);
-         } else {
-            this.context.strokeStyle = '#2a2a35';
-            this.context.lineWidth = 1;
-            this.context.setLineDash([4, 4]);
-            this.context.lineDashOffset = (performance.now() / 120) % 8;
-         }
-
-         this.context.stroke();
+      if (isMajorLine) {
+        this.context.strokeStyle = "rgba(139, 233, 253, 0.22)";
+        this.context.lineWidth = 1.25;
+        this.context.setLineDash([]);
+      } else {
+        this.context.strokeStyle = "#2a2a35";
+        this.context.lineWidth = 1;
+        this.context.setLineDash([4, 4]);
+        this.context.lineDashOffset = (performance.now() / 120) % 8;
       }
 
-      for (let row = startRow; row <= endRow; row++) {
-         const worldY = row * spacing;
-         const screenY = (worldY - camera.y) * zoom;
+      this.context.stroke();
+    }
 
-         const isMajorLine = row % majorEvery === 0;
+    for (let row = startRow; row <= endRow; row++) {
+      const worldY = row * spacing;
+      const screenY = (worldY - camera.y) * zoom;
 
-         this.context.beginPath();
-         this.context.moveTo(0, screenY);
-         this.context.lineTo(this.canvas.width, screenY);
+      const isMajorLine = row % majorEvery === 0;
 
-         if (isMajorLine) {
-            this.context.strokeStyle = 'rgba(139, 233, 253, 0.22)';
-            this.context.lineWidth = 1.25;
-            this.context.setLineDash([]);
-         } else {
-            this.context.strokeStyle = '#2a2a35';
-            this.context.lineWidth = 1;
-            this.context.setLineDash([4, 4]);
-            this.context.lineDashOffset = (performance.now() / 120) % 8;
-         }
+      this.context.beginPath();
+      this.context.moveTo(0, screenY);
+      this.context.lineTo(this.canvas.width, screenY);
 
-         this.context.stroke();
+      if (isMajorLine) {
+        this.context.strokeStyle = "rgba(139, 233, 253, 0.22)";
+        this.context.lineWidth = 1.25;
+        this.context.setLineDash([]);
+      } else {
+        this.context.strokeStyle = "#2a2a35";
+        this.context.lineWidth = 1;
+        this.context.setLineDash([4, 4]);
+        this.context.lineDashOffset = (performance.now() / 120) % 8;
       }
 
-      this.context.restore();
-   }
+      this.context.stroke();
+    }
 
-   drawWorldGridLabels(camera) {
-      if (!GAME_CONFIG.debug.showGridRulerLabels) {
-         return;
+    this.context.restore();
+  }
+
+  drawWorldGridLabels(camera) {
+    if (!GAME_CONFIG.debug.showGridRulerLabels) {
+      return;
+    }
+
+    const spacing = GAME_CONFIG.tileSize;
+    const zoom = camera.zoom || 1;
+    const majorEvery = GAME_CONFIG.debug.gridMajorLineEvery || 4;
+
+    const visibleWidth = this.canvas.width / zoom;
+    const visibleHeight = this.canvas.height / zoom;
+
+    const totalColumns = Math.ceil(GAME_CONFIG.worldWidth / spacing);
+    const totalRows = Math.ceil(GAME_CONFIG.worldHeight / spacing);
+
+    const startColumn = Math.max(0, Math.floor(camera.x / spacing) - 1);
+    const endColumn = Math.min(
+      totalColumns,
+      Math.ceil((camera.x + visibleWidth) / spacing) + 1,
+    );
+
+    const startRow = Math.max(0, Math.floor(camera.y / spacing) - 1);
+    const endRow = Math.min(
+      totalRows,
+      Math.ceil((camera.y + visibleHeight) / spacing) + 1,
+    );
+
+    this.context.save();
+
+    for (let column = startColumn; column <= endColumn; column++) {
+      if (column % majorEvery !== 0) {
+        continue;
       }
 
-      const spacing = GAME_CONFIG.tileSize;
-      const zoom = camera.zoom || 1;
-      const majorEvery = GAME_CONFIG.debug.gridMajorLineEvery || 4;
+      const worldX = column * spacing;
+      const screenX = (worldX - camera.x) * zoom;
 
-      const visibleWidth = this.canvas.width / zoom;
-      const visibleHeight = this.canvas.height / zoom;
+      this.drawGridLabel(`${column}`, screenX + 4, 14, "top");
+    }
 
-      const totalColumns = Math.ceil(GAME_CONFIG.worldWidth / spacing);
-      const totalRows = Math.ceil(GAME_CONFIG.worldHeight / spacing);
-
-      const startColumn = Math.max(0, Math.floor(camera.x / spacing) - 1);
-      const endColumn = Math.min(
-         totalColumns,
-         Math.ceil((camera.x + visibleWidth) / spacing) + 1,
-      );
-
-      const startRow = Math.max(0, Math.floor(camera.y / spacing) - 1);
-      const endRow = Math.min(
-         totalRows,
-         Math.ceil((camera.y + visibleHeight) / spacing) + 1,
-      );
-
-      this.context.save();
-
-      for (let column = startColumn; column <= endColumn; column++) {
-         if (column % majorEvery !== 0) {
-            continue;
-         }
-
-         const worldX = column * spacing;
-         const screenX = (worldX - camera.x) * zoom;
-
-         this.drawGridLabel(`${column}`, screenX + 4, 14, 'top');
+    for (let row = startRow; row <= endRow; row++) {
+      if (row % majorEvery !== 0) {
+        continue;
       }
 
-      for (let row = startRow; row <= endRow; row++) {
-         if (row % majorEvery !== 0) {
-            continue;
-         }
+      const worldY = row * spacing;
+      const screenY = (worldY - camera.y) * zoom;
 
-         const worldY = row * spacing;
-         const screenY = (worldY - camera.y) * zoom;
+      this.drawGridLabel(`${row}`, 6, screenY - 4, "left");
+    }
 
-         this.drawGridLabel(`${row}`, 6, screenY - 4, 'left');
-      }
+    this.context.restore();
+  }
 
-      this.context.restore();
-   }
+  drawGridLabel(text, x, y, position = "top") {
+    this.context.save();
 
-   drawGridLabel(text, x, y, position = 'top') {
-      this.context.save();
+    this.context.font = "11px JetBrains Mono";
+    this.context.textAlign = "left";
+    this.context.textBaseline = "top";
 
-      this.context.font = '11px JetBrains Mono';
-      this.context.textAlign = 'left';
-      this.context.textBaseline = 'top';
+    const paddingX = 4;
+    const paddingY = 2;
+    const textWidth = this.context.measureText(text).width;
+    const boxWidth = textWidth + paddingX * 2;
+    const boxHeight = 16;
 
-      const paddingX = 4;
-      const paddingY = 2;
-      const textWidth = this.context.measureText(text).width;
-      const boxWidth = textWidth + paddingX * 2;
-      const boxHeight = 16;
+    let boxX = x;
+    let boxY = y;
 
-      let boxX = x;
-      let boxY = y;
+    if (position === "left") {
+      boxY = y - 6;
+    }
 
-      if (position === 'left') {
-         boxY = y - 6;
-      }
+    this.context.fillStyle = "rgba(0, 0, 0, 0.25)";
+    this.context.fillRect(boxX, boxY, boxWidth, boxHeight);
 
-      this.context.fillStyle = 'rgba(0, 0, 0, 0.25)';
-      this.context.fillRect(boxX, boxY, boxWidth, boxHeight);
+    this.context.fillStyle = "rgba(139, 233, 253, 0.45)";
+    this.context.fillText(text, boxX + paddingX, boxY + paddingY);
 
-      this.context.fillStyle = 'rgba(139, 233, 253, 0.45)';
-      this.context.fillText(text, boxX + paddingX, boxY + paddingY);
+    this.context.restore();
+  }
 
-      this.context.restore();
-   }
+  drawHUD(lines) {
+    const { context, canvas } = this;
 
-   drawHUD({ collectedCount, totalCollectibles }) {
-      this.context.save();
+    const lineHeight = 20;
+    const paddingX = 18;
+    const paddingY = 12;
+    const minBoxWidth = 320;
 
-      this.context.fillStyle = 'rgba(0, 0, 0, 0.45)';
-      this.context.fillRect(776, 24, 150, 40);
+    context.save();
 
-      this.context.fillStyle = '#ffd166';
-      this.context.font = '600 16px JetBrains Mono';
-      this.context.textAlign = 'left';
-      this.context.textBaseline = 'middle';
+    context.font = "600 14px JetBrains Mono";
+    context.textAlign = "center";
+    context.textBaseline = "top";
 
-      this.context.fillText(
-         `Moedas: ${collectedCount}/${totalCollectibles}`,
-         800,
-         46,
-      );
+    const longestLineWidth = Math.max(
+      ...lines.map((line) => context.measureText(line).width),
+    );
 
-      this.context.restore();
-   }
+    const boxWidth = Math.max(minBoxWidth, longestLineWidth + paddingX * 2);
+    const boxHeight = lines.length * lineHeight + paddingY * 2;
 
-   drawDebugText(lines) {
-      const lineHeight = 20;
-      const padding = 12;
+    const boxX = (canvas.width - boxWidth) / 2;
+    const boxY = 18;
 
-      const boxWidth = 260;
-      const boxHeight = lines.length * lineHeight + padding * 2;
+    context.fillStyle = "rgba(0, 0, 0, 0.45)";
+    context.fillRect(boxX, boxY, boxWidth, boxHeight);
 
-      this.context.save();
+    lines.forEach((line, index) => {
+      const textY = boxY + paddingY + index * lineHeight;
 
-      this.context.fillStyle = 'rgba(0, 0, 0, 0.55)';
-      this.context.fillRect(40, 44, boxWidth, boxHeight);
+      context.fillStyle = index === 0 ? "#f5f5f5" : "#ffd166";
+      context.fillText(line, canvas.width / 2, textY);
+    });
 
-      this.context.fillStyle = '#f5f5f5';
-      this.context.font = '14px JetBrains Mono';
-      this.context.textAlign = 'left';
-      this.context.textBaseline = 'top';
+    context.restore();
+  }
 
-      lines.forEach((line, index) => {
-         this.context.fillText(line, 52, 56 + index * lineHeight);
-      });
+  drawDebugText(lines) {
+    const lineHeight = 20;
+    const padding = 12;
 
-      this.context.restore();
-   }
+    const boxWidth = 260;
+    const boxHeight = lines.length * lineHeight + padding * 2;
 
-   drawOverlayMessage(title, subtitle, anotherLine = '') {
-      const { context, canvas } = this;
+    this.context.save();
 
-      context.save();
+    this.context.fillStyle = "rgba(0, 0, 0, 0.55)";
+    this.context.fillRect(40, 44, boxWidth, boxHeight);
 
-      context.fillStyle = 'rgba(0, 0, 0, 0.55)';
-      context.fillRect(0, 0, canvas.width, canvas.height);
+    this.context.fillStyle = "#f5f5f5";
+    this.context.font = "14px JetBrains Mono";
+    this.context.textAlign = "left";
+    this.context.textBaseline = "top";
 
-      context.fillStyle = '#f5f5f5';
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
+    lines.forEach((line, index) => {
+      this.context.fillText(line, 52, 56 + index * lineHeight);
+    });
 
-      context.font = '700 42px JetBrains Mono';
-      context.fillText(title, canvas.width / 2, canvas.height / 2 - 24);
+    this.context.restore();
+  }
 
-      context.font = '400 18px JetBrains Mono';
-      context.fillStyle = '#a5a5b5';
-      this.drawMultilineText(
-         subtitle,
-         canvas.width / 2,
-         canvas.height / 2 + 48,
-         28,
-      );
+  drawOverlayMessage(title, subtitle, anotherLine = "") {
+    const { context, canvas } = this;
 
-      context.font = '400 14px JetBrains Mono';
-      context.fillStyle = '#a5a5b5';
-      this.drawMultilineText(
-         anotherLine,
-         canvas.width / 2,
-         canvas.height / 2 + 140,
-         28,
-      );
+    context.save();
 
-      context.restore();
-   }
+    context.fillStyle = "rgba(0, 0, 0, 0.55)";
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
-   drawPauseScreen() {
-      const { context, canvas } = this;
+    context.fillStyle = "#f5f5f5";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
 
-      context.save();
+    context.font = "700 42px JetBrains Mono";
+    context.fillText(title, canvas.width / 2, canvas.height / 2 - 24);
 
-      context.fillStyle = 'rgba(0, 0, 0, 0.55)';
-      context.fillRect(0, 0, canvas.width, canvas.height);
+    context.font = "400 18px JetBrains Mono";
+    context.fillStyle = "#a5a5b5";
+    this.drawMultilineText(
+      subtitle,
+      canvas.width / 2,
+      canvas.height / 2 + 48,
+      28,
+    );
 
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
+    context.font = "400 14px JetBrains Mono";
+    context.fillStyle = "#a5a5b5";
+    this.drawMultilineText(
+      anotherLine,
+      canvas.width / 2,
+      canvas.height / 2 + 140,
+      28,
+    );
 
-      context.fillStyle = '#f5f5f5';
-      context.font = '700 42px JetBrains Mono';
-      context.fillText(
-         'Jogo pausado',
-         canvas.width / 2,
-         canvas.height / 2 - 36,
-      );
+    context.restore();
+  }
 
-      context.fillStyle = '#a5a5b5';
-      context.font = '400 18px JetBrains Mono';
-      context.fillText(
-         'Pressione Esc para continuar',
-         canvas.width / 2,
-         canvas.height / 2 + 18,
-      );
+  drawPauseScreen() {
+    const { context, canvas } = this;
 
-      context.fillStyle = '#a5a5b5';
-      context.font = '400 14px JetBrains Mono';
-      context.fillText(
-         'Pressione R para reiniciar a fase',
-         canvas.width / 2,
-         canvas.height / 2 + 58,
-      );
+    context.save();
 
-      context.restore();
-   }
+    context.fillStyle = "rgba(0, 0, 0, 0.55)";
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
-   drawCameraDeadZone(camera) {
-      const deadZone = GAME_CONFIG.cameraDeadZone;
-      const zoom = camera.zoom || 1;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
 
-      const deadZoneWidth = deadZone.width * zoom;
-      const deadZoneHeight = deadZone.height * zoom;
+    context.fillStyle = "#f5f5f5";
+    context.font = "700 42px JetBrains Mono";
+    context.fillText("Jogo pausado", canvas.width / 2, canvas.height / 2 - 36);
 
-      const x = (this.canvas.width - deadZoneWidth) / 2;
-      const y = (this.canvas.height - deadZoneHeight) / 2;
+    context.fillStyle = "#a5a5b5";
+    context.font = "400 18px JetBrains Mono";
+    context.fillText(
+      "Pressione Esc para continuar",
+      canvas.width / 2,
+      canvas.height / 2 + 18,
+    );
 
-      this.context.save();
+    context.fillStyle = "#a5a5b5";
+    context.font = "400 14px JetBrains Mono";
+    context.fillText(
+      "Pressione R para reiniciar a fase",
+      canvas.width / 2,
+      canvas.height / 2 + 58,
+    );
 
-      this.context.strokeStyle = 'rgba(139, 233, 253, 0.35)';
-      this.context.lineWidth = 2;
-      this.context.strokeRect(x, y, deadZoneWidth, deadZoneHeight);
+    context.restore();
+  }
 
-      this.context.restore();
-   }
+  drawCameraDeadZone(camera) {
+    const deadZone = GAME_CONFIG.cameraDeadZone;
+    const zoom = camera.zoom || 1;
+
+    const deadZoneWidth = deadZone.width * zoom;
+    const deadZoneHeight = deadZone.height * zoom;
+
+    const x = (this.canvas.width - deadZoneWidth) / 2;
+    const y = (this.canvas.height - deadZoneHeight) / 2;
+
+    this.context.save();
+
+    this.context.strokeStyle = "rgba(139, 233, 253, 0.35)";
+    this.context.lineWidth = 2;
+    this.context.strokeRect(x, y, deadZoneWidth, deadZoneHeight);
+
+    this.context.restore();
+  }
 }
