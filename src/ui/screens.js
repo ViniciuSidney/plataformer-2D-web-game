@@ -26,7 +26,7 @@ function createMenuScreen() {
     primaryAction: "'Enter' — Jogar!",
     primaryActionEffect: "pulse",
 
-    lines: ["A/D ou ←/→ — Mover", "Espaço/W/↑ — Pular", "Esc — Pausar"],
+    lines: ["'A/D' ou '←/→' — Mover", "'Espaço/W/↑' — Pular", "'Esc' — Pausar"],
     accentColor: "#f5f5f5",
     backgroundColor: "#101014",
     backgroundOpacity: 1,
@@ -78,10 +78,10 @@ function createPauseScreen() {
     title: "Jogo pausado",
     subtitle: "Parou por quê? Joga aí!",
 
-    primaryAction: "Esc — continuar",
+    primaryAction: "'Esc' — continuar",
     primaryActionEffect: "glow",
 
-    lines: ["R — reiniciar fase", "M — menu inicial"],
+    lines: ["'R' — reiniciar fase", "'M' — menu inicial"],
 
     accentColor: "#8be9fd",
     backgroundColor: "#000000",
@@ -100,13 +100,13 @@ function createWinScreen(game) {
       ? `Moedas da fase: ${game.collectedCount}/${game.collectibles.length}`
       : `Você jogou o jogo todo! Aí sim!\nMoedas da fase: ${game.collectedCount}/${game.collectibles.length}`,
 
-    primaryAction: hasNextLevel ? "N — próxima fase" : "R — jogar novamente",
+    primaryAction: hasNextLevel ? "'N' — próxima fase" : "'R' — jogar novamente",
 
     primaryActionEffect: "glow",
 
     lines: hasNextLevel
-      ? ["R — repetir fase", "M — menu inicial"]
-      : ["M — menu inicial"],
+      ? ["'R' — repetir fase", "'M' — menu inicial"]
+      : ["'M' — menu inicial"],
 
     accentColor: hasNextLevel ? "#2dd4bf" : "#ffd166",
     backgroundColor: "#000000",
@@ -120,11 +120,11 @@ function createGameOverScreen() {
       title: 'Game Over!',
       subtitle: "Vish, você perdeu de algum jeito aí...",
 
-      primaryAction: 'R — tentar novamente',
+      primaryAction: "'R' — tentar novamente",
       primaryActionEffect: 'glow',
 
       lines: [
-         'M — menu inicial',
+         "'M' — menu inicial",
       ],
 
       accentColor: '#ff5c7a',
