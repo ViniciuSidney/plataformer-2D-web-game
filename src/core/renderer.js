@@ -772,6 +772,7 @@ export class Renderer {
          showTopHighlight = true,
          showBottomShade = true,
          topSegments = null,
+         visualType = 'platform',
       } = options;
 
       const topHeight = Math.max(3, Math.min(screenHeight * 0.18, 8 * zoom));
@@ -815,6 +816,16 @@ export class Renderer {
             screenY + screenHeight - bottomShadeHeight,
             screenWidth,
             bottomShadeHeight,
+         );
+      }
+
+      if (visualType === 'base') {
+         this.context.fillStyle = 'rgba(0, 0, 0, 0.18)';
+         this.context.fillRect(
+            screenX,
+            screenY + screenHeight - 3 * zoom,
+            screenWidth,
+            3 * zoom,
          );
       }
 

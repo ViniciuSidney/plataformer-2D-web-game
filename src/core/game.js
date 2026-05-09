@@ -260,6 +260,28 @@ export class Game {
       }));
    }
 
+   isPlatformOnWorldFloor(platform) {
+      return platform.y + platform.height >= GAME_CONFIG.worldHeight;
+   }
+
+   getPlatformVisualType(platform) {
+      if (platform.visualType && platform.visualType !== 'auto') {
+         return platform.visualType;
+      }
+
+      const touchesLeftEdge = platform.x <= 0;
+      const touchesRightEdge =
+         platform.x + platform.width >= GAME_CONFIG.worldWidth;
+
+      const isOnWorldFloor = this.isPlatformOnWorldFloor(platform);
+
+      if (isOnWorldFloor && (touchesLeftEdge || touchesRightEdge)) {
+         return 'ground';
+      }
+
+      return 'platform';
+   }
+
    update() {
       if (GAME_CONFIG.debug.levelEditMode) {
          this.handleEditModeLevelInput();
@@ -353,17 +375,23 @@ export class Game {
       }
 
       for (const platform of this.platforms) {
-         const isSupported = this.isPlatformSupported(platform);
+         const visualType = this.getPlatformVisualType(platform);
+
          const platformsAbove = this.getPlatformsAbove(platform);
          const visibleTopSegments = this.getVisibleTopSegments(
             platform,
             platformsAbove,
          );
 
+         const isSupported = this.isPlatformSupported(platform);
+
+         const isGround = visualType === 'ground';
+
          platform.draw(this.renderer, this.camera, {
-            showBottomShade: !isSupported,
+            showBottomShade: !isGround && !isSupported,
             showTopHighlight: visibleTopSegments.length > 0,
             topSegments: visibleTopSegments,
+            visualType,
          });
       }
 

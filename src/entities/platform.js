@@ -9,6 +9,7 @@ export class Platform extends Entity {
       color = '#2b2b3a',
       topColor = '#3a3a4d',
       bottomShadeColor = '#232330',
+      visualType = 'auto',
    }) {
       super({
          x,
@@ -20,6 +21,7 @@ export class Platform extends Entity {
 
       this.topColor = topColor;
       this.bottomShadeColor = bottomShadeColor;
+      this.visualType = visualType;
    }
 
    draw(renderer, camera, drawOptions = {}) {

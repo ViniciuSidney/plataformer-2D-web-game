@@ -13,12 +13,19 @@ export function position(column, row) {
    };
 }
 
-export function platform(column, row, widthInTiles, heightInTiles = 1) {
+export function platform(
+   column,
+   row,
+   widthInTiles = 1,
+   heightInTiles = 1,
+   options = {},
+) {
    return {
       x: toPixels(column),
       y: toPixels(row),
       width: toPixels(widthInTiles),
       height: toPixels(heightInTiles),
+      ...options,
    };
 }
 
