@@ -8,7 +8,7 @@ export class Platform extends Entity {
       height,
       color = '#2b2b3a',
       topColor = '#3a3a4d',
-      bottomShadeColor = '#292938',
+      bottomShadeColor = '#232330',
    }) {
       super({
          x,
@@ -22,7 +22,7 @@ export class Platform extends Entity {
       this.bottomShadeColor = bottomShadeColor;
    }
 
-   draw(renderer, camera) {
+   draw(renderer, camera, drawOptions = {}) {
       renderer.drawPlatformBlock(
          this.x,
          this.y,
@@ -34,6 +34,7 @@ export class Platform extends Entity {
             bottomShadeColor: this.bottomShadeColor,
          },
          camera,
+         drawOptions,
       );
    }
 }

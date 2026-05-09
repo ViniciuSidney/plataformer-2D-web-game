@@ -753,6 +753,7 @@ export class Renderer {
       height,
       colors = {},
       camera = { x: 0, y: 0, zoom: 1 },
+      options = {},
    ) {
       const zoom = camera.zoom || 1;
 
@@ -764,13 +765,16 @@ export class Renderer {
       const {
          bodyColor = '#2b2b3a',
          topColor = '#3a3a4d',
-         bottomShadeColor = '#2a2a3a',
+         bottomShadeColor = '#232330',
       } = colors;
 
-      // altura da faixa superior
-      const topHeight = Math.max(3, Math.min(screenHeight * 0.18, 8 * zoom));
+      const {
+         showTopHighlight = true,
+         showBottomShade = true,
+         topSegments = null,
+      } = options;
 
-      // altura da sombra inferior
+      const topHeight = Math.max(3, Math.min(screenHeight * 0.18, 8 * zoom));
       const bottomShadeHeight = Math.max(
          2,
          Math.min(screenHeight * 0.12, 6 * zoom),
@@ -783,20 +787,36 @@ export class Renderer {
       this.context.fillRect(screenX, screenY, screenWidth, screenHeight);
 
       // topo destacado
-      this.context.fillStyle = topColor;
-      this.context.fillRect(screenX, screenY, screenWidth, topHeight);
+      if (showTopHighlight) {
+         this.context.fillStyle = topColor;
 
-      // sombreamento inferior sutil
-      this.context.fillStyle = bottomShadeColor;
-      this.context.fillRect(
-         screenX,
-         screenY + screenHeight - bottomShadeHeight,
-         screenWidth,
-         bottomShadeHeight,
-      );
+         if (topSegments && topSegments.length > 0) {
+            topSegments.forEach((segment) => {
+               const segmentScreenX = (segment.x - camera.x) * zoom;
+               const segmentScreenWidth = segment.width * zoom;
 
-      this.context.fillStyle = '#5a5a72';
-      this.context.fillRect(screenX, screenY, screenWidth, 1.5);
+               this.context.fillRect(
+                  segmentScreenX,
+                  screenY,
+                  segmentScreenWidth,
+                  topHeight,
+               );
+            });
+         } else {
+            this.context.fillRect(screenX, screenY, screenWidth, topHeight);
+         }
+      }
+
+      // sombra inferior
+      if (showBottomShade) {
+         this.context.fillStyle = bottomShadeColor;
+         this.context.fillRect(
+            screenX,
+            screenY + screenHeight - bottomShadeHeight,
+            screenWidth,
+            bottomShadeHeight,
+         );
+      }
 
       this.context.restore();
    }

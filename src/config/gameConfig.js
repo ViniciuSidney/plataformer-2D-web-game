@@ -26,7 +26,7 @@ export const GAME_CONFIG = {
       gridMajorLineEvery: 4,
       showGridRulerLabels: true,
 
-      levelEditMode: true,
+      levelEditMode: false,
       editLevelIndex: 0, // 0 = Level 01
       hidePlayerInEditMode: true,
 
