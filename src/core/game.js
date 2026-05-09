@@ -3,7 +3,9 @@ import { GAME_STATES } from '../utils/constants.js';
 import { Renderer } from './renderer.js';
 import { Loop } from './loop.js';
 import { Camera } from './camera.js';
+
 import { createScreenData } from '../ui/screens.js';
+import { createHUDData } from '../ui/hud.js';
 
 import { Player } from '../entities/player.js';
 
@@ -475,15 +477,10 @@ export class Game {
          this.drawDebugInfo();
       }
 
-      if (
-         !GAME_CONFIG.debug.levelEditMode &&
-         this.state === GAME_STATES.PLAYING
-      ) {
-         this.renderer.drawHUD([
-            `Fase ${this.currentLevelIndex + 1}/${levels.length} — ${this.currentLevel.name}`,
-            `Moedas: ${this.collectedCount}/${this.collectibles.length}`,
-            `Objetivo: chegue ao portal`,
-         ]);
+      const hudData = createHUDData(this);
+
+      if (hudData) {
+         this.renderer.drawHUD(hudData);
       }
 
       const screenData = createScreenData(this);
