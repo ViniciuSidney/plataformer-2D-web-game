@@ -1,3 +1,8 @@
+/*
+. vazio | J jogador | G portal | C moeda | H perigo
+B terreno fundível | P plataforma conectável | S plataforma separada
+*/
+
 export const level01Map = `
 ................................................
 ................................................

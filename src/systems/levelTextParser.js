@@ -40,16 +40,6 @@ function normalizeMapRows(map) {
       .map((line) => line.trimEnd());
 }
 
-function getSolidTileVisualType(tile) {
-   const visualTypes = {
-      [TILE_SYMBOLS.GROUND]: 'ground',
-      [TILE_SYMBOLS.PLATFORM]: 'platform',
-      [TILE_SYMBOLS.SEPARATE]: 'separate',
-   };
-
-   return visualTypes[tile];
-}
-
 function buildMergedPlatforms(rows) {
    const mergedPlatforms = [];
    let activeRuns = [];
@@ -81,7 +71,6 @@ function buildMergedPlatforms(rows) {
          }
       });
 
-      // tudo que sobrou em activeRuns não continuou na linha atual
       activeRuns.forEach((finishedRun) => {
          mergedPlatforms.push(convertRunToPlatform(finishedRun));
       });
@@ -89,7 +78,6 @@ function buildMergedPlatforms(rows) {
       activeRuns = nextActiveRuns;
    });
 
-   // finaliza o que ainda estiver ativo
    activeRuns.forEach((finishedRun) => {
       mergedPlatforms.push(convertRunToPlatform(finishedRun));
    });
@@ -170,10 +158,6 @@ function parseSpecialTiles(rowText, row, levelData) {
          levelData.hazards.push(hazard(column, row + 0.5, 1, 0.5));
       }
    }
-}
-
-function isSolidTile(tile) {
-   return Boolean(getSolidTileVisualType(tile));
 }
 
 function validateLevel(levelData) {
