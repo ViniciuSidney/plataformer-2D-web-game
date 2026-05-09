@@ -114,6 +114,120 @@ export class Game {
       this.loadLevel(this.currentLevelIndex);
    }
 
+   drawPlatforms() {
+      const sortedPlatforms = [...this.platforms].sort((a, b) => b.y - a.y);
+
+      for (const platform of sortedPlatforms) {
+         const visualType = this.getPlatformVisualType(platform);
+
+         const isGround = visualType === 'ground';
+         const isSeparate = visualType === 'separate';
+         const isPlatform = visualType === 'platform';
+
+         const platformsThatFuseAbove =
+            this.getPlatformsThatFuseAbove(platform);
+
+         const visibleTopSegments = this.getVisibleTopSegments(
+            platform,
+            platformsThatFuseAbove,
+         );
+
+         const isSupported = this.isPlatformSupported(platform);
+
+         let showBottomShade = false;
+
+         if (isGround) {
+            showBottomShade = false;
+         }
+
+         if (isPlatform) {
+            showBottomShade = !isSupported;
+         }
+
+         if (isSeparate) {
+            showBottomShade = true;
+         }
+
+         platform.draw(this.renderer, this.camera, {
+            showBottomShade,
+            showTopHighlight: visibleTopSegments.length > 0,
+            topSegments: isSeparate ? null : visibleTopSegments,
+            visualType,
+            sprite: platform.sprite,
+         });
+      }
+   }
+
+   drawCollectibles() {
+      for (const collectible of this.collectibles) {
+         collectible.draw(this.renderer, this.camera);
+      }
+   }
+
+   drawHazards() {
+      for (const hazard of this.hazards) {
+         hazard.draw(this.renderer, this.camera);
+      }
+   }
+
+   drawPlayer() {
+      if (
+         GAME_CONFIG.debug.levelEditMode &&
+         GAME_CONFIG.debug.hidePlayerInEditMode
+      ) {
+         return;
+      }
+
+      this.player.draw(this.renderer, this.camera);
+   }
+
+   drawGoal() {
+      if (!this.goal) return;
+
+      this.goal.draw(this.renderer, this.camera);
+   }
+
+   drawGoalGlow() {
+      if (!this.goal) return;
+
+      this.renderer.drawGoalPortalGlow(
+         this.goal.x,
+         this.goal.y,
+         this.goal.width,
+         this.goal.height,
+         this.goal.color,
+         this.camera,
+      );
+   }
+
+   drawDebug() {
+      if (GAME_CONFIG.debug.showWorldGrid) {
+         this.renderer.drawWorldGridLabels(this.camera);
+      }
+
+      if (GAME_CONFIG.debug.showCameraDeadZone) {
+         this.renderer.drawCameraDeadZone(this.camera);
+      }
+
+      if (GAME_CONFIG.debug.showDebugText) {
+         this.drawDebugInfo();
+      }
+   }
+
+   drawUI() {
+      const hudData = createHUDData(this);
+
+      if (hudData) {
+         this.renderer.drawHUD(hudData);
+      }
+
+      const screenData = createScreenData(this);
+
+      if (screenData && !GAME_CONFIG.debug.levelEditMode) {
+         this.renderer.drawPanelScreen(screenData);
+      }
+   }
+
    goToMenu() {
       this.state = GAME_STATES.MENU;
       this.currentLevelIndex = 0;
@@ -389,107 +503,21 @@ export class Game {
    draw() {
       this.renderer.clear();
 
-      if (this.goal) {
-         this.renderer.drawGoalPortalGlow(
-            this.goal.x,
-            this.goal.y,
-            this.goal.width,
-            this.goal.height,
-            this.goal.color,
-            this.camera,
-         );
-      }
+      this.drawGoalGlow();
 
       if (GAME_CONFIG.debug.showWorldGrid) {
          this.renderer.drawWorldGrid(this.camera);
       }
 
-      const sortedPlatforms = [...this.platforms].sort((a, b) => b.y - a.y);
+      this.drawPlatforms();
+      this.drawCollectibles();
+      this.drawGoal();
+      this.drawPlayer();
+      this.drawHazards();
 
-      for (const platform of sortedPlatforms) {
-         const visualType = this.getPlatformVisualType(platform);
-
-         const isGround = visualType === 'ground';
-         const isSeparate = visualType === 'separate';
-         const isPlatform = visualType === 'platform';
-
-         const platformsThatFuseAbove =
-            this.getPlatformsThatFuseAbove(platform);
-
-         const visibleTopSegments = this.getVisibleTopSegments(
-            platform,
-            platformsThatFuseAbove,
-         );
-
-         const isSupported = this.isPlatformSupported(platform);
-
-         let showBottomShade = false;
-
-         if (isGround) {
-            showBottomShade = false;
-         }
-
-         if (isPlatform) {
-            showBottomShade = !isSupported;
-         }
-
-         if (isSeparate) {
-            showBottomShade = true;
-         }
-
-         platform.draw(this.renderer, this.camera, {
-            showBottomShade,
-            showTopHighlight: visibleTopSegments.length > 0,
-            topSegments: isSeparate ? null : visibleTopSegments,
-            visualType,
-            sprite: platform.sprite,
-         });
-      }
-
-      for (const collectible of this.collectibles) {
-         collectible.draw(this.renderer, this.camera);
-      }
-
-      this.goal.draw(this.renderer, this.camera);
-
-      if (
-         !(
-            GAME_CONFIG.debug.levelEditMode &&
-            GAME_CONFIG.debug.hidePlayerInEditMode
-         )
-      ) {
-         this.player.draw(this.renderer, this.camera);
-      }
-
-      for (const hazard of this.hazards) {
-         hazard.draw(this.renderer, this.camera);
-      }
-
-      if (GAME_CONFIG.debug.showWorldGrid) {
-         this.renderer.drawWorldGridLabels(this.camera);
-      }
-
-      if (GAME_CONFIG.debug.showCameraDeadZone) {
-         this.renderer.drawCameraDeadZone(this.camera);
-      }
-
-      if (GAME_CONFIG.debug.showDebugText) {
-         this.drawDebugInfo();
-      }
-
-      const hudData = createHUDData(this);
-
-      if (hudData) {
-         this.renderer.drawHUD(hudData);
-      }
-
-      const screenData = createScreenData(this);
-
-      if (screenData && !GAME_CONFIG.debug.levelEditMode) {
-         this.renderer.drawPanelScreen(screenData);
-      }
+      this.drawDebug();
+      this.drawUI();
    }
-
    drawDebugInfo() {
       if (!GAME_CONFIG.debug.levelEditMode) {
          this.renderer.drawDebugText([
