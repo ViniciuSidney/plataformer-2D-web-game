@@ -1,4 +1,6 @@
 import { GAME_STATES } from '../utils/constants.js';
+import { menuMap } from './menuMap.js';
+import { parseMenuSceneMap } from './menuSceneParser.js';
 
 export function createScreenData(game) {
    const screenFactories = {
@@ -35,94 +37,7 @@ function createMenuScreen() {
       backgroundColor: '#101014',
       backgroundOpacity: 1,
 
-      decoration: {
-         type: 'menu-scene',
-
-         grounds: [
-            {
-               column: 0,
-               row: 14,
-               width: 14,
-               height: 2,
-               sprite: 'ground',
-               visualType: 'ground',
-            },
-            {
-               column: 17,
-               row: 14,
-               width: 13,
-               height: 2,
-               sprite: 'ground',
-               visualType: 'ground',
-            },
-         ],
-
-         platforms: [
-            {
-               column: 3,
-               row: 13,
-               width: 3,
-               height: 1,
-               sprite: 'platform',
-               visualType: 'platform',
-            },
-            {
-               column: 19,
-               row: 12,
-               width: 4,
-               height: 2,
-               sprite: 'platform',
-               visualType: 'platform',
-            },
-         ],
-
-         collectibles: [
-            {
-               column: 4.3,
-               row: 12,
-               size: 0.4,
-               color: '#ffd166',
-            },
-            {
-               column: 20.3,
-               row: 11,
-               size: 0.4,
-               color: '#ffd166',
-            },
-            {
-               column: 22.3,
-               row: 11,
-               size: 0.4,
-               color: '#ffd166',
-            },
-         ],
-
-         hazards: [
-            {
-               column: 10,
-               row: 13.5,
-               width: 2,
-               height: 0.5,
-               color: '#ff5c7a',
-            },
-         ],
-
-         goal: {
-            column: 27,
-            row: 12,
-            width: 1,
-            height: 2,
-            color: '#2dd4bf',
-         },
-
-         player: {
-            column: 8,
-            row: 13,
-            width: 1,
-            height: 1,
-            color: '#f5f5f5',
-         },
-      },
+      decoration: parseMenuSceneMap(menuMap),
    };
 }
 
