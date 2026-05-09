@@ -1,12 +1,8 @@
-import { GAME_CONFIG } from '../config/gameConfig.js';
-
 import {
    getTileDefinition,
    getEntityDefinition,
    isSolidSymbol,
 } from '../levels/levelSymbols.js';
-
-const TILE_SIZE = GAME_CONFIG.tileSize;
 
 export function parseMenuSceneMap(map) {
    const rows = normalizeMapRows(map);
@@ -21,8 +17,17 @@ export function parseMenuSceneMap(map) {
       player: null,
    };
 
+   const solidTiles = buildMergedSolidTiles(rows);
+
+   solidTiles.forEach((tile) => {
+      if (tile.visualType === 'ground') {
+         scene.grounds.push(tile);
+      } else {
+         scene.platforms.push(tile);
+      }
+   });
+
    rows.forEach((rowText, row) => {
-      parseSolidTiles(rowText, row, scene);
       parseEntities(rowText, row, scene);
    });
 
@@ -36,7 +41,53 @@ function normalizeMapRows(map) {
       .map((line) => line.trimEnd());
 }
 
-function parseSolidTiles(rowText, row, scene) {
+function buildMergedSolidTiles(rows) {
+   const mergedTiles = [];
+   let activeRuns = [];
+
+   rows.forEach((rowText, row) => {
+      const currentRuns = extractSolidRuns(rowText, row);
+      const nextActiveRuns = [];
+
+      currentRuns.forEach((currentRun) => {
+         const matchingRunIndex = activeRuns.findIndex((activeRun) =>
+            canMergeRuns(activeRun, currentRun),
+         );
+
+         if (matchingRunIndex !== -1) {
+            const matchingRun = activeRuns[matchingRunIndex];
+
+            matchingRun.height += 1;
+            nextActiveRuns.push(matchingRun);
+
+            activeRuns.splice(matchingRunIndex, 1);
+         } else {
+            nextActiveRuns.push({
+               symbol: currentRun.symbol,
+               column: currentRun.column,
+               row: currentRun.row,
+               width: currentRun.width,
+               height: 1,
+            });
+         }
+      });
+
+      activeRuns.forEach((finishedRun) => {
+         mergedTiles.push(convertRunToMenuTile(finishedRun));
+      });
+
+      activeRuns = nextActiveRuns;
+   });
+
+   activeRuns.forEach((finishedRun) => {
+      mergedTiles.push(convertRunToMenuTile(finishedRun));
+   });
+
+   return mergedTiles;
+}
+
+function extractSolidRuns(rowText, row) {
+   const runs = [];
    let column = 0;
 
    while (column < rowText.length) {
@@ -48,8 +99,6 @@ function parseSolidTiles(rowText, row, scene) {
       }
 
       const startColumn = column;
-      const tileDefinition = getTileDefinition(symbol);
-
       let width = 0;
 
       while (rowText[column] === symbol) {
@@ -57,21 +106,37 @@ function parseSolidTiles(rowText, row, scene) {
          column++;
       }
 
-      const tileObject = {
+      runs.push({
+         symbol,
          column: startColumn,
          row,
          width,
-         height: 1,
-         visualType: tileDefinition.visualType,
-         sprite: tileDefinition.sprite,
-      };
-
-      if (tileDefinition.visualType === 'ground') {
-         scene.grounds.push(tileObject);
-      } else {
-         scene.platforms.push(tileObject);
-      }
+      });
    }
+
+   return runs;
+}
+
+function canMergeRuns(activeRun, currentRun) {
+   return (
+      activeRun.symbol === currentRun.symbol &&
+      activeRun.column === currentRun.column &&
+      activeRun.width === currentRun.width &&
+      activeRun.row + activeRun.height === currentRun.row
+   );
+}
+
+function convertRunToMenuTile(run) {
+   const tileDefinition = getTileDefinition(run.symbol);
+
+   return {
+      column: run.column,
+      row: run.row,
+      width: run.width,
+      height: run.height,
+      visualType: tileDefinition.visualType,
+      sprite: tileDefinition.sprite,
+   };
 }
 
 function parseEntities(rowText, row, scene) {
@@ -105,7 +170,7 @@ function parseEntities(rowText, row, scene) {
          scene.collectibles.push({
             column: column + 0.25,
             row: row + 0.25,
-            size: 0.45,
+            size: 0.4,
             color: '#ffd166',
          });
       }
