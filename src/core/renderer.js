@@ -773,6 +773,7 @@ export class Renderer {
          showBottomShade = true,
          topSegments = null,
          visualType = 'platform',
+         sprite = 'platform',
       } = options;
 
       const topHeight = Math.max(3, Math.min(screenHeight * 0.18, 8 * zoom));

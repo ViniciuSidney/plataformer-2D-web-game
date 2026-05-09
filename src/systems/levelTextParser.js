@@ -6,16 +6,12 @@ import {
    hazard,
 } from '../utils/levelBuilder.js';
 
-const TILE_SYMBOLS = {
-   EMPTY: '.',
-   GROUND: 'B',
-   PLATFORM: 'P',
-   SEPARATE: 'S',
-   PLAYER: 'J',
-   GOAL: 'G',
-   COLLECTIBLE: 'C',
-   HAZARD: 'H',
-};
+import {
+   LEVEL_SYMBOLS,
+   isSolidSymbol,
+   getTileDefinition,
+   getEntityDefinition,
+} from '../levels/levelSymbols.js';
 
 export function parseLevelText({ name, map }) {
    const rows = normalizeMapRows(map);
@@ -109,7 +105,7 @@ function extractSolidRuns(rowText, row) {
    while (column < rowText.length) {
       const tile = rowText[column];
 
-      if (!isSolidTile(tile)) {
+      if (!isSolidSymbol(tile)) {
          column++;
          continue;
       }
@@ -144,28 +140,34 @@ function canMergeRuns(activeRun, currentRun) {
 }
 
 function convertRunToPlatform(run) {
+   const tileDefinition = getTileDefinition(run.tileType);
+
    return platform(run.startColumn, run.row, run.width, run.height, {
-      visualType: getSolidTileVisualType(run.tileType),
+      visualType: tileDefinition.visualType,
+      sprite: tileDefinition.sprite,
    });
 }
 
 function parseSpecialTiles(rowText, row, levelData) {
    for (let column = 0; column < rowText.length; column++) {
-      const tile = rowText[column];
+      const symbol = rowText[column];
+      const entityDefinition = getEntityDefinition(symbol);
 
-      if (tile === TILE_SYMBOLS.PLAYER) {
+      if (!entityDefinition) continue;
+
+      if (entityDefinition.type === 'playerStart') {
          levelData.playerStart = position(column, row);
       }
 
-      if (tile === TILE_SYMBOLS.GOAL) {
+      if (entityDefinition.type === 'goal') {
          levelData.goal = goal(column, row - 1, 1, 2);
       }
 
-      if (tile === TILE_SYMBOLS.COLLECTIBLE) {
+      if (entityDefinition.type === 'collectible') {
          levelData.collectibles.push(collectible(column + 0.25, row + 0.25));
       }
 
-      if (tile === TILE_SYMBOLS.HAZARD) {
+      if (entityDefinition.type === 'hazard') {
          levelData.hazards.push(hazard(column, row + 0.5, 1, 0.5));
       }
    }
