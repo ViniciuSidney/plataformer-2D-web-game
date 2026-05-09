@@ -3,7 +3,7 @@ export const GAME_CONFIG = {
 
    screen: {
       width: 960,
-      height: 540,
+      height: 512,
    },
 
    world: {

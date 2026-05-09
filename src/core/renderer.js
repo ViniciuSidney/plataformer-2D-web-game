@@ -459,14 +459,15 @@ export class Renderer {
    // Menu Scene -----
    drawMenuScene(scene) {
       const { context, canvas } = this;
+      const staticCamera = { x: 0, y: 0, zoom: 1 };
 
       context.save();
 
-      // grade de fundo sutil
+      // grade de fundo alinhada ao tileSize
       context.strokeStyle = 'rgba(255, 255, 255, 0.04)';
       context.lineWidth = 1;
 
-      const spacing = 48;
+      const spacing = GAME_CONFIG.tileSize;
 
       for (let x = 0; x <= canvas.width; x += spacing) {
          context.beginPath();
@@ -482,16 +483,18 @@ export class Renderer {
          context.stroke();
       }
 
-      // chão usando o visual real dos tiles
+      // chão
       if (scene.grounds) {
          scene.grounds.forEach((ground) => {
+            const rect = this.getMenuTileRect(ground);
+
             this.drawPlatformBlock(
-               ground.x,
-               ground.y,
-               ground.width,
-               ground.height,
+               rect.x,
+               rect.y,
+               rect.width,
+               rect.height,
                {},
-               { x: 0, y: 0, zoom: 1 },
+               staticCamera,
                {
                   showTopHighlight: true,
                   showBottomShade: false,
@@ -502,16 +505,18 @@ export class Renderer {
          });
       }
 
-      // plataformas usando sprites lógicos
+      // plataformas
       if (scene.platforms) {
          scene.platforms.forEach((platform) => {
+            const rect = this.getMenuTileRect(platform);
+
             this.drawPlatformBlock(
-               platform.x,
-               platform.y,
-               platform.width,
-               platform.height,
+               rect.x,
+               rect.y,
+               rect.width,
+               rect.height,
                {},
-               { x: 0, y: 0, zoom: 1 },
+               staticCamera,
                {
                   showTopHighlight: true,
                   showBottomShade: true,
@@ -522,29 +527,36 @@ export class Renderer {
          });
       }
 
-      // perigos com o mesmo visual da gameplay
+      // perigos
       if (scene.hazards) {
          scene.hazards.forEach((hazard) => {
+            const rect = this.getMenuTileRect(hazard);
+
             this.drawHazardSpikes(
-               hazard.x,
-               hazard.y - hazard.height,
-               hazard.width,
-               hazard.height,
+               rect.x,
+               rect.y,
+               rect.width,
+               rect.height,
                hazard.color || '#ff5c7a',
-               { x: 0, y: 0, zoom: 1 },
+               staticCamera,
             );
          });
       }
 
-      // moedas com glow simples
+      // coletáveis
       if (scene.collectibles) {
          scene.collectibles.forEach((collectible) => {
+            const radius = this.toMenuPixels(collectible.size || 0.4) / 2;
+
+            const centerX = this.toMenuPixels(collectible.column) + radius;
+            const centerY = this.toMenuPixels(collectible.row) + radius;
+
             this.drawCircle(
-               collectible.x,
-               collectible.y,
-               collectible.radius + 5,
+               centerX,
+               centerY,
+               radius + 5,
                collectible.color || '#ffd166',
-               { x: 0, y: 0, zoom: 1 },
+               staticCamera,
                {
                   opacity: 0.18,
                   shadowColor: collectible.color || '#ffd166',
@@ -553,11 +565,11 @@ export class Renderer {
             );
 
             this.drawCircle(
-               collectible.x,
-               collectible.y,
-               collectible.radius,
+               centerX,
+               centerY,
+               radius,
                collectible.color || '#ffd166',
-               { x: 0, y: 0, zoom: 1 },
+               staticCamera,
                {
                   strokeColor: '#ffefb0',
                   lineWidth: 1.5,
@@ -568,27 +580,26 @@ export class Renderer {
          });
       }
 
-      // portal energético igual ao objetivo real
+      // portal
       if (scene.goal) {
+         const rect = this.getMenuTileRect(scene.goal);
+
          this.drawGoalPortal(
-            scene.goal.x,
-            scene.goal.y,
-            scene.goal.width,
-            scene.goal.height,
+            rect.x,
+            rect.y,
+            rect.width,
+            rect.height,
             scene.goal.color || '#2dd4bf',
-            { x: 0, y: 0, zoom: 1 },
+            staticCamera,
          );
       }
 
       // player decorativo
       if (scene.player) {
+         const rect = this.getMenuTileRect(scene.player);
+
          context.fillStyle = scene.player.color || '#f5f5f5';
-         context.fillRect(
-            scene.player.x,
-            scene.player.y,
-            scene.player.width,
-            scene.player.height,
-         );
+         context.fillRect(rect.x, rect.y, rect.width, rect.height);
       }
 
       context.restore();
@@ -945,6 +956,19 @@ export class Renderer {
       const b = parseInt(normalizedHex.substring(4, 6), 16);
 
       return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+   }
+
+   toMenuPixels(value) {
+      return value * GAME_CONFIG.tileSize;
+   }
+
+   getMenuTileRect(item) {
+      return {
+         x: this.toMenuPixels(item.column),
+         y: this.toMenuPixels(item.row),
+         width: this.toMenuPixels(item.width),
+         height: this.toMenuPixels(item.height),
+      };
    }
    // ------------------
 }
