@@ -819,16 +819,6 @@ export class Renderer {
          );
       }
 
-      if (visualType === 'base') {
-         this.context.fillStyle = 'rgba(0, 0, 0, 0.18)';
-         this.context.fillRect(
-            screenX,
-            screenY + screenHeight - 3 * zoom,
-            screenWidth,
-            3 * zoom,
-         );
-      }
-
       this.context.restore();
    }
 

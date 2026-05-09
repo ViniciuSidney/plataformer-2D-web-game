@@ -33,7 +33,7 @@ export const level02 = {
       platform(4, 20, 1, 0.5),
       platform(8, 18, 1, 0.5),
       platform(13, 17, 1, 0.5),
-      platform(14, 16, 2, 12),
+      platform(14, 16, 2, 18),
 
       platform(11, 28, 3, 1),
 

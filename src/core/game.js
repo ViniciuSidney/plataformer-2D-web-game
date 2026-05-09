@@ -63,6 +63,10 @@ export class Game {
       return levels.length;
    }
 
+   areValuesClose(a, b, tolerance = 1) {
+      return Math.abs(a - b) <= tolerance;
+   }
+
    setupCanvas() {
       this.canvas.width = GAME_CONFIG.width;
       this.canvas.height = GAME_CONFIG.height;
@@ -185,8 +189,10 @@ export class Game {
       return this.platforms.some((otherPlatform) => {
          if (otherPlatform === platform) return false;
 
-         const isTouchingFromBelow =
-            platform.y + platform.height === otherPlatform.y;
+         const isTouchingFromBelow = this.areValuesClose(
+            platform.y + platform.height,
+            otherPlatform.y,
+         );
 
          const hasHorizontalOverlap =
             platform.x < otherPlatform.x + otherPlatform.width &&
@@ -200,8 +206,10 @@ export class Game {
       return this.platforms.filter((otherPlatform) => {
          if (otherPlatform === platform) return false;
 
-         const isTouchingFromAbove =
-            otherPlatform.y + otherPlatform.height === platform.y;
+         const isTouchingFromAbove = this.areValuesClose(
+            otherPlatform.y + otherPlatform.height,
+            platform.y,
+         );
 
          const hasHorizontalOverlap =
             otherPlatform.x < platform.x + platform.width &&
@@ -374,10 +382,18 @@ export class Game {
          this.renderer.drawWorldGrid(this.camera);
       }
 
-      for (const platform of this.platforms) {
+      const sortedPlatforms = [...this.platforms].sort((a, b) => {
+         return b.y - a.y;
+      });
+      for (const platform of sortedPlatforms) {
          const visualType = this.getPlatformVisualType(platform);
 
-         const platformsAbove = this.getPlatformsAbove(platform);
+         const isGround = visualType === 'ground';
+         const isSeparate = visualType === 'separate';
+
+         const platformsAbove =
+            isGround || isSeparate ? [] : this.getPlatformsAbove(platform);
+
          const visibleTopSegments = this.getVisibleTopSegments(
             platform,
             platformsAbove,
@@ -385,12 +401,10 @@ export class Game {
 
          const isSupported = this.isPlatformSupported(platform);
 
-         const isGround = visualType === 'ground';
-
          platform.draw(this.renderer, this.camera, {
-            showBottomShade: !isGround && !isSupported,
-            showTopHighlight: visibleTopSegments.length > 0,
-            topSegments: visibleTopSegments,
+            showBottomShade: isSeparate ? true : !isGround && !isSupported,
+            showTopHighlight: true,
+            topSegments: isSeparate || isGround ? null : visibleTopSegments,
             visualType,
          });
       }

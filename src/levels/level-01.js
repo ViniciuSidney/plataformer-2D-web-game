@@ -30,13 +30,13 @@ export const level01 = {
       platform(16, 22, 4, 3.5),
 
       platform(16, 27, 5, 1),
-      platform(27, 23, 1, 5),
-      platform(26, 22, 2, 1),
+      platform(27, 22, 1, 6),
+      platform(26, 22, 2, 1, { visualType: 'ground' }),
       platform(32, 28, 5, 1),
 
       platform(32, 18, 1, 4),
 
-      platform(40, 26, 2, 2),
+      platform(40, 26, 2, 3, { visualType: 'ground' }),
 
       platform(44, 24, 3, 1),
 
