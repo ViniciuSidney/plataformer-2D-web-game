@@ -1,6 +1,7 @@
 import { GAME_CONFIG } from '../config/gameConfig.js';
 
 export class Renderer {
+   // Base -----
    constructor(canvas) {
       this.canvas = canvas;
       this.context = canvas.getContext('2d');
@@ -70,66 +71,9 @@ export class Renderer {
 
       this.context.restore();
    }
+   // ----------
 
-   drawMultilineText(text, x, y, lineHeight = 24) {
-      const lines = text.split('\n');
-      const baselineOffset = -((lines.length - 1) * lineHeight) / 2;
-
-      lines.forEach((line, index) => {
-         this.context.fillText(
-            line,
-            x,
-            y + baselineOffset + index * lineHeight,
-         );
-      });
-   }
-
-   drawMenuScreen() {
-      const { context, canvas } = this;
-
-      context.save();
-
-      context.fillStyle = 'rgba(20, 20, 20)';
-      context.fillRect(0, 0, canvas.width, canvas.height);
-
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-
-      context.fillStyle = '#f5f5f5';
-      context.font = '700 42px JetBrains Mono';
-      context.fillText(
-         'Pulando e Caindo: O Jogo',
-         canvas.width / 2,
-         canvas.height / 2 - 80,
-      );
-
-      context.fillStyle = '#a5a5b5';
-      context.font = '400 18px JetBrains Mono';
-      context.fillText(
-         'Um protótipo minimalista de plataforma 2D.',
-         canvas.width / 2,
-         canvas.height / 2 - 36,
-      );
-
-      context.fillStyle = '#f5f5f5';
-      context.font = '600 18px JetBrains Mono';
-      context.fillText(
-         'Pressione Enter para jogar',
-         canvas.width / 2,
-         canvas.height / 2 + 36,
-      );
-
-      context.fillStyle = '#a5a5b5';
-      context.font = '400 14px JetBrains Mono';
-      context.fillText(
-         'A/D ou setas para mover • Espaço/W/seta para cima para pular',
-         canvas.width / 2,
-         canvas.height / 2 + 78,
-      );
-
-      context.restore();
-   }
-
+   // Debug -----
    drawWorldGrid(camera) {
       const spacing = GAME_CONFIG.tileSize;
       const zoom = camera.zoom || 1;
@@ -290,6 +234,51 @@ export class Renderer {
       this.context.restore();
    }
 
+   drawDebugText(lines) {
+      const lineHeight = 20;
+      const padding = 12;
+
+      const boxWidth = 260;
+      const boxHeight = lines.length * lineHeight + padding * 2;
+
+      this.context.save();
+
+      this.context.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      this.context.fillRect(40, 44, boxWidth, boxHeight);
+
+      this.context.fillStyle = '#f5f5f5';
+      this.context.font = '14px JetBrains Mono';
+      this.context.textAlign = 'left';
+      this.context.textBaseline = 'top';
+
+      lines.forEach((line, index) => {
+         this.context.fillText(line, 52, 56 + index * lineHeight);
+      });
+
+      this.context.restore();
+   }
+
+   drawCameraDeadZone(camera) {
+      const deadZone = GAME_CONFIG.cameraDeadZone;
+      const zoom = camera.zoom || 1;
+
+      const deadZoneWidth = deadZone.width * zoom;
+      const deadZoneHeight = deadZone.height * zoom;
+
+      const x = (this.canvas.width - deadZoneWidth) / 2;
+      const y = (this.canvas.height - deadZoneHeight) / 2;
+
+      this.context.save();
+
+      this.context.strokeStyle = 'rgba(139, 233, 253, 0.35)';
+      this.context.lineWidth = 2;
+      this.context.strokeRect(x, y, deadZoneWidth, deadZoneHeight);
+
+      this.context.restore();
+   }
+   // ----------
+
+   // Screens / UI -----
    drawPanelScreen({
       variant = 'panel',
       title,
@@ -429,6 +418,45 @@ export class Renderer {
       context.restore();
    }
 
+   drawHUD(lines) {
+      const { context, canvas } = this;
+
+      const lineHeight = 20;
+      const paddingX = 18;
+      const paddingY = 12;
+      const minBoxWidth = 320;
+
+      context.save();
+
+      context.font = '600 14px JetBrains Mono';
+      context.textAlign = 'center';
+      context.textBaseline = 'top';
+
+      const longestLineWidth = Math.max(
+         ...lines.map((line) => context.measureText(line).width),
+      );
+
+      const boxWidth = Math.max(minBoxWidth, longestLineWidth + paddingX * 2);
+      const boxHeight = lines.length * lineHeight + paddingY * 2;
+
+      const boxX = (canvas.width - boxWidth) / 2;
+      const boxY = 18;
+
+      context.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      context.fillRect(boxX, boxY, boxWidth, boxHeight);
+
+      lines.forEach((line, index) => {
+         const textY = boxY + paddingY + index * lineHeight;
+
+         context.fillStyle = index === 0 ? '#f5f5f5' : '#ffd166';
+         context.fillText(line, canvas.width / 2, textY);
+      });
+
+      context.restore();
+   }
+   // ------------------
+
+   // Menu Scene -----
    drawMenuScene(scene) {
       const { context, canvas } = this;
 
@@ -531,6 +559,31 @@ export class Renderer {
       context.restore();
    }
 
+   drawHazardStripMenu({ x, y, width, height, color = '#ff5c7a' }) {
+      const { context } = this;
+
+      const spikeCount = Math.max(1, Math.floor(width / 16));
+      const spikeWidth = width / spikeCount;
+
+      context.save();
+      context.fillStyle = color;
+
+      for (let i = 0; i < spikeCount; i++) {
+         const spikeX = x + i * spikeWidth;
+
+         context.beginPath();
+         context.moveTo(spikeX, y);
+         context.lineTo(spikeX + spikeWidth / 2, y - height);
+         context.lineTo(spikeX + spikeWidth, y);
+         context.closePath();
+         context.fill();
+      }
+
+      context.restore();
+   }
+   // ------------------
+
+   // World Objects ----
    drawGoalPortalGlow(
       x,
       y,
@@ -631,29 +684,6 @@ export class Renderer {
    ) {
       this.drawGoalPortalGlow(x, y, width, height, color, camera);
       this.drawGoalPortalBody(x, y, width, height, color, camera);
-   }
-
-   drawHazardStripMenu({ x, y, width, height, color = '#ff5c7a' }) {
-      const { context } = this;
-
-      const spikeCount = Math.max(1, Math.floor(width / 16));
-      const spikeWidth = width / spikeCount;
-
-      context.save();
-      context.fillStyle = color;
-
-      for (let i = 0; i < spikeCount; i++) {
-         const spikeX = x + i * spikeWidth;
-
-         context.beginPath();
-         context.moveTo(spikeX, y);
-         context.lineTo(spikeX + spikeWidth / 2, y - height);
-         context.lineTo(spikeX + spikeWidth, y);
-         context.closePath();
-         context.fill();
-      }
-
-      context.restore();
    }
 
    drawHazardSpikes(
@@ -869,7 +899,9 @@ export class Renderer {
 
       return spriteStyles[sprite] || spriteStyles.platform;
    }
+   // ------------------
 
+   // Helpers ----------
    hexToRgba(hex, opacity = 1) {
       const normalizedHex = hex.replace('#', '');
 
@@ -879,168 +911,5 @@ export class Renderer {
 
       return `rgba(${r}, ${g}, ${b}, ${opacity})`;
    }
-
-   drawMenuDecoration(accentColor = '#f5f5f5') {
-      const { context, canvas } = this;
-
-      context.save();
-
-      context.fillStyle = this.hexToRgba('#2a2a35', 0.6);
-      context.fillRect(0, canvas.height - 56, canvas.width, 56);
-
-      context.fillStyle = this.hexToRgba('#2a2a35', 0.9);
-      context.fillRect(80, canvas.height - 96, 120, 40);
-      context.fillRect(canvas.width - 240, canvas.height - 128, 160, 72);
-
-      context.restore();
-   }
-
-   drawHUD(lines) {
-      const { context, canvas } = this;
-
-      const lineHeight = 20;
-      const paddingX = 18;
-      const paddingY = 12;
-      const minBoxWidth = 320;
-
-      context.save();
-
-      context.font = '600 14px JetBrains Mono';
-      context.textAlign = 'center';
-      context.textBaseline = 'top';
-
-      const longestLineWidth = Math.max(
-         ...lines.map((line) => context.measureText(line).width),
-      );
-
-      const boxWidth = Math.max(minBoxWidth, longestLineWidth + paddingX * 2);
-      const boxHeight = lines.length * lineHeight + paddingY * 2;
-
-      const boxX = (canvas.width - boxWidth) / 2;
-      const boxY = 18;
-
-      context.fillStyle = 'rgba(0, 0, 0, 0.45)';
-      context.fillRect(boxX, boxY, boxWidth, boxHeight);
-
-      lines.forEach((line, index) => {
-         const textY = boxY + paddingY + index * lineHeight;
-
-         context.fillStyle = index === 0 ? '#f5f5f5' : '#ffd166';
-         context.fillText(line, canvas.width / 2, textY);
-      });
-
-      context.restore();
-   }
-
-   drawDebugText(lines) {
-      const lineHeight = 20;
-      const padding = 12;
-
-      const boxWidth = 260;
-      const boxHeight = lines.length * lineHeight + padding * 2;
-
-      this.context.save();
-
-      this.context.fillStyle = 'rgba(0, 0, 0, 0.55)';
-      this.context.fillRect(40, 44, boxWidth, boxHeight);
-
-      this.context.fillStyle = '#f5f5f5';
-      this.context.font = '14px JetBrains Mono';
-      this.context.textAlign = 'left';
-      this.context.textBaseline = 'top';
-
-      lines.forEach((line, index) => {
-         this.context.fillText(line, 52, 56 + index * lineHeight);
-      });
-
-      this.context.restore();
-   }
-
-   drawOverlayMessage(title, subtitle, anotherLine = '') {
-      const { context, canvas } = this;
-
-      context.save();
-
-      context.fillStyle = 'rgba(0, 0, 0, 0.55)';
-      context.fillRect(0, 0, canvas.width, canvas.height);
-
-      context.fillStyle = '#f5f5f5';
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-
-      context.font = '700 42px JetBrains Mono';
-      context.fillText(title, canvas.width / 2, canvas.height / 2 - 24);
-
-      context.font = '400 18px JetBrains Mono';
-      context.fillStyle = '#a5a5b5';
-      context.fillText(subtitle, canvas.width / 2, canvas.height / 2 + 48);
-
-      context.font = '400 14px JetBrains Mono';
-      context.fillStyle = '#a5a5b5';
-      this.drawMultilineText(
-         anotherLine,
-         canvas.width / 2,
-         canvas.height / 2 + 140,
-         28,
-      );
-
-      context.restore();
-   }
-
-   drawPauseScreen() {
-      const { context, canvas } = this;
-
-      context.save();
-
-      context.fillStyle = 'rgba(0, 0, 0, 0.55)';
-      context.fillRect(0, 0, canvas.width, canvas.height);
-
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-
-      context.fillStyle = '#f5f5f5';
-      context.font = '700 42px JetBrains Mono';
-      context.fillText(
-         'Jogo pausado',
-         canvas.width / 2,
-         canvas.height / 2 - 36,
-      );
-
-      context.fillStyle = '#a5a5b5';
-      context.font = '400 18px JetBrains Mono';
-      context.fillText(
-         'Pressione Esc para continuar',
-         canvas.width / 2,
-         canvas.height / 2 + 18,
-      );
-
-      context.fillStyle = '#a5a5b5';
-      context.font = '400 14px JetBrains Mono';
-      context.fillText(
-         'Pressione R para reiniciar a fase',
-         canvas.width / 2,
-         canvas.height / 2 + 58,
-      );
-
-      context.restore();
-   }
-
-   drawCameraDeadZone(camera) {
-      const deadZone = GAME_CONFIG.cameraDeadZone;
-      const zoom = camera.zoom || 1;
-
-      const deadZoneWidth = deadZone.width * zoom;
-      const deadZoneHeight = deadZone.height * zoom;
-
-      const x = (this.canvas.width - deadZoneWidth) / 2;
-      const y = (this.canvas.height - deadZoneHeight) / 2;
-
-      this.context.save();
-
-      this.context.strokeStyle = 'rgba(139, 233, 253, 0.35)';
-      this.context.lineWidth = 2;
-      this.context.strokeRect(x, y, deadZoneWidth, deadZoneHeight);
-
-      this.context.restore();
-   }
+   // ------------------
 }
