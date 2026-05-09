@@ -1,61 +1,7 @@
-import {
-  platform,
-  position,
-  goal,
-  hole,
-  groundWithHoles,
-  hazard,
-  collectible,
-} from "../utils/levelBuilder.js";
+import { parseLevelText } from '../systems/levelTextParser.js';
+import { level01Map } from './maps/level-01-map.js';
 
-import { GAME_CONFIG } from "../config/gameConfig.js";
-
-const worldColumns = GAME_CONFIG.world.columns;
-
-export const level01 = {
+export const level01 = parseLevelText({
    name: 'Level 01 - Introdução',
-
-   playerStart: position(2, 26),
-
-   platforms: [
-      // chão principal com buraco
-      ...groundWithHoles(0, 28, worldColumns, 6, [hole(10, 6), hole(28, 12)]),
-
-      // sequência de pulos
-      platform(7, 26, 2, 2),
-
-      platform(12, 29, 2, 1),
-      platform(12, 24, 1, 1),
-
-      platform(16, 22, 4, 3.5),
-
-      platform(16, 27, 5, 1),
-      platform(27, 22, 1, 6),
-      platform(26, 22, 2, 1, { visualType: 'ground' }),
-      platform(32, 28, 5, 1),
-
-      platform(32, 18, 1, 4),
-
-      platform(40, 26, 2, 3, { visualType: 'ground' }),
-
-      platform(44, 24, 3, 1),
-
-      platform(46, 21.5, 2, 1),
-
-      platform(41, 20, 2, 1),
-
-      // fim da fase
-      platform(32, 22, 6),
-   ],
-
-   hazards: [hazard(23, 27.5, 2, 0.5), hazard(46, 27.5, 2, 0.5)],
-
-   collectibles: [
-      collectible(8, 25),
-      collectible(12, 23),
-      collectible(18, 21),
-      collectible(34, 19),
-   ],
-
-   goal: goal(34, 20, 1, 2),
-};
+   map: level01Map,
+});

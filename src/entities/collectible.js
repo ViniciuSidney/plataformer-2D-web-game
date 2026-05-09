@@ -31,8 +31,8 @@ export class Collectible extends Entity {
          this.baseY +
          Math.sin(time * this.floatSpeed + this.floatOffset) * this.floatAmplitude;
 
-      const centerX = this.x + this.width + 3;
-      const centerY = floatingY + this.height-5;
+      const centerX = this.x + this.width - 4;
+      const centerY = floatingY + this.height-9;
 
       const radius = this.width / 2;
       const glowRadius = radius + 3;
