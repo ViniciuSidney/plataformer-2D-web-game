@@ -273,21 +273,41 @@ export class Game {
    }
 
    getPlatformVisualType(platform) {
-      if (platform.visualType && platform.visualType !== 'auto') {
-         return platform.visualType;
+      return platform.visualType || 'platform';
+   }
+
+   getPlatformsThatFuseAbove(platform) {
+      const currentVisualType = this.getPlatformVisualType(platform);
+
+      if (currentVisualType === 'separate') {
+         return [];
       }
 
-      const touchesLeftEdge = platform.x <= 0;
-      const touchesRightEdge =
-         platform.x + platform.width >= GAME_CONFIG.worldWidth;
+      return this.platforms.filter((otherPlatform) => {
+         if (otherPlatform === platform) return false;
 
-      const isOnWorldFloor = this.isPlatformOnWorldFloor(platform);
+         const otherVisualType = this.getPlatformVisualType(otherPlatform);
 
-      if (isOnWorldFloor && (touchesLeftEdge || touchesRightEdge)) {
-         return 'ground';
-      }
+         const shouldFuse =
+            (currentVisualType === 'ground' && otherVisualType === 'ground') ||
+            (currentVisualType === 'platform' &&
+               otherVisualType === 'platform');
 
-      return 'platform';
+         if (!shouldFuse) {
+            return false;
+         }
+
+         const isTouchingFromAbove = this.areValuesClose(
+            otherPlatform.y + otherPlatform.height,
+            platform.y,
+         );
+
+         const hasHorizontalOverlap =
+            otherPlatform.x < platform.x + platform.width &&
+            otherPlatform.x + otherPlatform.width > platform.x;
+
+         return isTouchingFromAbove && hasHorizontalOverlap;
+      });
    }
 
    update() {
@@ -382,29 +402,43 @@ export class Game {
          this.renderer.drawWorldGrid(this.camera);
       }
 
-      const sortedPlatforms = [...this.platforms].sort((a, b) => {
-         return b.y - a.y;
-      });
+      const sortedPlatforms = [...this.platforms].sort((a, b) => b.y - a.y);
+
       for (const platform of sortedPlatforms) {
          const visualType = this.getPlatformVisualType(platform);
 
          const isGround = visualType === 'ground';
          const isSeparate = visualType === 'separate';
+         const isPlatform = visualType === 'platform';
 
-         const platformsAbove =
-            isGround || isSeparate ? [] : this.getPlatformsAbove(platform);
+         const platformsThatFuseAbove =
+            this.getPlatformsThatFuseAbove(platform);
 
          const visibleTopSegments = this.getVisibleTopSegments(
             platform,
-            platformsAbove,
+            platformsThatFuseAbove,
          );
 
          const isSupported = this.isPlatformSupported(platform);
 
+         let showBottomShade = false;
+
+         if (isGround) {
+            showBottomShade = false;
+         }
+
+         if (isPlatform) {
+            showBottomShade = !isSupported;
+         }
+
+         if (isSeparate) {
+            showBottomShade = true;
+         }
+
          platform.draw(this.renderer, this.camera, {
-            showBottomShade: isSeparate ? true : !isGround && !isSupported,
-            showTopHighlight: true,
-            topSegments: isSeparate || isGround ? null : visibleTopSegments,
+            showBottomShade,
+            showTopHighlight: visibleTopSegments.length > 0,
+            topSegments: isSeparate ? null : visibleTopSegments,
             visualType,
          });
       }

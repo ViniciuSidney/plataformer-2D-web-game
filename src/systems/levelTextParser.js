@@ -8,8 +8,9 @@ import {
 
 const TILE_SYMBOLS = {
    EMPTY: '.',
-   BLOCK: 'B',
+   GROUND: 'B',
    PLATFORM: 'P',
+   SEPARATE: 'S',
    PLAYER: 'J',
    GOAL: 'G',
    COLLECTIBLE: 'C',
@@ -44,9 +45,16 @@ function normalizeMapRows(map) {
       .map((line) => line.trimEnd());
 }
 
-/* =========================================================
-   NOVO: junta blocos na horizontal E na vertical
-========================================================= */
+function getSolidTileVisualType(tile) {
+   const visualTypes = {
+      [TILE_SYMBOLS.GROUND]: 'ground',
+      [TILE_SYMBOLS.PLATFORM]: 'platform',
+      [TILE_SYMBOLS.SEPARATE]: 'separate',
+   };
+
+   return visualTypes[tile];
+}
+
 function buildMergedPlatforms(rows) {
    const mergedPlatforms = [];
    let activeRuns = [];
@@ -136,16 +144,11 @@ function canMergeRuns(activeRun, currentRun) {
 }
 
 function convertRunToPlatform(run) {
-   const visualType = run.tileType === TILE_SYMBOLS.BLOCK ? 'auto' : 'platform';
-
    return platform(run.startColumn, run.row, run.width, run.height, {
-      visualType,
+      visualType: getSolidTileVisualType(run.tileType),
    });
 }
 
-/* =========================================================
-   especiais
-========================================================= */
 function parseSpecialTiles(rowText, row, levelData) {
    for (let column = 0; column < rowText.length; column++) {
       const tile = rowText[column];
@@ -169,7 +172,7 @@ function parseSpecialTiles(rowText, row, levelData) {
 }
 
 function isSolidTile(tile) {
-   return tile === TILE_SYMBOLS.BLOCK || tile === TILE_SYMBOLS.PLATFORM;
+   return Boolean(getSolidTileVisualType(tile));
 }
 
 function validateLevel(levelData) {
