@@ -26,14 +26,14 @@ export const GAME_CONFIG = {
       gridMajorLineEvery: 4,
       showGridRulerLabels: true,
 
-      levelEditMode: false,
+      levelEditMode: true,
       editLevelIndex: 0, // 0 = Level 01
       hidePlayerInEditMode: true,
 
       editCamera: {
-         x: 0,
-         y: 520,
-         zoom: 1,
+         x: 100,
+         y: 720,
+         zoom: 1.5,
       },
    },
 

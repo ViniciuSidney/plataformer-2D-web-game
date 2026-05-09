@@ -746,6 +746,61 @@ export class Renderer {
       this.context.restore();
    }
 
+   drawPlatformBlock(
+      x,
+      y,
+      width,
+      height,
+      colors = {},
+      camera = { x: 0, y: 0, zoom: 1 },
+   ) {
+      const zoom = camera.zoom || 1;
+
+      const screenX = (x - camera.x) * zoom;
+      const screenY = (y - camera.y) * zoom;
+      const screenWidth = width * zoom;
+      const screenHeight = height * zoom;
+
+      const {
+         bodyColor = '#2b2b3a',
+         topColor = '#3a3a4d',
+         bottomShadeColor = '#2a2a3a',
+      } = colors;
+
+      // altura da faixa superior
+      const topHeight = Math.max(3, Math.min(screenHeight * 0.18, 8 * zoom));
+
+      // altura da sombra inferior
+      const bottomShadeHeight = Math.max(
+         2,
+         Math.min(screenHeight * 0.12, 6 * zoom),
+      );
+
+      this.context.save();
+
+      // corpo principal
+      this.context.fillStyle = bodyColor;
+      this.context.fillRect(screenX, screenY, screenWidth, screenHeight);
+
+      // topo destacado
+      this.context.fillStyle = topColor;
+      this.context.fillRect(screenX, screenY, screenWidth, topHeight);
+
+      // sombreamento inferior sutil
+      this.context.fillStyle = bottomShadeColor;
+      this.context.fillRect(
+         screenX,
+         screenY + screenHeight - bottomShadeHeight,
+         screenWidth,
+         bottomShadeHeight,
+      );
+
+      this.context.fillStyle = '#5a5a72';
+      this.context.fillRect(screenX, screenY, screenWidth, 1.5);
+
+      this.context.restore();
+   }
+
    hexToRgba(hex, opacity = 1) {
       const normalizedHex = hex.replace('#', '');
 
