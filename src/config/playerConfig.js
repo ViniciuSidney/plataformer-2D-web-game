@@ -7,7 +7,7 @@ export const PLAYER_CONFIG = {
    maxSpeed: 4.5,
    acceleration: 0.65,
    deceleration: 0.75,
-   airControl: 0.55,
+   airControl: 0.4,
 
    jumpForce: 11,
    jumpCutMultiplier: 0.6,

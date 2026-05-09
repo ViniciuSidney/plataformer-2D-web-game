@@ -440,6 +440,7 @@ export class Game {
             showTopHighlight: visibleTopSegments.length > 0,
             topSegments: isSeparate ? null : visibleTopSegments,
             visualType,
+            sprite: platform.sprite,
          });
       }
 

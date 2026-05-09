@@ -763,12 +763,6 @@ export class Renderer {
       const screenHeight = height * zoom;
 
       const {
-         bodyColor = '#2b2b3a',
-         topColor = '#3a3a4d',
-         bottomShadeColor = '#232330',
-      } = colors;
-
-      const {
          showTopHighlight = true,
          showBottomShade = true,
          topSegments = null,
@@ -776,7 +770,21 @@ export class Renderer {
          sprite = 'platform',
       } = options;
 
-      const topHeight = Math.max(3, Math.min(screenHeight * 0.18, 8 * zoom));
+      const spriteStyle = this.getPlatformSpriteStyle(sprite);
+
+      const bodyColor = colors.bodyColor || spriteStyle.bodyColor;
+      const topColor = colors.topColor || spriteStyle.topColor;
+      const bottomShadeColor =
+         colors.bottomShadeColor || spriteStyle.bottomShadeColor;
+
+      const topHeight = Math.max(
+         3,
+         Math.min(
+            screenHeight * spriteStyle.topHeightMultiplier,
+            spriteStyle.maxTopHeight * zoom,
+         ),
+      );
+
       const bottomShadeHeight = Math.max(
          2,
          Math.min(screenHeight * 0.12, 6 * zoom),
@@ -820,7 +828,46 @@ export class Renderer {
          );
       }
 
+      // detalhe extra para plataformas separadas
+      if (visualType === 'separate') {
+         this.context.fillStyle = 'rgba(255, 255, 255, 0.03)';
+         this.context.fillRect(screenX, screenY, screenWidth, 1.5 * zoom);
+      }
+
       this.context.restore();
+   }
+
+   getPlatformSpriteStyle(sprite = 'platform') {
+      const spriteStyles = {
+         ground: {
+            bodyColor: '#292938',
+            topColor: '#3a3a4d',
+            bottomShadeColor: '#20202c',
+            topHeightMultiplier: 0.14,
+            maxTopHeight: 7,
+            showBottomShadeByDefault: false,
+         },
+
+         platform: {
+            bodyColor: '#2d2d3d',
+            topColor: '#46465c',
+            bottomShadeColor: '#20202c',
+            topHeightMultiplier: 0.18,
+            maxTopHeight: 8,
+            showBottomShadeByDefault: true,
+         },
+
+         separatePlatform: {
+            bodyColor: '#303044',
+            topColor: '#55556f',
+            bottomShadeColor: '#1f1f2b',
+            topHeightMultiplier: 0.2,
+            maxTopHeight: 8,
+            showBottomShadeByDefault: true,
+         },
+      };
+
+      return spriteStyles[sprite] || spriteStyles.platform;
    }
 
    hexToRgba(hex, opacity = 1) {

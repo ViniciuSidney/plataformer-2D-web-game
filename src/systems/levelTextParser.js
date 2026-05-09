@@ -7,7 +7,6 @@ import {
 } from '../utils/levelBuilder.js';
 
 import {
-   LEVEL_SYMBOLS,
    isSolidSymbol,
    getTileDefinition,
    getEntityDefinition,
