@@ -354,7 +354,7 @@ export class Renderer {
       const contentCenterX = canvas.width / 2;
 
       let currentY =
-         variant === 'fullscreen' ? canvas.height / 2 - 110 : panelY + paddingY;
+         variant === 'fullscreen' ? canvas.height / 2 - 135 : panelY + paddingY;
 
       context.fillStyle = '#f5f5f5';
       context.font = titleFont;
@@ -462,7 +462,7 @@ export class Renderer {
 
       context.save();
 
-      // grade de fundo bem sutil
+      // grade de fundo sutil
       context.strokeStyle = 'rgba(255, 255, 255, 0.04)';
       context.lineWidth = 1;
 
@@ -482,72 +482,107 @@ export class Renderer {
          context.stroke();
       }
 
-      // chão
+      // chão usando o visual real dos tiles
       if (scene.grounds) {
          scene.grounds.forEach((ground) => {
-            context.fillStyle = ground.color;
-            context.fillRect(ground.x, ground.y, ground.width, ground.height);
+            this.drawPlatformBlock(
+               ground.x,
+               ground.y,
+               ground.width,
+               ground.height,
+               {},
+               { x: 0, y: 0, zoom: 1 },
+               {
+                  showTopHighlight: true,
+                  showBottomShade: false,
+                  visualType: ground.visualType || 'ground',
+                  sprite: ground.sprite || 'ground',
+               },
+            );
          });
       }
 
-      // plataformas
+      // plataformas usando sprites lógicos
       if (scene.platforms) {
          scene.platforms.forEach((platform) => {
-            context.fillStyle = platform.color;
-            context.fillRect(
+            this.drawPlatformBlock(
                platform.x,
                platform.y,
                platform.width,
                platform.height,
+               {},
+               { x: 0, y: 0, zoom: 1 },
+               {
+                  showTopHighlight: true,
+                  showBottomShade: true,
+                  visualType: platform.visualType || 'platform',
+                  sprite: platform.sprite || 'platform',
+               },
             );
          });
       }
 
-      // perigos
+      // perigos com o mesmo visual da gameplay
       if (scene.hazards) {
          scene.hazards.forEach((hazard) => {
-            this.drawHazardStripMenu(hazard);
+            this.drawHazardSpikes(
+               hazard.x,
+               hazard.y - hazard.height,
+               hazard.width,
+               hazard.height,
+               hazard.color || '#ff5c7a',
+               { x: 0, y: 0, zoom: 1 },
+            );
          });
       }
 
-      // coletáveis
+      // moedas com glow simples
       if (scene.collectibles) {
          scene.collectibles.forEach((collectible) => {
-            context.fillStyle = collectible.color;
-            context.beginPath();
-            context.arc(
+            this.drawCircle(
+               collectible.x,
+               collectible.y,
+               collectible.radius + 5,
+               collectible.color || '#ffd166',
+               { x: 0, y: 0, zoom: 1 },
+               {
+                  opacity: 0.18,
+                  shadowColor: collectible.color || '#ffd166',
+                  shadowBlur: 12,
+               },
+            );
+
+            this.drawCircle(
                collectible.x,
                collectible.y,
                collectible.radius,
-               0,
-               Math.PI * 2,
+               collectible.color || '#ffd166',
+               { x: 0, y: 0, zoom: 1 },
+               {
+                  strokeColor: '#ffefb0',
+                  lineWidth: 1.5,
+                  shadowColor: collectible.color || '#ffd166',
+                  shadowBlur: 8,
+               },
             );
-            context.fill();
          });
       }
 
-      // objetivo
+      // portal energético igual ao objetivo real
       if (scene.goal) {
-         context.fillStyle = scene.goal.poleColor;
-         context.fillRect(
+         this.drawGoalPortal(
             scene.goal.x,
             scene.goal.y,
             scene.goal.width,
             scene.goal.height,
-         );
-
-         context.fillStyle = scene.goal.flagColor;
-         context.fillRect(
-            scene.goal.x + scene.goal.width,
-            scene.goal.y,
-            24,
-            24,
+            scene.goal.color || '#2dd4bf',
+            { x: 0, y: 0, zoom: 1 },
          );
       }
 
       // player decorativo
       if (scene.player) {
-         context.fillStyle = scene.player.color;
+         context.fillStyle = scene.player.color || '#f5f5f5';
          context.fillRect(
             scene.player.x,
             scene.player.y,
