@@ -4,19 +4,74 @@ Todas as mudanças importantes do projeto serão documentadas aqui.
 
 ## [Unreleased] - v0.2
 
-### Planejado
-- Menu inicial.
+### Adicionado
+- Menu inicial funcional.
+- Menu inicial em tela cheia.
+- Cenário decorativo no menu inicial.
+- Destaque visual para a ação principal do menu.
 - Tela de pausa.
-- Telas de vitória e derrota mais organizadas.
+- Tela de vitória de fase.
+- Tela de derrota/Game Over.
+- Tela de jogo concluído.
+- Sistema centralizado de telas com `screens.js`.
+- Ações principais destacadas nas telas de estado.
+- Opção de voltar ao menu inicial a partir das telas de pausa, vitória e derrota.
 - Sistema de troca de fases.
 - Segunda fase jogável.
-- Obstáculos simples.
+- Seleção de fase no modo edição.
+- Troca de fase por teclado no modo edição.
 - Entidade de perigo/dano.
-- Coletáveis simples.
-- Interface básica dentro do jogo.
-- Melhorias visuais minimalistas.
-- Controle para ativar/desativar debug.
-- Melhor separação entre modo jogo e modo edição.
+- Obstáculos perigosos nas fases.
+- Entidade de coletável.
+- Moedas coletáveis opcionais.
+- Contador de moedas coletadas.
+- HUD centralizada no topo da tela.
+- HUD escalável conforme a quantidade de linhas.
+- Portal energético como objetivo final da fase.
+- Visual animado para moedas, com brilho e flutuação.
+- Visual de espinhos para os perigos.
+- Visual em camadas para plataformas.
+- Estilos visuais diferentes para tiles por sprite lógico.
+- Sistema de criação de fases por mapa textual.
+- Parser de fases baseado em caracteres.
+- União horizontal e vertical de blocos contínuos no parser.
+- Arquivo `levelSymbols.js` para centralizar símbolos, tipos visuais e sprites lógicos.
+- Legenda oficial dos símbolos dos mapas.
+- Conversão das fases para mapas textuais.
+
+### Alterado
+- O fluxo do jogo passou a usar estados mais organizados para menu, gameplay, pausa, vitória e derrota.
+- O menu inicial deixou de ser apenas um painel e passou a ocupar a tela inteira.
+- As telas de pausa, vitória, derrota e fim de jogo passaram a usar uma estrutura visual padronizada.
+- A tela de fase concluída passou a usar destaque em verde azulado/teal.
+- A tela de jogo concluído passou a usar destaque em amarelo dourado.
+- O comando de voltar ao menu passou a funcionar apenas em telas de estado.
+- O comando de reinício passou a funcionar apenas em telas de estado.
+- As moedas passaram a ser coletáveis opcionais, sem bloquear a conclusão da fase.
+- O objetivo final passou de um bloco simples para um portal energético.
+- Os perigos passaram de blocos simples para espinhos visuais.
+- As plataformas passaram a ter topo destacado e corpo com variações visuais.
+- A criação de fases deixou de depender principalmente de código manual e passou a usar mapas por caracteres.
+- Os tipos visuais dos tiles passaram a ser definidos pelos símbolos do mapa.
+- O renderer passou a aplicar variações visuais com base em sprites lógicos.
+
+### Corrigido
+- Correção do reinício da fase ao iniciar pelo menu.
+- Correção de comportamento do zoom para não mostrar espaço vazio fora do mundo.
+- Correção dos atalhos de troca de fase no modo edição.
+- Ajuste dos comandos de menu e reinício para evitar acionamento durante a gameplay.
+- Correção do brilho visual dos perigos e do portal para evitar aparência retangular.
+- Ajuste da união visual de blocos gerados por mapa textual.
+
+### Planejado
+- Revisar e balancear as fases iniciais.
+- Melhorar documentação de criação de fases.
+- Criar ou consolidar um guia de símbolos dos mapas.
+- Refinar feedback visual ao coletar moedas.
+- Refinar feedback visual ao vencer ou perder.
+- Limpar métodos antigos de tela no `renderer.js`.
+- Revisar o fluxo completo de estados do jogo.
+- Finalizar polimento visual básico da v0.2.
 
 ---
 
