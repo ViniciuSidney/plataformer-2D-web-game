@@ -545,38 +545,8 @@ export class Renderer {
 
       // coletáveis
       if (scene.collectibles) {
-         scene.collectibles.forEach((collectible) => {
-            const radius = this.toMenuPixels(collectible.size || 0.25) / 2;
-
-            const centerX = this.toMenuPixels(collectible.column) + radius;
-            const centerY = this.toMenuPixels(collectible.row) + radius - 4;
-
-            this.drawCircle(
-               centerX,
-               centerY,
-               radius + 3,
-               collectible.color || '#ffd166',
-               staticCamera,
-               {
-                  opacity: 0.18,
-                  shadowColor: collectible.color || '#ffd166',
-                  shadowBlur: 12,
-               },
-            );
-
-            this.drawCircle(
-               centerX,
-               centerY,
-               radius,
-               collectible.color || '#ffd166',
-               staticCamera,
-               {
-                  strokeColor: '#ffefb0',
-                  lineWidth: 1.5,
-                  shadowColor: collectible.color || '#ffd166',
-                  shadowBlur: 8,
-               },
-            );
+         scene.collectibles.forEach((collectible, index) => {
+            this.drawMenuCollectible(collectible, index);
          });
       }
 
@@ -626,6 +596,54 @@ export class Renderer {
       }
 
       context.restore();
+   }
+
+   drawMenuCollectible(collectible, index = 0) {
+      const staticCamera = { x: 0, y: 0, zoom: 1 };
+
+      const size = collectible.size || 0.25;
+      const radius = this.toMenuPixels(size) / 2;
+
+      const baseX = this.toMenuPixels(collectible.column) + radius;
+      const baseY = this.toMenuPixels(collectible.row) + radius;
+
+      const time = performance.now() / 1000;
+
+      const floatAmplitude = 3;
+      const floatSpeed = 2.4;
+      const floatOffset = (collectible.column + collectible.row + index) * 0.7;
+
+      const floatingY =
+         baseY + Math.sin(time * floatSpeed + floatOffset) * floatAmplitude;
+
+      const color = collectible.color || '#ffd166';
+
+      // glow externo
+      this.drawCircle(baseX, floatingY, radius + 5, color, staticCamera, {
+         opacity: 0.18,
+         shadowColor: color,
+         shadowBlur: 12,
+      });
+
+      // corpo principal
+      this.drawCircle(baseX, floatingY, radius, color, staticCamera, {
+         strokeColor: '#ffefb0',
+         lineWidth: 1.5,
+         shadowColor: color,
+         shadowBlur: 8,
+      });
+
+      // brilho interno
+      this.drawCircle(
+         baseX - radius * 0.25,
+         floatingY - radius * 0.25,
+         radius * 0.28,
+         '#fff4c7',
+         staticCamera,
+         {
+            opacity: 0.9,
+         },
+      );
    }
    // ------------------
 
