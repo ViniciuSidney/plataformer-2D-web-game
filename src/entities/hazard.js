@@ -10,4 +10,15 @@ export class Hazard extends Entity {
          color,
       });
    }
+
+   draw(renderer, camera) {
+      renderer.drawHazardSpikes(
+         this.x,
+         this.y,
+         this.width,
+         this.height,
+         this.color,
+         camera,
+      );
+   }
 }

@@ -248,6 +248,17 @@ export class Game {
   draw() {
     this.renderer.clear();
 
+    if (this.goal) {
+      this.renderer.drawGoalPortalGlow(
+        this.goal.x,
+        this.goal.y,
+        this.goal.width,
+        this.goal.height,
+        this.goal.color,
+        this.camera,
+      );
+    }
+
     if (GAME_CONFIG.debug.showWorldGrid) {
       this.renderer.drawWorldGrid(this.camera);
     }

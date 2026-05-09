@@ -12,13 +12,13 @@ export class Goal extends Entity {
    }
 
    draw(renderer, camera) {
-      renderer.drawGoalPortal(
+      renderer.drawGoalPortalBody(
          this.x,
          this.y,
          this.width,
          this.height,
          this.color,
-         camera
+         camera,
       );
    }
 }
