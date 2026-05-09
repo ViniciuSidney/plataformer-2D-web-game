@@ -151,7 +151,7 @@ function parseSpecialTiles(rowText, row, levelData) {
       }
 
       if (entityDefinition.type === 'collectible') {
-         levelData.collectibles.push(collectible(column + 0.25, row + 0.25));
+         levelData.collectibles.push(collectible(column, row, 0.25));
       }
 
       if (entityDefinition.type === 'hazard') {

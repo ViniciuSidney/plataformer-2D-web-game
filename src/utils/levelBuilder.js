@@ -47,11 +47,13 @@ export function hazard(column, row, widthInTiles = 1, heightInTiles = 0.5) {
    };
 }
 
-export function collectible(column, row, sizeInTiles = 0.4) {
+export function collectible(column, row, sizeInTiles = 0.25) {
+   const size = toPixels(sizeInTiles);
+   const offset = (TILE_SIZE - size) / 2;
    return {
-      x: toPixels(column),
-      y: toPixels(row),
-      width: toPixels(sizeInTiles),
-      height: toPixels(sizeInTiles),
+      x: toPixels(column) + offset,
+      y: toPixels(row) + offset,
+      width: size,
+      height: size,
    };
 }

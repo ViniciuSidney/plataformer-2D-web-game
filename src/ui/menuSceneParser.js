@@ -168,9 +168,9 @@ function parseEntities(rowText, row, scene) {
 
       if (entityDefinition.type === 'collectible') {
          scene.collectibles.push({
-            column: column + 0.25,
+            column: column + 0.375,
             row: row + 0.25,
-            size: 0.4,
+            size: 0.25,
             color: '#ffd166',
          });
       }

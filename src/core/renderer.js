@@ -546,15 +546,15 @@ export class Renderer {
       // coletáveis
       if (scene.collectibles) {
          scene.collectibles.forEach((collectible) => {
-            const radius = this.toMenuPixels(collectible.size || 0.4) / 2;
+            const radius = this.toMenuPixels(collectible.size || 0.25) / 2;
 
             const centerX = this.toMenuPixels(collectible.column) + radius;
-            const centerY = this.toMenuPixels(collectible.row) + radius;
+            const centerY = this.toMenuPixels(collectible.row) + radius - 4;
 
             this.drawCircle(
                centerX,
                centerY,
-               radius + 5,
+               radius + 3,
                collectible.color || '#ffd166',
                staticCamera,
                {
