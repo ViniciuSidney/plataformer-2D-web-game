@@ -29,12 +29,12 @@ export class Player extends Entity {
       this.jumpBufferCounter = 0;
 
       this.wasJumpPressed = false;
-      this.previousJumpPressed = false;
 
       this.previousX = this.x;
       this.previousY = this.y;
 
       this.isOnGround = false;
+      this.facing = 1;
    }
 
    update(inputSystem) {
@@ -45,7 +45,6 @@ export class Player extends Entity {
       this.handleJump();
       this.handleVariableJump(inputSystem);
       this.applyGravity();
-      this.previousJumpPressed = inputSystem.isPressed('jump');
    }
 
    savePreviousPosition() {
@@ -61,10 +60,12 @@ export class Player extends Entity {
 
       if (movingLeft && !movingRight) {
          this.velocityX -= this.acceleration * controlMultiplier;
+         this.facing = -1;
       }
 
       if (movingRight && !movingLeft) {
          this.velocityX += this.acceleration * controlMultiplier;
+         this.facing = 1;
       }
 
       if ((!movingLeft && !movingRight) || (movingLeft && movingRight)) {
@@ -103,9 +104,8 @@ export class Player extends Entity {
 
    handleVariableJump(inputSystem) {
       const isJumpPressed = inputSystem.isPressed('jump');
-      const justReleasedJump = !isJumpPressed && this.previousJumpPressed;
 
-      if (justReleasedJump && this.velocityY < 0) {
+      if (!isJumpPressed && this.velocityY < 0) {
          this.velocityY *= this.jumpCutMultiplier;
       }
    }
@@ -153,24 +153,51 @@ export class Player extends Entity {
    moveY() {
       this.y += this.velocityY;
 
-      this.y = Math.max(this.y, 0);
+      this.y = clamp(this.y, 0, GAME_CONFIG.worldHeight - this.height);
    }
 
-   reset(position) {
-      this.x = position.x;
-      this.y = position.y;
+   isIdle() {
+      return (
+         this.isOnGround &&
+         Math.abs(this.velocityX) < 0.15 &&
+         Math.abs(this.velocityY) < 0.15
+      );
+   }
+
+   draw(renderer, camera) {
+      renderer.drawPlayerCharacter(
+         this.x,
+         this.y,
+         this.width,
+         this.height,
+         {
+            bodyColor: PLAYER_CONFIG.color,
+            topColor: PLAYER_CONFIG.topColor,
+            shadeColor: PLAYER_CONFIG.shadeColor,
+            eyeColor: PLAYER_CONFIG.eyeColor,
+
+            idle: this.isIdle(),
+            moving: Math.abs(this.velocityX) > 0.2 && this.isOnGround,
+            facing: this.facing,
+
+            bobAmplitude: PLAYER_CONFIG.idleBobAmplitude,
+            bobSpeed: PLAYER_CONFIG.idleBobSpeed,
+            bobSeed: 0,
+         },
+         camera,
+      );
+   }
+
+   reset(startPosition) {
+      this.x = startPosition.x;
+      this.y = startPosition.y;
 
       this.velocityX = 0;
       this.velocityY = 0;
 
-      this.previousX = this.x;
-      this.previousY = this.y;
-
       this.isOnGround = false;
-
       this.coyoteTimeCounter = 0;
       this.jumpBufferCounter = 0;
-
       this.wasJumpPressed = false;
    }
 }

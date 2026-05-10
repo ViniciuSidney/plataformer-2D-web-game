@@ -582,8 +582,27 @@ export class Renderer {
       if (scene.player) {
          const rect = this.getMenuTileRect(scene.player);
 
-         context.fillStyle = scene.player.color || '#f5f5f5';
-         context.fillRect(rect.x, rect.y, rect.width, rect.height);
+         this.drawPlayerCharacter(
+            rect.x,
+            rect.y,
+            rect.width,
+            rect.height,
+            {
+               bodyColor: scene.player.color || '#f2f2f7',
+               topColor: '#ffffff',
+               shadeColor: '#d7d8e6',
+               eyeColor: '#232330',
+
+               idle: true,
+               moving: false,
+               facing: 1,
+
+               bobAmplitude: 2.2,
+               bobSpeed: 2.2,
+               bobSeed: 1.2,
+            },
+            { x: 0, y: 0, zoom: 1 },
+         );
       }
 
       context.restore();
@@ -662,6 +681,128 @@ export class Renderer {
    // ------------------
 
    // World Objects ----
+   drawPlayerCharacter(
+      x,
+      y,
+      width,
+      height,
+      options = {},
+      camera = { x: 0, y: 0, zoom: 1 },
+   ) {
+      const {
+         bodyColor = '#f2f2f7',
+         topColor = '#ffffff',
+         shadeColor = '#d7d8e6',
+         eyeColor = '#232330',
+
+         idle = false,
+         moving = false,
+         facing = 1,
+
+         bobAmplitude = 2.5,
+         bobSpeed = 2.4,
+         bobSeed = 0,
+      } = options;
+
+      const zoom = camera.zoom || 1;
+
+      let screenX = (x - camera.x) * zoom;
+      let screenY = (y - camera.y) * zoom;
+      const screenWidth = width * zoom;
+      const screenHeight = height * zoom;
+
+      const time = performance.now() / 1000;
+
+      const idleProgress = idle
+         ? (Math.sin(time * bobSpeed + bobSeed) + 1) / 2
+         : 0;
+
+      const originalScreenY = screenY;
+      const originalScreenHeight = screenHeight;
+
+      const idleStretch = idleProgress * bobAmplitude * zoom;
+
+      const visualHeight = screenHeight + idleStretch;
+      const visualY = screenY - idleStretch;
+
+      const topHeight = Math.max(3, Math.min(visualHeight * 0.16, 6 * zoom));
+      const sideShadeWidth = Math.max(
+         2,
+         Math.min(screenWidth * 0.14, 4 * zoom),
+      );
+      const bottomShadeHeight = Math.max(
+         2,
+         Math.min(visualHeight * 0.14, 4 * zoom),
+      );
+
+      const walkTilt = moving ? Math.sin(time * 12) * 0.6 * zoom : 0;
+
+      const eyeWidth = Math.max(4, screenWidth * 0.1);
+      const eyeHeight = Math.max(2, visualHeight * 0.2);
+
+      const eyeX =
+         facing >= 0
+            ? screenX + screenWidth * 0.6
+            : screenX + screenWidth * 0.3;
+
+      const eyeY = visualY + visualHeight * 0.34 + walkTilt;
+
+      this.context.save();
+
+      // sombra sutil no chão
+      if (idle) {
+         this.context.fillStyle = 'rgba(0, 0, 0, 0.16)';
+         this.context.fillRect(
+            screenX + screenWidth * 0.12,
+            originalScreenY + originalScreenHeight + 2 * zoom,
+            screenWidth * 0.76,
+            3 * zoom,
+         );
+      }
+
+      // corpo principal
+      this.context.fillStyle = bodyColor;
+      this.context.fillRect(
+         screenX,
+         visualY + walkTilt,
+         screenWidth,
+         visualHeight,
+      );
+
+      // brilho no topo
+      this.context.fillStyle = topColor;
+      this.context.fillRect(
+         screenX,
+         visualY + walkTilt,
+         screenWidth,
+         topHeight,
+      );
+
+      // sombra lateral direita
+      this.context.fillStyle = shadeColor;
+      this.context.fillRect(
+         screenX + screenWidth - sideShadeWidth,
+         visualY + walkTilt,
+         sideShadeWidth,
+         visualHeight,
+      );
+
+      // sombra inferior
+      this.context.fillStyle = 'rgba(0, 0, 0, 0.10)';
+      this.context.fillRect(
+         screenX,
+         visualY + walkTilt + visualHeight - bottomShadeHeight,
+         screenWidth,
+         bottomShadeHeight,
+      );
+
+      // olho/faixa minimalista
+      this.context.fillStyle = eyeColor;
+      this.context.fillRect(eyeX, eyeY, eyeWidth, eyeHeight);
+
+      this.context.restore();
+   }
+
    drawGoalPortalGlow(
       x,
       y,
