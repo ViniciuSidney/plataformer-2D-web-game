@@ -26,6 +26,7 @@ export const PLAYER_CONFIG = {
 
    walkSquashAmplitude: 2,
    walkSquashSpeed: 10,
+   walkTiltAmplitude: 1.2,
 
    animationBlendSpeed: 0.12,
 };

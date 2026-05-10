@@ -206,6 +206,7 @@ export class Player extends Entity {
 
             walkSquashAmplitude: PLAYER_CONFIG.walkSquashAmplitude,
             walkSquashSpeed: PLAYER_CONFIG.walkSquashSpeed,
+            walkTiltAmplitude: PLAYER_CONFIG.walkTiltAmplitude,
          },
          camera,
       );

@@ -600,6 +600,10 @@ export class Renderer {
 
                idleStretchAmplitude: 2,
                idleStretchSpeed: 2.2,
+
+               walkSquashAmplitude: 0,
+               walkTiltAmplitude: 0,
+
                bobSeed: 1.2,
             },
             { x: 0, y: 0, zoom: 1 },
@@ -704,8 +708,9 @@ export class Renderer {
          idleStretchAmplitude = 2,
          idleStretchSpeed = 2.4,
 
-         walkSquashAmplitude = 1.5,
-         walkSquashSpeed = 10,
+         walkSquashAmplitude = 3,
+         walkSquashSpeed = 12,
+         walkTiltAmplitude = 1.2,
 
          bobSeed = 0,
       } = options;
@@ -724,23 +729,28 @@ export class Renderer {
 
       const idleProgress =
          (Math.sin(time * idleStretchSpeed + bobSeed) + 1) / 2;
-      const walkProgress = Math.sin(time * walkSquashSpeed);
+      const walkCycle = Math.sin(time * walkSquashSpeed);
+      const walkPulse = Math.abs(walkCycle);
 
       const idleStretch =
          idle && idleBlend > 0
             ? idleProgress * idleStretchAmplitude * idleBlend * zoom
             : 0;
 
-      const walkSquash =
-         safeMoveBlend > 0
-            ? walkProgress * walkSquashAmplitude * safeMoveBlend * zoom
-            : 0;
+      const walkSquash = walkPulse * walkSquashAmplitude * safeMoveBlend * zoom;
 
-      const visualWidth = screenWidth + Math.abs(walkSquash) * 0.8;
-      const visualHeight = screenHeight + idleStretch - Math.abs(walkSquash);
+      const walkStretch =
+         (1 - walkPulse) * walkSquashAmplitude * 0.55 * safeMoveBlend * zoom;
+
+      const visualWidth = screenWidth + walkSquash;
+      const visualHeight =
+         screenHeight + idleStretch + walkStretch - walkSquash * 0.45;
 
       const visualX = screenX - (visualWidth - screenWidth) / 2;
       const visualY = screenY + screenHeight - visualHeight;
+
+      const tilt =
+         walkCycle * walkTiltAmplitude * safeMoveBlend * facing * zoom;
 
       const topHeight = Math.max(3, Math.min(visualHeight * 0.16, 6 * zoom));
       const sideShadeWidth = Math.max(
@@ -774,6 +784,14 @@ export class Renderer {
             3 * zoom,
          );
       }
+
+      // inclinação visual em torno da base do player
+      this.context.translate(screenX + screenWidth / 2, screenY + screenHeight);
+      this.context.rotate((tilt * Math.PI) / 180);
+      this.context.translate(
+         -(screenX + screenWidth / 2),
+         -(screenY + screenHeight),
+      );
 
       // corpo principal
       this.context.fillStyle = bodyColor;
