@@ -595,10 +595,11 @@ export class Renderer {
 
                idle: true,
                moving: false,
+               moveBlend: 0,
                facing: 1,
 
-               bobAmplitude: 2.2,
-               bobSpeed: 2.2,
+               idleStretchAmplitude: 2,
+               idleStretchSpeed: 2.2,
                bobSeed: 1.2,
             },
             { x: 0, y: 0, zoom: 1 },
@@ -697,64 +698,78 @@ export class Renderer {
 
          idle = false,
          moving = false,
+         moveBlend = moving ? 1 : 0,
          facing = 1,
 
-         bobAmplitude = 2.5,
-         bobSpeed = 2.4,
+         idleStretchAmplitude = 2,
+         idleStretchSpeed = 2.4,
+
+         walkSquashAmplitude = 1.5,
+         walkSquashSpeed = 10,
+
          bobSeed = 0,
       } = options;
 
       const zoom = camera.zoom || 1;
 
-      let screenX = (x - camera.x) * zoom;
-      let screenY = (y - camera.y) * zoom;
+      const screenX = (x - camera.x) * zoom;
+      const screenY = (y - camera.y) * zoom;
       const screenWidth = width * zoom;
       const screenHeight = height * zoom;
 
       const time = performance.now() / 1000;
 
-      const idleProgress = idle
-         ? (Math.sin(time * bobSpeed + bobSeed) + 1) / 2
-         : 0;
+      const safeMoveBlend = Math.max(0, Math.min(moveBlend, 1));
+      const idleBlend = 1 - safeMoveBlend;
 
-      const originalScreenY = screenY;
-      const originalScreenHeight = screenHeight;
+      const idleProgress =
+         (Math.sin(time * idleStretchSpeed + bobSeed) + 1) / 2;
+      const walkProgress = Math.sin(time * walkSquashSpeed);
 
-      const idleStretch = idleProgress * bobAmplitude * zoom;
+      const idleStretch =
+         idle && idleBlend > 0
+            ? idleProgress * idleStretchAmplitude * idleBlend * zoom
+            : 0;
 
-      const visualHeight = screenHeight + idleStretch;
-      const visualY = screenY - idleStretch;
+      const walkSquash =
+         safeMoveBlend > 0
+            ? walkProgress * walkSquashAmplitude * safeMoveBlend * zoom
+            : 0;
+
+      const visualWidth = screenWidth + Math.abs(walkSquash) * 0.8;
+      const visualHeight = screenHeight + idleStretch - Math.abs(walkSquash);
+
+      const visualX = screenX - (visualWidth - screenWidth) / 2;
+      const visualY = screenY + screenHeight - visualHeight;
 
       const topHeight = Math.max(3, Math.min(visualHeight * 0.16, 6 * zoom));
       const sideShadeWidth = Math.max(
          2,
-         Math.min(screenWidth * 0.14, 4 * zoom),
+         Math.min(visualWidth * 0.14, 4 * zoom),
       );
       const bottomShadeHeight = Math.max(
          2,
          Math.min(visualHeight * 0.14, 4 * zoom),
       );
 
-      const walkTilt = moving ? Math.sin(time * 12) * 0.6 * zoom : 0;
-
-      const eyeWidth = Math.max(4, screenWidth * 0.1);
-      const eyeHeight = Math.max(2, visualHeight * 0.2);
+      const eyeWidth = Math.max(4, visualWidth * 0.18);
+      const eyeHeight = Math.max(2, visualHeight * 0.1);
 
       const eyeX =
          facing >= 0
-            ? screenX + screenWidth * 0.6
-            : screenX + screenWidth * 0.3;
+            ? visualX + visualWidth * 0.56
+            : visualX + visualWidth * 0.26;
 
-      const eyeY = visualY + visualHeight * 0.34 + walkTilt;
+      const eyeY = visualY + visualHeight * 0.34;
 
       this.context.save();
 
-      // sombra sutil no chão
-      if (idle) {
-         this.context.fillStyle = 'rgba(0, 0, 0, 0.16)';
+      // sombra fixa no chão
+      if (idleBlend > 0.05 || safeMoveBlend > 0.05) {
+         this.context.fillStyle = 'rgba(0, 0, 0, 0.14)';
          this.context.fillRect(
             screenX + screenWidth * 0.12,
-            originalScreenY + originalScreenHeight + 2 * zoom,
+            screenY + screenHeight + 2 * zoom,
             screenWidth * 0.76,
             3 * zoom,
          );
@@ -762,27 +777,17 @@ export class Renderer {
 
       // corpo principal
       this.context.fillStyle = bodyColor;
-      this.context.fillRect(
-         screenX,
-         visualY + walkTilt,
-         screenWidth,
-         visualHeight,
-      );
+      this.context.fillRect(visualX, visualY, visualWidth, visualHeight);
 
       // brilho no topo
       this.context.fillStyle = topColor;
-      this.context.fillRect(
-         screenX,
-         visualY + walkTilt,
-         screenWidth,
-         topHeight,
-      );
+      this.context.fillRect(visualX, visualY, visualWidth, topHeight);
 
-      // sombra lateral direita
+      // sombra lateral
       this.context.fillStyle = shadeColor;
       this.context.fillRect(
-         screenX + screenWidth - sideShadeWidth,
-         visualY + walkTilt,
+         visualX + visualWidth - sideShadeWidth,
+         visualY,
          sideShadeWidth,
          visualHeight,
       );
@@ -790,9 +795,9 @@ export class Renderer {
       // sombra inferior
       this.context.fillStyle = 'rgba(0, 0, 0, 0.10)';
       this.context.fillRect(
-         screenX,
-         visualY + walkTilt + visualHeight - bottomShadeHeight,
-         screenWidth,
+         visualX,
+         visualY + visualHeight - bottomShadeHeight,
+         visualWidth,
          bottomShadeHeight,
       );
 

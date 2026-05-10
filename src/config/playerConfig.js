@@ -10,17 +10,22 @@ export const PLAYER_CONFIG = {
    shadeColor: '#d7d8e6',
    eyeColor: '#232330',
 
-   maxSpeed: 4.5,
+   maxSpeed: 5,
    acceleration: 0.5,
    deceleration: 0.35,
    airControl: 0.7,
 
-   jumpForce: 10,
+   jumpForce: 11,
    jumpCutMultiplier: 0.55,
 
    coyoteTime: 6,
    jumpBufferTime: 6,
 
-   idleBobAmplitude: 2.5,
-   idleBobSpeed: 2.4,
+   idleStretchAmplitude: 2,
+   idleStretchSpeed: 2.4,
+
+   walkSquashAmplitude: 2,
+   walkSquashSpeed: 10,
+
+   animationBlendSpeed: 0.12,
 };

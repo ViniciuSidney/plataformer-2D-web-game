@@ -33,6 +33,8 @@ export class Player extends Entity {
       this.previousX = this.x;
       this.previousY = this.y;
 
+      this.animationMoveBlend = 0;
+
       this.isOnGround = false;
       this.facing = 1;
    }
@@ -45,6 +47,24 @@ export class Player extends Entity {
       this.handleJump();
       this.handleVariableJump(inputSystem);
       this.applyGravity();
+
+      this.updateAnimationState();
+   }
+
+   updateAnimationState() {
+      const targetMoveBlend = this.isMovingOnGround() ? 1 : 0;
+      const blendSpeed = PLAYER_CONFIG.animationBlendSpeed;
+
+      this.animationMoveBlend +=
+         (targetMoveBlend - this.animationMoveBlend) * blendSpeed;
+   }
+
+   isMovingOnGround() {
+      return this.isOnGround && Math.abs(this.velocityX) > 0.2;
+   }
+
+   isIdle() {
+      return this.isOnGround && Math.abs(this.velocityX) < 0.15;
    }
 
    savePreviousPosition() {
@@ -177,12 +197,15 @@ export class Player extends Entity {
             eyeColor: PLAYER_CONFIG.eyeColor,
 
             idle: this.isIdle(),
-            moving: Math.abs(this.velocityX) > 0.2 && this.isOnGround,
+            moving: this.isMovingOnGround(),
+            moveBlend: this.animationMoveBlend,
             facing: this.facing,
 
-            bobAmplitude: PLAYER_CONFIG.idleBobAmplitude,
-            bobSpeed: PLAYER_CONFIG.idleBobSpeed,
-            bobSeed: 0,
+            idleStretchAmplitude: PLAYER_CONFIG.idleStretchAmplitude,
+            idleStretchSpeed: PLAYER_CONFIG.idleStretchSpeed,
+
+            walkSquashAmplitude: PLAYER_CONFIG.walkSquashAmplitude,
+            walkSquashSpeed: PLAYER_CONFIG.walkSquashSpeed,
          },
          camera,
       );
