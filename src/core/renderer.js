@@ -595,7 +595,11 @@ export class Renderer {
 
                idle: true,
                moving: false,
+
                moveBlend: 0,
+               airBlend: 0,
+               velocityY: 0,
+
                facing: 1,
 
                idleStretchAmplitude: 2,
@@ -603,6 +607,9 @@ export class Renderer {
 
                walkSquashAmplitude: 0,
                walkTiltAmplitude: 0,
+
+               jumpStretchAmount: 0,
+               fallSquashAmount: 0,
 
                bobSeed: 1.2,
             },
@@ -703,6 +710,8 @@ export class Renderer {
          idle = false,
          moving = false,
          moveBlend = moving ? 1 : 0,
+         airBlend = 0,
+         velocityY = 0,
          facing = 1,
 
          idleStretchAmplitude = 2,
@@ -711,6 +720,12 @@ export class Renderer {
          walkSquashAmplitude = 3,
          walkSquashSpeed = 12,
          walkTiltAmplitude = 1.2,
+
+         jumpStretchAmount = 3,
+         fallSquashAmount = 2.5,
+
+         landImpactAmount = 0,
+         landSquashAmount = 4,
 
          bobSeed = 0,
       } = options;
@@ -725,32 +740,76 @@ export class Renderer {
       const time = performance.now() / 1000;
 
       const safeMoveBlend = Math.max(0, Math.min(moveBlend, 1));
-      const idleBlend = 1 - safeMoveBlend;
+      const safeAirBlend = Math.max(0, Math.min(airBlend, 1));
+      const groundBlend = 1 - safeAirBlend;
+      const idleBlend = (1 - safeMoveBlend) * groundBlend;
 
       const idleProgress =
          (Math.sin(time * idleStretchSpeed + bobSeed) + 1) / 2;
+
       const walkCycle = Math.sin(time * walkSquashSpeed);
       const walkPulse = Math.abs(walkCycle);
+
+      const isJumping = velocityY < -0.2;
+      const isFalling = velocityY > 0.2;
+
+      const jumpStretch = isJumping
+         ? jumpStretchAmount * safeAirBlend * zoom
+         : 0;
+
+      const fallSquash = isFalling ? fallSquashAmount * safeAirBlend * zoom : 0;
+      const landingSquash = landImpactAmount * landSquashAmount * zoom;
 
       const idleStretch =
          idle && idleBlend > 0
             ? idleProgress * idleStretchAmplitude * idleBlend * zoom
             : 0;
 
-      const walkSquash = walkPulse * walkSquashAmplitude * safeMoveBlend * zoom;
+      const walkSquash =
+         walkPulse * walkSquashAmplitude * safeMoveBlend * groundBlend * zoom;
 
       const walkStretch =
-         (1 - walkPulse) * walkSquashAmplitude * 0.55 * safeMoveBlend * zoom;
+         (1 - walkPulse) *
+         walkSquashAmplitude *
+         0.55 *
+         safeMoveBlend *
+         groundBlend *
+         zoom;
 
-      const visualWidth = screenWidth + walkSquash;
-      const visualHeight =
-         screenHeight + idleStretch + walkStretch - walkSquash * 0.45;
+      let visualWidth =
+         screenWidth +
+         walkSquash +
+         fallSquash * 0.8 +
+         landingSquash * 1.1 -
+         jumpStretch * 0.25;
+
+      let visualHeight =
+         screenHeight +
+         idleStretch +
+         walkStretch +
+         jumpStretch -
+         walkSquash * 0.45 -
+         fallSquash -
+         landingSquash;
+
+      visualWidth = Math.max(screenWidth * 0.82, visualWidth);
+      visualHeight = Math.max(screenHeight * 0.82, visualHeight);
 
       const visualX = screenX - (visualWidth - screenWidth) / 2;
       const visualY = screenY + screenHeight - visualHeight;
 
       const tilt =
-         walkCycle * walkTiltAmplitude * safeMoveBlend * facing * zoom;
+         walkCycle *
+         walkTiltAmplitude *
+         safeMoveBlend *
+         groundBlend *
+         facing *
+         zoom;
+
+      const airTilt =
+         safeAirBlend * facing * (isJumping ? 1.2 : isFalling ? -0.8 : 0);
+
+      const finalTilt = tilt + airTilt;
 
       const topHeight = Math.max(3, Math.min(visualHeight * 0.16, 6 * zoom));
       const sideShadeWidth = Math.max(
@@ -774,8 +833,8 @@ export class Renderer {
 
       this.context.save();
 
-      // sombra fixa no chão
-      if (idleBlend > 0.05 || safeMoveBlend > 0.05) {
+      // sombra fixa no chão apenas quando está próximo/encostado no chão
+      if (groundBlend > 0.15) {
          this.context.fillStyle = 'rgba(0, 0, 0, 0.14)';
          this.context.fillRect(
             screenX + screenWidth * 0.12,
@@ -785,9 +844,9 @@ export class Renderer {
          );
       }
 
-      // inclinação visual em torno da base do player
+      // rotação visual em torno da base do player
       this.context.translate(screenX + screenWidth / 2, screenY + screenHeight);
-      this.context.rotate((tilt * Math.PI) / 180);
+      this.context.rotate((finalTilt * Math.PI) / 180);
       this.context.translate(
          -(screenX + screenWidth / 2),
          -(screenY + screenHeight),
@@ -811,12 +870,15 @@ export class Renderer {
       );
 
       // sombra inferior
-      this.context.fillStyle = 'rgba(0, 0, 0, 0.10)';
+      const shadowWidth = screenWidth * (0.76 + landImpactAmount * 0.18);
+      const shadowX = screenX + (screenWidth - shadowWidth) / 2;
+
+      this.context.fillStyle = `rgba(0, 0, 0, ${0.14 + landImpactAmount * 0.08})`;
       this.context.fillRect(
-         visualX,
-         visualY + visualHeight - bottomShadeHeight,
-         visualWidth,
-         bottomShadeHeight,
+         shadowX,
+         screenY + screenHeight + 2 * zoom,
+         shadowWidth,
+         3 * zoom,
       );
 
       // olho/faixa minimalista

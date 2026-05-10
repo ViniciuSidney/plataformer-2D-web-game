@@ -1,4 +1,3 @@
-
 import { GAME_CONFIG } from '../config/gameConfig.js';
 import { GAME_STATES } from '../utils/constants.js';
 
@@ -195,6 +194,9 @@ export class Game {
    updateGameplay() {
       this.updatePlayer();
       this.handlePlayerCollisions();
+
+      this.player.updateLandingAnimation();
+
       this.handleCollectibles();
       this.checkWinCondition();
       this.checkHazardCollision();

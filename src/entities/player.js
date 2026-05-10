@@ -34,6 +34,10 @@ export class Player extends Entity {
       this.previousY = this.y;
 
       this.animationMoveBlend = 0;
+      this.animationAirBlend = 0;
+
+      this.wasOnGround = false;
+      this.landImpactAmount = 0;
 
       this.isOnGround = false;
       this.facing = 1;
@@ -53,10 +57,32 @@ export class Player extends Entity {
 
    updateAnimationState() {
       const targetMoveBlend = this.isMovingOnGround() ? 1 : 0;
-      const blendSpeed = PLAYER_CONFIG.animationBlendSpeed;
+      const targetAirBlend = !this.isOnGround ? 1 : 0;
 
       this.animationMoveBlend +=
-         (targetMoveBlend - this.animationMoveBlend) * blendSpeed;
+         (targetMoveBlend - this.animationMoveBlend) *
+         PLAYER_CONFIG.animationBlendSpeed;
+
+      this.animationAirBlend +=
+         (targetAirBlend - this.animationAirBlend) *
+         PLAYER_CONFIG.airAnimationBlendSpeed;
+   }
+
+   updateLandingAnimation() {
+      const justLanded = !this.wasOnGround && this.isOnGround;
+
+      if (justLanded) {
+         this.landImpactAmount = 1;
+      }
+
+      this.landImpactAmount +=
+         (0 - this.landImpactAmount) * PLAYER_CONFIG.landImpactDecay;
+
+      if (this.landImpactAmount < 0.01) {
+         this.landImpactAmount = 0;
+      }
+
+      this.wasOnGround = this.isOnGround;
    }
 
    isMovingOnGround() {
@@ -198,7 +224,11 @@ export class Player extends Entity {
 
             idle: this.isIdle(),
             moving: this.isMovingOnGround(),
+
             moveBlend: this.animationMoveBlend,
+            airBlend: this.animationAirBlend,
+
+            velocityY: this.velocityY,
             facing: this.facing,
 
             idleStretchAmplitude: PLAYER_CONFIG.idleStretchAmplitude,
@@ -207,6 +237,12 @@ export class Player extends Entity {
             walkSquashAmplitude: PLAYER_CONFIG.walkSquashAmplitude,
             walkSquashSpeed: PLAYER_CONFIG.walkSquashSpeed,
             walkTiltAmplitude: PLAYER_CONFIG.walkTiltAmplitude,
+
+            jumpStretchAmount: PLAYER_CONFIG.jumpStretchAmount,
+            fallSquashAmount: PLAYER_CONFIG.fallSquashAmount,
+
+            landImpactAmount: this.landImpactAmount,
+            landSquashAmount: PLAYER_CONFIG.landSquashAmount,
          },
          camera,
       );
@@ -223,5 +259,10 @@ export class Player extends Entity {
       this.coyoteTimeCounter = 0;
       this.jumpBufferCounter = 0;
       this.wasJumpPressed = false;
+
+      this.wasOnGround = false;
+      this.landImpactAmount = 0;
+      this.animationMoveBlend = 0;
+      this.animationAirBlend = 0;
    }
 }
