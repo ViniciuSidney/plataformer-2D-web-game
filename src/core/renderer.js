@@ -483,6 +483,20 @@ export class Renderer {
          context.stroke();
       }
 
+      // portal glow (atrás de tudo)
+      if (scene.goal) {
+         const rect = this.getMenuTileRect(scene.goal);
+
+         this.drawGoalPortalGlow(
+            rect.x,
+            rect.y,
+            rect.width,
+            rect.height,
+            scene.goal.color || '#2dd4bf',
+            staticCamera,
+         );
+      }
+
       // chão
       if (scene.grounds) {
          scene.grounds.forEach((ground) => {
@@ -550,11 +564,11 @@ export class Renderer {
          });
       }
 
-      // portal
+      // portal body (na frente)
       if (scene.goal) {
          const rect = this.getMenuTileRect(scene.goal);
 
-         this.drawGoalPortal(
+         this.drawGoalPortalBody(
             rect.x,
             rect.y,
             rect.width,
@@ -619,7 +633,7 @@ export class Renderer {
       const color = collectible.color || '#ffd166';
 
       // glow externo
-      this.drawCircle(baseX, floatingY, radius + 5, color, staticCamera, {
+      this.drawCircle(baseX, floatingY, radius + 3, color, staticCamera, {
          opacity: 0.18,
          shadowColor: color,
          shadowBlur: 12,
