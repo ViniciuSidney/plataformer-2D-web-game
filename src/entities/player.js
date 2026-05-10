@@ -153,7 +153,7 @@ export class Player extends Entity {
    moveY() {
       this.y += this.velocityY;
 
-      this.y = clamp(this.y, 0, GAME_CONFIG.worldHeight - this.height);
+      this.y = Math.max(this.y, 0);
    }
 
    isIdle() {
