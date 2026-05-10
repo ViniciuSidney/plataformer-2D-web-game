@@ -31,7 +31,7 @@ export const level01Map = `
 ............P...PPPP........................SSS.
 ........C.......PPPP.......B....................
 .......PP..................B............BB......
-..J....PP.......BBBBB..HH..B............BB....HH
+..J.............BBBBB..HH..B.....HH.....BB....HH
 BBBBBBBBBB......BBBBBBBBBBBB...SSSSSS...BBBBBBBB
 BBBBBBBBBB..SS..BBBBBBBBBBBB............BBBBBBBB
 BBBBBBBBBB......BBBBBBBBBBBB............BBBBBBBB
