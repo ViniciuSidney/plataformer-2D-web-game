@@ -1350,4 +1350,77 @@ export class Renderer {
     };
   }
   // ------------------
+
+  // Efeitos
+
+  drawDefeatBurstEffect(effect, camera = { x: 0, y: 0, zoom: 1 }) {
+    const zoom = camera.zoom || 1;
+
+    const progress = effect.age / effect.duration;
+    const easedProgress = 1 - Math.pow(1 - progress, 3);
+    const opacity = 1 - progress;
+
+    const screenX = (effect.x - camera.x) * zoom;
+    const screenY = (effect.y - camera.y) * zoom;
+
+    const ringRadius = (10 + easedProgress * 28) * zoom;
+
+    this.context.save();
+
+    // anel de impacto
+    this.context.strokeStyle = this.hexToRgba(effect.color, opacity * 0.75);
+    this.context.lineWidth = Math.max(1, 2 * zoom);
+    this.context.shadowColor = effect.color;
+    this.context.shadowBlur = 12 * opacity;
+
+    this.context.beginPath();
+    this.context.arc(screenX, screenY, ringRadius, 0, Math.PI * 2);
+    this.context.stroke();
+
+    // núcleo do impacto
+    this.context.fillStyle = this.hexToRgba(effect.color, opacity * 0.38);
+    this.context.beginPath();
+    this.context.arc(
+      screenX,
+      screenY,
+      (8 - progress * 4) * zoom,
+      0,
+      Math.PI * 2,
+    );
+    this.context.fill();
+
+    // partículas
+    effect.particles.forEach((particle) => {
+      const distance = particle.distance * easedProgress * zoom;
+
+      const particleX = screenX + Math.cos(particle.angle) * distance;
+      const particleY = screenY + Math.sin(particle.angle) * distance;
+
+      this.context.fillStyle = this.hexToRgba(effect.color, opacity);
+
+      this.context.beginPath();
+      this.context.arc(
+        particleX,
+        particleY,
+        particle.radius * zoom * (1 - progress * 0.3),
+        0,
+        Math.PI * 2,
+      );
+      this.context.fill();
+    });
+
+    this.context.restore();
+  }
+
+  drawScreenFlashEffect(effect) {
+    const progress = effect.age / effect.duration;
+    const opacity = (1 - progress) * (effect.opacity || 0.25);
+
+    this.context.save();
+
+    this.context.fillStyle = this.hexToRgba(effect.color || "#ff5c7a", opacity);
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.context.restore();
+  }
 }

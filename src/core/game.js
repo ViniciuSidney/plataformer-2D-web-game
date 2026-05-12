@@ -158,6 +158,9 @@ export class Game {
 
     this.handleStateInputs();
 
+    this.updateEffects();
+    this.updateHUDAnimations();
+
     if (this.shouldPauseGameplayUpdate()) return;
 
     this.updateGameplay();
@@ -201,8 +204,6 @@ export class Game {
     this.player.updateLandingAnimation();
 
     this.handleCollectibles();
-    this.updateEffects();
-    this.updateHUDAnimations();
 
     this.checkWinCondition();
     this.checkHazardCollision();
@@ -313,6 +314,14 @@ export class Game {
       if (effect.type === "floatingText") {
         this.renderer.drawFloatingTextEffect(effect, this.camera);
       }
+
+      if (effect.type === "defeatBurst") {
+        this.renderer.drawDefeatBurstEffect(effect, this.camera);
+      }
+
+      if (effect.type === "screenFlash") {
+        this.renderer.drawScreenFlashEffect(effect);
+      }
     });
   }
 
@@ -326,13 +335,13 @@ export class Game {
 
   checkHazardCollision() {
     if (CollisionSystem.checkHazardCollision(this.player, this.hazards)) {
-      this.state = GAME_STATES.LOST;
+      this.triggerDefeat("hazard");
     }
   }
 
   checkPlayerDeath() {
     if (this.player.y > GAME_CONFIG.deathZoneY) {
-      this.state = GAME_STATES.LOST;
+      this.triggerDefeat("fall");
     }
   }
 
@@ -401,6 +410,15 @@ export class Game {
     }
   }
 
+  triggerDefeat(reason = "default") {
+    if (this.state === GAME_STATES.LOST) {
+      return;
+    }
+
+    this.createDefeatEffect(reason);
+    this.state = GAME_STATES.LOST;
+  }
+
   /* =========================================================
       Modo edição
    ========================================================= */
@@ -454,10 +472,10 @@ export class Game {
 
     this.drawPlatforms();
     this.drawCollectibles();
-    this.drawEffects();
     this.drawGoal();
     this.drawPlayer();
     this.drawHazards();
+    this.drawEffects();
 
     this.drawDebug();
     this.drawUI();
@@ -723,5 +741,43 @@ export class Game {
 
   areValuesClose(a, b, tolerance = 1) {
     return Math.abs(a - b) <= tolerance;
+  }
+
+  /* =========================================================
+      Efeitos
+   ========================================================= */
+
+  createDefeatEffect(reason = "default") {
+    const centerX = this.player.x + this.player.width / 2;
+    const centerY = this.player.y + this.player.height / 2;
+
+    const particles = Array.from({ length: 14 }, (_, index) => {
+      const angle = (Math.PI * 2 * index) / 14;
+
+      return {
+        angle,
+        distance: 18 + Math.random() * 16,
+        radius: 2 + Math.random() * 2,
+      };
+    });
+
+    this.effects.push({
+      type: "defeatBurst",
+      reason,
+      x: centerX,
+      y: centerY,
+      age: 0,
+      duration: 42,
+      color: "#ff5c7a",
+      particles,
+    });
+
+    this.effects.push({
+      type: "screenFlash",
+      age: 0,
+      duration: 26,
+      color: "#ff5c7a",
+      opacity: 0.28,
+    });
   }
 }
