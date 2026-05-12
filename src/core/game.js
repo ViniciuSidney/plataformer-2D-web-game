@@ -1,908 +1,986 @@
-import { GAME_CONFIG } from "../config/gameConfig.js";
-import { GAME_STATES } from "../utils/constants.js";
+import { GAME_CONFIG } from '../config/gameConfig.js';
+import { GAME_STATES } from '../utils/constants.js';
 
-import { Renderer } from "./renderer.js";
-import { Loop } from "./loop.js";
-import { Camera } from "./camera.js";
+import { Renderer } from './renderer.js';
+import { Loop } from './loop.js';
+import { Camera } from './camera.js';
 
-import { createScreenData } from "../ui/screens.js";
-import { createHUDData } from "../ui/hud.js";
+import { createScreenData } from '../ui/screens.js';
+import { createHUDData } from '../ui/hud.js';
 
-import { Player } from "../entities/player.js";
+import { Player } from '../entities/player.js';
 
-import { InputSystem } from "../systems/inputSystem.js";
-import { LevelSystem } from "../systems/levelSystem.js";
-import { CollisionSystem } from "../systems/collisionSystem.js";
+import { InputSystem } from '../systems/inputSystem.js';
+import { LevelSystem } from '../systems/levelSystem.js';
+import { CollisionSystem } from '../systems/collisionSystem.js';
 
-import { levels } from "../levels/index.js";
+import { levels } from '../levels/index.js';
 
 export class Game {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.renderer = new Renderer(canvas);
+	constructor(canvas) {
+		this.canvas = canvas;
+		this.renderer = new Renderer(canvas);
 
-    this.inputSystem = new InputSystem();
+		this.inputSystem = new InputSystem();
 
-    this.currentLevelIndex = this.getInitialLevelIndex();
-    this.currentLevel = levels[this.currentLevelIndex];
+		this.currentLevelIndex = this.getInitialLevelIndex();
+		this.currentLevel = levels[this.currentLevelIndex];
 
-    this.player = new Player();
-    this.player.x = this.currentLevel.playerStart.x;
-    this.player.y = this.currentLevel.playerStart.y;
+		this.player = new Player();
+		this.player.x = this.currentLevel.playerStart.x;
+		this.player.y = this.currentLevel.playerStart.y;
 
-    this.platforms = LevelSystem.createPlatforms(this.currentLevel);
-    this.goal = LevelSystem.createGoal(this.currentLevel);
-    this.hazards = LevelSystem.createHazards(this.currentLevel);
-    this.collectibles = LevelSystem.createCollectibles(this.currentLevel);
+		this.platforms = LevelSystem.createPlatforms(this.currentLevel);
+		this.goal = LevelSystem.createGoal(this.currentLevel);
+		this.hazards = LevelSystem.createHazards(this.currentLevel);
+		this.collectibles = LevelSystem.createCollectibles(this.currentLevel);
 
-    this.collectedCount = 0;
-    this.effects = [];
-    this.coinHUDPulse = 0;
-    this.defeatScreenDelay = 0;
+		this.collectedCount = 0;
+		this.effects = [];
+		this.coinHUDPulse = 0;
+		this.defeatScreenDelay = 0;
+		this.victoryScreenDelay = 0;
 
-    this.state = GAME_CONFIG.debug.levelEditMode
-      ? GAME_STATES.PLAYING
-      : GAME_STATES.MENU;
+		this.state = GAME_CONFIG.debug.levelEditMode
+			? GAME_STATES.PLAYING
+			: GAME_STATES.MENU;
 
-    this.screenTransitionAge = 0;
-    this.screenTransitionDuration = 22;
-    this.previousVisibleScreenKey = this.getVisibleScreenKey();
+		this.screenTransitionAge = 0;
+		this.screenTransitionDuration = 22;
+		this.previousVisibleScreenKey = this.getVisibleScreenKey();
 
-    this.wasPausePressed = false;
-    this.wasMenuPressed = false;
-    this.wasRestartPressed = false;
+		this.wasPausePressed = false;
+		this.wasMenuPressed = false;
+		this.wasRestartPressed = false;
 
-    this.wasPreviousLevelPressed = false;
-    this.wasNextLevelEditPressed = false;
+		this.wasPreviousLevelPressed = false;
+		this.wasNextLevelEditPressed = false;
 
-    this.camera = new Camera();
+		this.camera = new Camera();
 
-    if (GAME_CONFIG.debug.levelEditMode) {
-      this.camera.setView(GAME_CONFIG.debug.editCamera);
-    }
+		if (GAME_CONFIG.debug.levelEditMode) {
+			this.camera.setView(GAME_CONFIG.debug.editCamera);
+		}
 
-    this.loop = new Loop(
-      () => this.update(),
-      () => this.draw(),
-    );
+		this.loop = new Loop(
+			() => this.update(),
+			() => this.draw(),
+		);
 
-    this.setupCanvas();
-  }
+		this.setupCanvas();
+	}
 
-  /* =========================================================
+	/* =========================================================
       Setup / Inicialização
    ========================================================= */
 
-  get totalLevels() {
-    return levels.length;
-  }
+	get totalLevels() {
+		return levels.length;
+	}
 
-  setupCanvas() {
-    this.canvas.width = GAME_CONFIG.width;
-    this.canvas.height = GAME_CONFIG.height;
-  }
+	setupCanvas() {
+		this.canvas.width = GAME_CONFIG.width;
+		this.canvas.height = GAME_CONFIG.height;
+	}
 
-  start() {
-    this.loop.start();
-  }
+	start() {
+		this.loop.start();
+	}
 
-  getInitialLevelIndex() {
-    if (!GAME_CONFIG.debug.levelEditMode) {
-      return 0;
-    }
+	getInitialLevelIndex() {
+		if (!GAME_CONFIG.debug.levelEditMode) {
+			return 0;
+		}
 
-    const requestedLevelIndex = GAME_CONFIG.debug.editLevelIndex ?? 0;
-    const lastLevelIndex = levels.length - 1;
+		const requestedLevelIndex = GAME_CONFIG.debug.editLevelIndex ?? 0;
+		const lastLevelIndex = levels.length - 1;
 
-    return Math.min(Math.max(requestedLevelIndex, 0), lastLevelIndex);
-  }
+		return Math.min(Math.max(requestedLevelIndex, 0), lastLevelIndex);
+	}
 
-  getScreenTransitionProgress() {
-    const visibleScreenKey = this.getVisibleScreenKey();
+	getScreenTransitionProgress() {
+		const visibleScreenKey = this.getVisibleScreenKey();
 
-    if (!visibleScreenKey) {
-      return 1;
-    }
+		if (!visibleScreenKey) {
+			return 1;
+		}
 
-    const rawProgress =
-      this.screenTransitionAge / this.screenTransitionDuration;
+		const rawProgress =
+			this.screenTransitionAge / this.screenTransitionDuration;
 
-    return Math.min(Math.max(rawProgress, 0), 1);
-  }
+		return Math.min(Math.max(rawProgress, 0), 1);
+	}
 
-  getVisibleScreenKey() {
-    if (GAME_CONFIG.debug.levelEditMode) {
-      return null;
-    }
+	getVisibleScreenKey() {
+		if (GAME_CONFIG.debug.levelEditMode) {
+			return null;
+		}
 
-    if (this.state === GAME_STATES.MENU) {
-      return GAME_STATES.MENU;
-    }
+		if (this.state === GAME_STATES.MENU) {
+			return GAME_STATES.MENU;
+		}
 
-    if (this.state === GAME_STATES.PAUSED) {
-      return GAME_STATES.PAUSED;
-    }
+		if (this.state === GAME_STATES.PAUSED) {
+			return GAME_STATES.PAUSED;
+		}
 
-    if (this.state === GAME_STATES.WON) {
-      return GAME_STATES.WON;
-    }
+		if (this.state === GAME_STATES.WON && this.victoryScreenDelay <= 0) {
+			return GAME_STATES.WON;
+		}
 
-    if (this.state === GAME_STATES.LOST && this.defeatScreenDelay <= 0) {
-      return GAME_STATES.LOST;
-    }
+		if (this.state === GAME_STATES.LOST && this.defeatScreenDelay <= 0) {
+			return GAME_STATES.LOST;
+		}
 
-    return null;
-  }
+		return null;
+	}
 
-  /* =========================================================
+	/* =========================================================
       Levels / Estados principais
    ========================================================= */
 
-  loadLevel(levelIndex) {
-    this.currentLevelIndex = levelIndex;
-    this.currentLevel = levels[this.currentLevelIndex];
+	loadLevel(levelIndex) {
+		this.currentLevelIndex = levelIndex;
+		this.currentLevel = levels[this.currentLevelIndex];
 
-    this.platforms = LevelSystem.createPlatforms(this.currentLevel);
-    this.goal = LevelSystem.createGoal(this.currentLevel);
-    this.hazards = LevelSystem.createHazards(this.currentLevel);
-    this.collectibles = LevelSystem.createCollectibles(this.currentLevel);
+		this.platforms = LevelSystem.createPlatforms(this.currentLevel);
+		this.goal = LevelSystem.createGoal(this.currentLevel);
+		this.hazards = LevelSystem.createHazards(this.currentLevel);
+		this.collectibles = LevelSystem.createCollectibles(this.currentLevel);
 
-    this.collectedCount = 0;
-    this.effects = [];
-    this.coinHUDPulse = 0;
-    this.defeatScreenDelay = 0;
+		this.collectedCount = 0;
+		this.effects = [];
+		this.coinHUDPulse = 0;
+		this.defeatScreenDelay = 0;
+		this.victoryScreenDelay = 0;
 
-    this.player.reset(this.currentLevel.playerStart);
+		this.player.reset(this.currentLevel.playerStart);
 
-    if (GAME_CONFIG.debug.levelEditMode) {
-      this.camera.setView(GAME_CONFIG.debug.editCamera);
-    } else {
-      this.camera.follow(this.player);
-    }
-  }
+		if (GAME_CONFIG.debug.levelEditMode) {
+			this.camera.setView(GAME_CONFIG.debug.editCamera);
+		} else {
+			this.camera.follow(this.player);
+		}
+	}
 
-  startGame() {
-    this.state = GAME_STATES.PLAYING;
-    this.currentLevelIndex = 0;
-    this.loadLevel(this.currentLevelIndex);
-  }
+	startGame() {
+		this.state = GAME_STATES.PLAYING;
+		this.currentLevelIndex = 0;
+		this.loadLevel(this.currentLevelIndex);
+	}
 
-  restartLevel() {
-    this.state = GAME_STATES.PLAYING;
-    this.loadLevel(this.currentLevelIndex);
-  }
+	restartLevel() {
+		this.state = GAME_STATES.PLAYING;
+		this.loadLevel(this.currentLevelIndex);
+	}
 
-  goToMenu() {
-    this.returnToMenu();
-    this.currentLevelIndex = 0;
-    this.loadLevel(this.currentLevelIndex);
-  }
+	goToMenu() {
+		this.returnToMenu();
+		this.currentLevelIndex = 0;
+		this.loadLevel(this.currentLevelIndex);
+	}
 
-  goToNextLevel() {
-    const nextLevelIndex = this.currentLevelIndex + 1;
-    const hasNextLevel = nextLevelIndex < levels.length;
+	goToNextLevel() {
+		const nextLevelIndex = this.currentLevelIndex + 1;
+		const hasNextLevel = nextLevelIndex < levels.length;
 
-    if (!hasNextLevel) {
-      this.state = GAME_STATES.WON;
-      return;
-    }
+		if (!hasNextLevel) {
+			this.state = GAME_STATES.WON;
+			return;
+		}
 
-    this.state = GAME_STATES.PLAYING;
-    this.loadLevel(nextLevelIndex);
-  }
+		this.state = GAME_STATES.PLAYING;
+		this.loadLevel(nextLevelIndex);
+	}
 
-  returnToMenu() {
-    this.state = GAME_STATES.MENU;
+	returnToMenu() {
+		this.state = GAME_STATES.MENU;
 
-    this.defeatScreenDelay = 0;
-    this.effects = [];
-    this.coinHUDPulse = 0;
+		this.defeatScreenDelay = 0;
+		this.effects = [];
+		this.coinHUDPulse = 0;
+		this.victoryScreenDelay = 0;
 
-    this.screenTransitionAge = 0;
-    this.previousVisibleScreenKey = this.getVisibleScreenKey();
-  }
+		this.screenTransitionAge = 0;
+		this.previousVisibleScreenKey = this.getVisibleScreenKey();
+	}
 
-  /* =========================================================
+	/* =========================================================
       Update principal
    ========================================================= */
 
-  update() {
-    if (this.updateEditMode()) return;
+	update() {
+		if (this.updateEditMode()) return;
 
-    this.updateEffects();
-    this.updateHUDAnimations();
-    this.updateDefeatScreenDelay();
-    this.updateScreenTransition();
+		this.updateEffects();
+		this.updateHUDAnimations();
+		this.updateDefeatScreenDelay();
+		this.updateVictoryScreenDelay();
+		this.updateScreenTransition();
 
-    if (this.updateMenu()) return;
+		if (this.updateMenu()) return;
 
-    this.handleStateInputs();
+		this.handleStateInputs();
 
-    if (this.shouldPauseGameplayUpdate()) return;
+		if (this.shouldPauseGameplayUpdate()) return;
 
-    this.updateGameplay();
-  }
+		this.updateGameplay();
+	}
 
-  updateEditMode() {
-    if (!GAME_CONFIG.debug.levelEditMode) {
-      return false;
-    }
+	updateEditMode() {
+		if (!GAME_CONFIG.debug.levelEditMode) {
+			return false;
+		}
 
-    this.handleEditModeLevelInput();
-    return true;
-  }
+		this.handleEditModeLevelInput();
+		return true;
+	}
 
-  updateMenu() {
-    if (this.state !== GAME_STATES.MENU) {
-      return false;
-    }
+	updateMenu() {
+		if (this.state !== GAME_STATES.MENU) {
+			return false;
+		}
 
-    if (this.inputSystem.isPressed("start")) {
-      this.startGame();
-    }
+		if (this.inputSystem.isPressed('start')) {
+			this.startGame();
+		}
 
-    return true;
-  }
+		return true;
+	}
 
-  handleStateInputs() {
-    this.handlePauseInput();
-    this.handleMenuInput();
-    this.handleRestartInput();
-    this.handleNextLevelInput();
-  }
+	handleStateInputs() {
+		this.handlePauseInput();
+		this.handleMenuInput();
+		this.handleRestartInput();
+		this.handleNextLevelInput();
+	}
 
-  shouldPauseGameplayUpdate() {
-    return this.state !== GAME_STATES.PLAYING;
-  }
+	shouldPauseGameplayUpdate() {
+		return this.state !== GAME_STATES.PLAYING;
+	}
 
-  updateGameplay() {
-    this.updatePlayer();
-    this.handlePlayerCollisions();
-    this.player.updateLandingAnimation();
+	updateGameplay() {
+		this.updatePlayer();
+		this.handlePlayerCollisions();
+		this.player.updateLandingAnimation();
 
-    this.handleCollectibles();
+		this.handleCollectibles();
 
-    this.checkWinCondition();
-    this.checkHazardCollision();
-    this.checkPlayerDeath();
-    this.updateCamera();
-  }
+		this.checkWinCondition();
+		this.checkHazardCollision();
+		this.checkPlayerDeath();
+		this.updateCamera();
+	}
 
-  updatePlayer() {
-    this.player.update(this.inputSystem);
-  }
+	updatePlayer() {
+		this.player.update(this.inputSystem);
+	}
 
-  handlePlayerCollisions() {
-    this.player.moveX();
+	handlePlayerCollisions() {
+		this.player.moveX();
 
-    CollisionSystem.resolveHorizontalPlatformCollision(
-      this.player,
-      this.platforms,
-    );
+		CollisionSystem.resolveHorizontalPlatformCollision(
+			this.player,
+			this.platforms,
+		);
 
-    this.player.moveY();
+		this.player.moveY();
 
-    CollisionSystem.resolveVerticalPlatformCollision(
-      this.player,
-      this.platforms,
-    );
+		CollisionSystem.resolveVerticalPlatformCollision(
+			this.player,
+			this.platforms,
+		);
 
-    this.player.updateCoyoteTime();
-    this.player.handleJump();
-  }
+		this.player.updateCoyoteTime();
+		this.player.handleJump();
+	}
 
-  handleCollectibles() {
-    const collectedItems = CollisionSystem.collectItems(
-      this.player,
-      this.collectibles,
-    );
+	handleCollectibles() {
+		const collectedItems = CollisionSystem.collectItems(
+			this.player,
+			this.collectibles,
+		);
 
-    if (collectedItems.length === 0) {
-      return;
-    }
+		if (collectedItems.length === 0) {
+			return;
+		}
 
-    this.collectedCount += collectedItems.length;
-    this.coinHUDPulse = 1;
+		this.collectedCount += collectedItems.length;
+		this.coinHUDPulse = 1;
 
-    collectedItems.forEach((collectible) => {
-      this.createCollectEffect(collectible);
-    });
-  }
+		collectedItems.forEach((collectible) => {
+			this.createCollectEffect(collectible);
+		});
+	}
 
-  createCollectEffect(collectible) {
-    const centerX = collectible.x + collectible.width / 2;
-    const centerY = collectible.y + collectible.height / 2;
+	createCollectEffect(collectible) {
+		const centerX = collectible.x + collectible.width / 2;
+		const centerY = collectible.y + collectible.height / 2;
 
-    const particles = Array.from({ length: 8 }, (_, index) => {
-      const angle = (Math.PI * 2 * index) / 8;
+		const particles = Array.from({ length: 8 }, (_, index) => {
+			const angle = (Math.PI * 2 * index) / 8;
 
-      return {
-        angle,
-        distance: 10 + Math.random() * 8,
-        radius: 2 + Math.random() * 1.5,
-      };
-    });
+			return {
+				angle,
+				distance: 10 + Math.random() * 8,
+				radius: 2 + Math.random() * 1.5,
+			};
+		});
 
-    this.effects.push({
-      type: "coinCollect",
-      x: centerX,
-      y: centerY,
-      age: 0,
-      duration: 28,
-      color: "#ffd166",
-      particles,
-    });
+		this.effects.push({
+			type: 'coinCollect',
+			x: centerX,
+			y: centerY,
+			age: 0,
+			duration: 28,
+			color: '#ffd166',
+			particles,
+		});
 
-    this.effects.push({
-      type: "floatingText",
-      text: "+1",
-      x: centerX,
-      y: centerY - 10,
-      age: 0,
-      duration: 38,
-      color: "#ffd166",
-    });
-  }
+		this.effects.push({
+			type: 'floatingText',
+			text: '+1',
+			x: centerX,
+			y: centerY - 10,
+			age: 0,
+			duration: 38,
+			color: '#ffd166',
+		});
+	}
 
-  updateEffects() {
-    this.effects.forEach((effect) => {
-      effect.age++;
-    });
+	updateEffects() {
+		this.effects.forEach((effect) => {
+			effect.age++;
+		});
 
-    this.effects = this.effects.filter((effect) => {
-      return effect.age < effect.duration;
-    });
-  }
+		this.effects = this.effects.filter((effect) => {
+			return effect.age < effect.duration;
+		});
+	}
 
-  updateHUDAnimations() {
-    this.coinHUDPulse += (0 - this.coinHUDPulse) * 0.16;
+	updateHUDAnimations() {
+		this.coinHUDPulse += (0 - this.coinHUDPulse) * 0.16;
 
-    if (this.coinHUDPulse < 0.01) {
-      this.coinHUDPulse = 0;
-    }
-  }
+		if (this.coinHUDPulse < 0.01) {
+			this.coinHUDPulse = 0;
+		}
+	}
 
-  drawEffects() {
-    this.effects.forEach((effect) => {
-      if (effect.type === "coinCollect") {
-        this.renderer.drawCoinCollectEffect(effect, this.camera);
-      }
+	drawEffects() {
+		this.effects.forEach((effect) => {
+			if (effect.type === 'coinCollect') {
+				this.renderer.drawCoinCollectEffect(effect, this.camera);
+			}
 
-      if (effect.type === "floatingText") {
-        this.renderer.drawFloatingTextEffect(effect, this.camera);
-      }
+			if (effect.type === 'floatingText') {
+				this.renderer.drawFloatingTextEffect(effect, this.camera);
+			}
 
-      if (effect.type === "defeatBurst") {
-        this.renderer.drawDefeatBurstEffect(effect, this.camera);
-      }
+			if (effect.type === 'defeatBurst') {
+				this.renderer.drawDefeatBurstEffect(effect, this.camera);
+			}
 
-      if (effect.type === "screenFlash") {
-        this.renderer.drawScreenFlashEffect(effect);
-      }
-    });
-  }
+			if (effect.type === 'victoryBurst') {
+				this.renderer.drawVictoryBurstEffect(effect, this.camera);
+			}
 
-  checkWinCondition() {
-    if (!this.goal) return;
+			if (effect.type === 'screenFlash') {
+				this.renderer.drawScreenFlashEffect(effect);
+			}
+		});
+	}
 
-    if (CollisionSystem.checkGoalCollision(this.player, this.goal)) {
-      this.state = GAME_STATES.WON;
-    }
-  }
+	checkWinCondition() {
+		if (!this.goal) return;
 
-  checkHazardCollision() {
-    if (CollisionSystem.checkHazardCollision(this.player, this.hazards)) {
-      this.triggerDefeat("hazard");
-    }
-  }
+		if (CollisionSystem.checkGoalCollision(this.player, this.goal)) {
+			this.triggerVictory();
+		}
+	}
 
-  checkPlayerDeath() {
-    if (this.player.y > GAME_CONFIG.deathZoneY) {
-      this.triggerDefeat("fall");
-    }
-  }
+	checkHazardCollision() {
+		if (CollisionSystem.checkHazardCollision(this.player, this.hazards)) {
+			this.triggerDefeat('hazard');
+		}
+	}
 
-  updateCamera() {
-    this.camera.follow(this.player);
-  }
+	checkPlayerDeath() {
+		if (this.player.y > GAME_CONFIG.deathZoneY) {
+			this.triggerDefeat('fall');
+		}
+	}
 
-  updateScreenTransition() {
-    const currentVisibleScreenKey = this.getVisibleScreenKey();
+	updateCamera() {
+		this.camera.follow(this.player);
+	}
 
-    if (currentVisibleScreenKey !== this.previousVisibleScreenKey) {
-      this.screenTransitionAge = 0;
-      this.previousVisibleScreenKey = currentVisibleScreenKey;
-      return;
-    }
+	updateScreenTransition() {
+		const currentVisibleScreenKey = this.getVisibleScreenKey();
 
-    if (
-      currentVisibleScreenKey &&
-      this.screenTransitionAge < this.screenTransitionDuration
-    ) {
-      this.screenTransitionAge++;
-    }
-  }
+		if (currentVisibleScreenKey !== this.previousVisibleScreenKey) {
+			this.screenTransitionAge = 0;
+			this.previousVisibleScreenKey = currentVisibleScreenKey;
+			return;
+		}
 
-  /* =========================================================
+		if (
+			currentVisibleScreenKey &&
+			this.screenTransitionAge < this.screenTransitionDuration
+		) {
+			this.screenTransitionAge++;
+		}
+	}
+
+	updateVictoryScreenDelay() {
+		if (this.victoryScreenDelay > 0) {
+			this.victoryScreenDelay--;
+		}
+	}
+
+	/* =========================================================
       Inputs de estado
    ========================================================= */
 
-  handlePauseInput() {
-    const isPausePressed = this.inputSystem.isPressed("pause");
-    const justPressedPause = isPausePressed && !this.wasPausePressed;
+	handlePauseInput() {
+		const isPausePressed = this.inputSystem.isPressed('pause');
+		const justPressedPause = isPausePressed && !this.wasPausePressed;
 
-    if (justPressedPause) {
-      if (this.state === GAME_STATES.PLAYING) {
-        this.state = GAME_STATES.PAUSED;
-      } else if (this.state === GAME_STATES.PAUSED) {
-        this.state = GAME_STATES.PLAYING;
-      }
-    }
+		if (justPressedPause) {
+			if (this.state === GAME_STATES.PLAYING) {
+				this.state = GAME_STATES.PAUSED;
+			} else if (this.state === GAME_STATES.PAUSED) {
+				this.state = GAME_STATES.PLAYING;
+			}
+		}
 
-    this.wasPausePressed = isPausePressed;
-  }
+		this.wasPausePressed = isPausePressed;
+	}
 
-  handleMenuInput() {
-    const isMenuPressed = this.inputSystem.isPressed("menu");
-    const justPressedMenu = isMenuPressed && !this.wasMenuPressed;
+	handleMenuInput() {
+		const isMenuPressed = this.inputSystem.isPressed('menu');
+		const justPressedMenu = isMenuPressed && !this.wasMenuPressed;
 
-    const canReturnToMenu =
-      this.state === GAME_STATES.PAUSED ||
-      this.state === GAME_STATES.WON ||
-      this.state === GAME_STATES.LOST;
+		const canReturnToMenu =
+			this.state === GAME_STATES.PAUSED ||
+			this.state === GAME_STATES.WON ||
+			this.state === GAME_STATES.LOST;
 
-    if (justPressedMenu && canReturnToMenu) {
-      this.goToMenu();
-    }
+		if (justPressedMenu && canReturnToMenu) {
+			this.goToMenu();
+		}
 
-    this.wasMenuPressed = isMenuPressed;
-  }
+		this.wasMenuPressed = isMenuPressed;
+	}
 
-  handleRestartInput() {
-    const isRestartPressed = this.inputSystem.isPressed("restart");
-    const justPressedRestart = isRestartPressed && !this.wasRestartPressed;
+	handleRestartInput() {
+		const isRestartPressed = this.inputSystem.isPressed('restart');
+		const justPressedRestart = isRestartPressed && !this.wasRestartPressed;
 
-    const canRestartLevel =
-      this.state === GAME_STATES.PAUSED ||
-      this.state === GAME_STATES.WON ||
-      this.state === GAME_STATES.LOST;
+		const canRestartLevel =
+			this.state === GAME_STATES.PAUSED ||
+			this.state === GAME_STATES.WON ||
+			this.state === GAME_STATES.LOST;
 
-    if (justPressedRestart && canRestartLevel) {
-      this.restartLevel();
-    }
+		if (justPressedRestart && canRestartLevel) {
+			this.restartLevel();
+		}
 
-    this.wasRestartPressed = isRestartPressed;
-  }
+		this.wasRestartPressed = isRestartPressed;
+	}
 
-  handleNextLevelInput() {
-    if (this.state !== GAME_STATES.WON) {
-      return;
-    }
+	handleNextLevelInput() {
+		if (this.state !== GAME_STATES.WON) {
+			return;
+		}
 
-    if (this.inputSystem.isPressed("next")) {
-      this.goToNextLevel();
-    }
-  }
+		if (this.victoryScreenDelay > 0) {
+			return;
+		}
 
-  triggerDefeat(reason = "default") {
-    if (this.state === GAME_STATES.LOST) {
-      return;
-    }
+		if (this.inputSystem.isPressed('next')) {
+			this.goToNextLevel();
+		}
+	}
 
-    this.createDefeatEffect(reason);
+	triggerDefeat(reason = 'default') {
+		if (this.state === GAME_STATES.LOST) {
+			return;
+		}
 
-    this.defeatScreenDelay = 32;
-    this.state = GAME_STATES.LOST;
-  }
+		this.createDefeatEffect(reason);
 
-  updateDefeatScreenDelay() {
-    if (this.defeatScreenDelay > 0) {
-      this.defeatScreenDelay--;
-    }
-  }
+		this.defeatScreenDelay = 32;
+		this.state = GAME_STATES.LOST;
+	}
 
-  /* =========================================================
+	updateDefeatScreenDelay() {
+		if (this.defeatScreenDelay > 0) {
+			this.defeatScreenDelay--;
+		}
+	}
+
+	triggerVictory() {
+		if (this.state === GAME_STATES.WON) {
+			return;
+		}
+
+		this.createVictoryEffect();
+
+		this.victoryScreenDelay = 52;
+		this.state = GAME_STATES.WON;
+	}
+
+	/* =========================================================
       Modo edição
    ========================================================= */
 
-  handleEditModeLevelInput() {
-    const isPreviousPressed = this.inputSystem.isPressed("previousLevel");
-    const isNextPressed = this.inputSystem.isPressed("nextLevelEdit");
+	handleEditModeLevelInput() {
+		const isPreviousPressed = this.inputSystem.isPressed('previousLevel');
+		const isNextPressed = this.inputSystem.isPressed('nextLevelEdit');
 
-    const justPressedPrevious =
-      isPreviousPressed && !this.wasPreviousLevelPressed;
+		const justPressedPrevious =
+			isPreviousPressed && !this.wasPreviousLevelPressed;
 
-    const justPressedNext = isNextPressed && !this.wasNextLevelEditPressed;
+		const justPressedNext = isNextPressed && !this.wasNextLevelEditPressed;
 
-    if (justPressedPrevious) {
-      this.goToEditLevel(this.currentLevelIndex - 1);
-    }
+		if (justPressedPrevious) {
+			this.goToEditLevel(this.currentLevelIndex - 1);
+		}
 
-    if (justPressedNext) {
-      this.goToEditLevel(this.currentLevelIndex + 1);
-    }
+		if (justPressedNext) {
+			this.goToEditLevel(this.currentLevelIndex + 1);
+		}
 
-    this.wasPreviousLevelPressed = isPreviousPressed;
-    this.wasNextLevelEditPressed = isNextPressed;
-  }
+		this.wasPreviousLevelPressed = isPreviousPressed;
+		this.wasNextLevelEditPressed = isNextPressed;
+	}
 
-  goToEditLevel(levelIndex) {
-    const lastLevelIndex = levels.length - 1;
+	goToEditLevel(levelIndex) {
+		const lastLevelIndex = levels.length - 1;
 
-    const safeLevelIndex = Math.min(Math.max(levelIndex, 0), lastLevelIndex);
+		const safeLevelIndex = Math.min(Math.max(levelIndex, 0), lastLevelIndex);
 
-    if (safeLevelIndex === this.currentLevelIndex) {
-      return;
-    }
+		if (safeLevelIndex === this.currentLevelIndex) {
+			return;
+		}
 
-    this.loadLevel(safeLevelIndex);
-    this.state = GAME_STATES.PLAYING;
-  }
+		this.loadLevel(safeLevelIndex);
+		this.state = GAME_STATES.PLAYING;
+	}
 
-  /* =========================================================
+	/* =========================================================
       Draw principal
    ========================================================= */
 
-  draw() {
-    this.renderer.clear();
+	draw() {
+		this.renderer.clear();
 
-    if (this.state === GAME_STATES.MENU && !GAME_CONFIG.debug.levelEditMode) {
-      this.drawUI();
-      return;
-    }
+		if (this.state === GAME_STATES.MENU && !GAME_CONFIG.debug.levelEditMode) {
+			this.drawUI();
+			return;
+		}
 
-    this.drawGoalGlow();
+		this.drawGoalGlow();
 
-    if (GAME_CONFIG.debug.showWorldGrid) {
-      this.renderer.drawWorldGrid(this.camera);
-    }
+		if (GAME_CONFIG.debug.showWorldGrid) {
+			this.renderer.drawWorldGrid(this.camera);
+		}
 
-    this.drawPlatforms();
-    this.drawCollectibles();
-    this.drawGoal();
-    this.drawPlayer();
-    this.drawHazards();
-    this.drawEffects();
+		this.drawPlatforms();
+		this.drawCollectibles();
+		this.drawGoal();
+		this.drawPlayer();
+		this.drawHazards();
+		this.drawEffects();
 
-    this.drawDebug();
-    this.drawUI();
-  }
+		this.drawDebug();
+		this.drawUI();
+	}
 
-  drawPlatforms() {
-    const sortedPlatforms = [...this.platforms].sort((a, b) => b.y - a.y);
+	drawPlatforms() {
+		const sortedPlatforms = [...this.platforms].sort((a, b) => b.y - a.y);
 
-    for (const platform of sortedPlatforms) {
-      const visualType = this.getPlatformVisualType(platform);
+		for (const platform of sortedPlatforms) {
+			const visualType = this.getPlatformVisualType(platform);
 
-      const isGround = visualType === "ground";
-      const isSeparate = visualType === "separate";
-      const isPlatform = visualType === "platform";
+			const isGround = visualType === 'ground';
+			const isSeparate = visualType === 'separate';
+			const isPlatform = visualType === 'platform';
 
-      const platformsThatFuseAbove = this.getPlatformsThatFuseAbove(platform);
+			const platformsThatFuseAbove =
+				this.getPlatformsThatFuseAbove(platform);
 
-      const visibleTopSegments = this.getVisibleTopSegments(
-        platform,
-        platformsThatFuseAbove,
-      );
+			const visibleTopSegments = this.getVisibleTopSegments(
+				platform,
+				platformsThatFuseAbove,
+			);
 
-      const isSupported = this.isPlatformSupported(platform);
+			const isSupported = this.isPlatformSupported(platform);
 
-      let showBottomShade = false;
+			let showBottomShade = false;
 
-      if (isGround) {
-        showBottomShade = false;
-      }
+			if (isGround) {
+				showBottomShade = false;
+			}
 
-      if (isPlatform) {
-        showBottomShade = !isSupported;
-      }
+			if (isPlatform) {
+				showBottomShade = !isSupported;
+			}
 
-      if (isSeparate) {
-        showBottomShade = true;
-      }
+			if (isSeparate) {
+				showBottomShade = true;
+			}
 
-      platform.draw(this.renderer, this.camera, {
-        showBottomShade,
-        showTopHighlight: visibleTopSegments.length > 0,
-        topSegments: isSeparate ? null : visibleTopSegments,
-        visualType,
-        sprite: platform.sprite,
-      });
-    }
-  }
+			platform.draw(this.renderer, this.camera, {
+				showBottomShade,
+				showTopHighlight: visibleTopSegments.length > 0,
+				topSegments: isSeparate ? null : visibleTopSegments,
+				visualType,
+				sprite: platform.sprite,
+			});
+		}
+	}
 
-  drawCollectibles() {
-    for (const collectible of this.collectibles) {
-      collectible.draw(this.renderer, this.camera);
-    }
-  }
+	drawCollectibles() {
+		for (const collectible of this.collectibles) {
+			collectible.draw(this.renderer, this.camera);
+		}
+	}
 
-  drawHazards() {
-    for (const hazard of this.hazards) {
-      hazard.draw(this.renderer, this.camera);
-    }
-  }
+	drawHazards() {
+		for (const hazard of this.hazards) {
+			hazard.draw(this.renderer, this.camera);
+		}
+	}
 
-  drawPlayer() {
-    if (
-      GAME_CONFIG.debug.levelEditMode &&
-      GAME_CONFIG.debug.hidePlayerInEditMode
-    ) {
-      return;
-    }
+	drawPlayer() {
+		if (
+			GAME_CONFIG.debug.levelEditMode &&
+			GAME_CONFIG.debug.hidePlayerInEditMode
+		) {
+			return;
+		}
 
-    this.player.draw(this.renderer, this.camera);
-  }
+		this.player.draw(this.renderer, this.camera);
+	}
 
-  drawGoalGlow() {
-    if (!this.goal) return;
+	drawGoalGlow() {
+		if (!this.goal) return;
 
-    this.renderer.drawGoalPortalGlow(
-      this.goal.x,
-      this.goal.y,
-      this.goal.width,
-      this.goal.height,
-      this.goal.color,
-      this.camera,
-    );
-  }
+		this.renderer.drawGoalPortalGlow(
+			this.goal.x,
+			this.goal.y,
+			this.goal.width,
+			this.goal.height,
+			this.goal.color,
+			this.camera,
+		);
+	}
 
-  drawGoal() {
-    if (!this.goal) return;
+	drawGoal() {
+		if (!this.goal) return;
 
-    this.renderer.drawGoalPortalBody(
-      this.goal.x,
-      this.goal.y,
-      this.goal.width,
-      this.goal.height,
-      this.goal.color,
-      this.camera,
-    );
-  }
+		this.renderer.drawGoalPortalBody(
+			this.goal.x,
+			this.goal.y,
+			this.goal.width,
+			this.goal.height,
+			this.goal.color,
+			this.camera,
+		);
+	}
 
-  drawDebug() {
-    if (GAME_CONFIG.debug.showWorldGrid) {
-      this.renderer.drawWorldGridLabels(this.camera);
-    }
+	drawDebug() {
+		if (GAME_CONFIG.debug.showWorldGrid) {
+			this.renderer.drawWorldGridLabels(this.camera);
+		}
 
-    if (GAME_CONFIG.debug.showCameraDeadZone) {
-      this.renderer.drawCameraDeadZone(this.camera);
-    }
+		if (GAME_CONFIG.debug.showCameraDeadZone) {
+			this.renderer.drawCameraDeadZone(this.camera);
+		}
 
-    if (GAME_CONFIG.debug.showDebugText) {
-      this.drawDebugInfo();
-    }
-  }
+		if (GAME_CONFIG.debug.showDebugText) {
+			this.drawDebugInfo();
+		}
+	}
 
-  drawUI() {
-    const hudData = createHUDData(this);
+	drawUI() {
+		const hudData = createHUDData(this);
 
-    if (hudData) {
-      this.renderer.drawHUD(hudData);
-    }
+		if (hudData) {
+			this.renderer.drawHUD(hudData);
+		}
 
-    const screenData = createScreenData(this);
+		const screenData = createScreenData(this);
 
-    const shouldHideDefeatScreen =
-      this.state === GAME_STATES.LOST && this.defeatScreenDelay > 0;
+		const shouldHideDefeatScreen =
+			this.state === GAME_STATES.LOST && this.defeatScreenDelay > 0;
 
-    if (
-      screenData &&
-      !GAME_CONFIG.debug.levelEditMode &&
-      !shouldHideDefeatScreen
-    ) {
-      this.renderer.drawPanelScreen(
-        screenData,
-        this.getScreenTransitionProgress(),
-      );
-    }
-  }
+		const shouldHideVictoryScreen =
+			this.state === GAME_STATES.WON && this.victoryScreenDelay > 0;
 
-  drawDebugInfo() {
-    if (!GAME_CONFIG.debug.levelEditMode) {
-      this.renderer.drawDebugText([
-        `Fase: ${this.currentLevelIndex + 1}/${levels.length}`,
-        `Nome: ${this.currentLevel.name}`,
-        `Tile X: ${Math.floor(this.player.x / GAME_CONFIG.tileSize)}`,
-        `Tile Y: ${Math.floor(this.player.y / GAME_CONFIG.tileSize)}`,
-      ]);
+		if (
+			screenData &&
+			!GAME_CONFIG.debug.levelEditMode &&
+			!shouldHideDefeatScreen &&
+			!shouldHideVictoryScreen
+		) {
+			this.renderer.drawPanelScreen(
+				screenData,
+				this.getScreenTransitionProgress(),
+			);
+		}
+	}
 
-      return;
-    }
+	drawDebugInfo() {
+		if (!GAME_CONFIG.debug.levelEditMode) {
+			this.renderer.drawDebugText([
+				`Fase: ${this.currentLevelIndex + 1}/${levels.length}`,
+				`Nome: ${this.currentLevel.name}`,
+				`Tile X: ${Math.floor(this.player.x / GAME_CONFIG.tileSize)}`,
+				`Tile Y: ${Math.floor(this.player.y / GAME_CONFIG.tileSize)}`,
+			]);
 
-    this.renderer.drawDebugText([
-      "Modo: Edição",
-      `Fase: ${this.currentLevelIndex + 1}/${levels.length}`,
-      `Nome: ${this.currentLevel.name}`,
-      `Camera X: ${Math.round(this.camera.x)}`,
-      `Camera Y: ${Math.round(this.camera.y)}`,
-      `Zoom: ${this.camera.zoom.toFixed(2)}`,
-      '"," fase anterior',
-      '"." próxima fase',
-    ]);
-  }
+			return;
+		}
 
-  /* =========================================================
+		this.renderer.drawDebugText([
+			'Modo: Edição',
+			`Fase: ${this.currentLevelIndex + 1}/${levels.length}`,
+			`Nome: ${this.currentLevel.name}`,
+			`Camera X: ${Math.round(this.camera.x)}`,
+			`Camera Y: ${Math.round(this.camera.y)}`,
+			`Zoom: ${this.camera.zoom.toFixed(2)}`,
+			'"," fase anterior',
+			'"." próxima fase',
+		]);
+	}
+
+	/* =========================================================
       Plataformas / Fusão visual
    ========================================================= */
 
-  getPlatformVisualType(platform) {
-    return platform.visualType || "platform";
-  }
+	getPlatformVisualType(platform) {
+		return platform.visualType || 'platform';
+	}
 
-  getPlatformsThatFuseAbove(platform) {
-    const currentVisualType = this.getPlatformVisualType(platform);
+	getPlatformsThatFuseAbove(platform) {
+		const currentVisualType = this.getPlatformVisualType(platform);
 
-    if (currentVisualType === "separate") {
-      return [];
-    }
+		if (currentVisualType === 'separate') {
+			return [];
+		}
 
-    return this.platforms.filter((otherPlatform) => {
-      if (otherPlatform === platform) return false;
+		return this.platforms.filter((otherPlatform) => {
+			if (otherPlatform === platform) return false;
 
-      const otherVisualType = this.getPlatformVisualType(otherPlatform);
+			const otherVisualType = this.getPlatformVisualType(otherPlatform);
 
-      const shouldFuse =
-        (currentVisualType === "ground" && otherVisualType === "ground") ||
-        (currentVisualType === "platform" && otherVisualType === "platform");
+			const shouldFuse =
+				(currentVisualType === 'ground' && otherVisualType === 'ground') ||
+				(currentVisualType === 'platform' &&
+					otherVisualType === 'platform');
 
-      if (!shouldFuse) {
-        return false;
-      }
+			if (!shouldFuse) {
+				return false;
+			}
 
-      const isTouchingFromAbove = this.areValuesClose(
-        otherPlatform.y + otherPlatform.height,
-        platform.y,
-      );
+			const isTouchingFromAbove = this.areValuesClose(
+				otherPlatform.y + otherPlatform.height,
+				platform.y,
+			);
 
-      const hasHorizontalOverlap =
-        otherPlatform.x < platform.x + platform.width &&
-        otherPlatform.x + otherPlatform.width > platform.x;
+			const hasHorizontalOverlap =
+				otherPlatform.x < platform.x + platform.width &&
+				otherPlatform.x + otherPlatform.width > platform.x;
 
-      return isTouchingFromAbove && hasHorizontalOverlap;
-    });
-  }
+			return isTouchingFromAbove && hasHorizontalOverlap;
+		});
+	}
 
-  getVisibleTopSegments(platform, platformsAbove) {
-    let segments = [
-      {
-        start: platform.x,
-        end: platform.x + platform.width,
-      },
-    ];
+	getVisibleTopSegments(platform, platformsAbove) {
+		let segments = [
+			{
+				start: platform.x,
+				end: platform.x + platform.width,
+			},
+		];
 
-    platformsAbove.forEach((abovePlatform) => {
-      const coverStart = Math.max(platform.x, abovePlatform.x);
-      const coverEnd = Math.min(
-        platform.x + platform.width,
-        abovePlatform.x + abovePlatform.width,
-      );
+		platformsAbove.forEach((abovePlatform) => {
+			const coverStart = Math.max(platform.x, abovePlatform.x);
+			const coverEnd = Math.min(
+				platform.x + platform.width,
+				abovePlatform.x + abovePlatform.width,
+			);
 
-      segments = segments.flatMap((segment) => {
-        const noOverlap =
-          coverEnd <= segment.start || coverStart >= segment.end;
+			segments = segments.flatMap((segment) => {
+				const noOverlap =
+					coverEnd <= segment.start || coverStart >= segment.end;
 
-        if (noOverlap) {
-          return [segment];
-        }
+				if (noOverlap) {
+					return [segment];
+				}
 
-        const result = [];
+				const result = [];
 
-        if (coverStart > segment.start) {
-          result.push({
-            start: segment.start,
-            end: coverStart,
-          });
-        }
+				if (coverStart > segment.start) {
+					result.push({
+						start: segment.start,
+						end: coverStart,
+					});
+				}
 
-        if (coverEnd < segment.end) {
-          result.push({
-            start: coverEnd,
-            end: segment.end,
-          });
-        }
+				if (coverEnd < segment.end) {
+					result.push({
+						start: coverEnd,
+						end: segment.end,
+					});
+				}
 
-        return result;
-      });
-    });
+				return result;
+			});
+		});
 
-    return segments.map((segment) => ({
-      x: segment.start,
-      width: segment.end - segment.start,
-    }));
-  }
+		return segments.map((segment) => ({
+			x: segment.start,
+			width: segment.end - segment.start,
+		}));
+	}
 
-  isPlatformSupported(platform) {
-    const isOnWorldFloor =
-      platform.y + platform.height >= GAME_CONFIG.worldHeight;
+	isPlatformSupported(platform) {
+		const isOnWorldFloor =
+			platform.y + platform.height >= GAME_CONFIG.worldHeight;
 
-    if (isOnWorldFloor) {
-      return true;
-    }
+		if (isOnWorldFloor) {
+			return true;
+		}
 
-    return this.platforms.some((otherPlatform) => {
-      if (otherPlatform === platform) return false;
+		return this.platforms.some((otherPlatform) => {
+			if (otherPlatform === platform) return false;
 
-      const isTouchingFromBelow = this.areValuesClose(
-        platform.y + platform.height,
-        otherPlatform.y,
-      );
+			const isTouchingFromBelow = this.areValuesClose(
+				platform.y + platform.height,
+				otherPlatform.y,
+			);
 
-      const hasHorizontalOverlap =
-        platform.x < otherPlatform.x + otherPlatform.width &&
-        platform.x + platform.width > otherPlatform.x;
+			const hasHorizontalOverlap =
+				platform.x < otherPlatform.x + otherPlatform.width &&
+				platform.x + platform.width > otherPlatform.x;
 
-      return isTouchingFromBelow && hasHorizontalOverlap;
-    });
-  }
+			return isTouchingFromBelow && hasHorizontalOverlap;
+		});
+	}
 
-  areValuesClose(a, b, tolerance = 1) {
-    return Math.abs(a - b) <= tolerance;
-  }
+	areValuesClose(a, b, tolerance = 1) {
+		return Math.abs(a - b) <= tolerance;
+	}
 
-  clampValue(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-  }
+	clampValue(value, min, max) {
+		return Math.min(Math.max(value, min), max);
+	}
 
-  /* =========================================================
+	/* =========================================================
       Efeitos
    ========================================================= */
 
-  createDefeatEffect(reason = "default") {
-    const effectPosition = this.getDefeatEffectPosition(reason);
+	createDefeatEffect(reason = 'default') {
+		const effectPosition = this.getDefeatEffectPosition(reason);
 
-    const particles = Array.from({ length: 14 }, (_, index) => {
-      const angle = (Math.PI * 2 * index) / 14;
+		const particles = Array.from({ length: 14 }, (_, index) => {
+			const angle = (Math.PI * 2 * index) / 14;
 
-      return {
-        angle,
-        distance: 18 + Math.random() * 16,
-        radius: 2 + Math.random() * 2,
-      };
-    });
+			return {
+				angle,
+				distance: 18 + Math.random() * 16,
+				radius: 2 + Math.random() * 2,
+			};
+		});
 
-    this.effects.push({
-      type: "defeatBurst",
-      reason,
-      x: effectPosition.x,
-      y: effectPosition.y,
-      age: 0,
-      duration: 42,
-      color: "#ff5c7a",
-      particles,
-    });
+		this.effects.push({
+			type: 'defeatBurst',
+			reason,
+			x: effectPosition.x,
+			y: effectPosition.y,
+			age: 0,
+			duration: 42,
+			color: '#ff5c7a',
+			particles,
+		});
 
-    this.effects.push({
-      type: "screenFlash",
-      age: 0,
-      duration: 26,
-      color: "#ff5c7a",
-      opacity: 0.28,
-    });
-  }
+		this.effects.push({
+			type: 'screenFlash',
+			age: 0,
+			duration: 26,
+			color: '#ff5c7a',
+			opacity: 0.28,
+		});
+	}
 
-  getDefeatEffectPosition(reason) {
-    const playerCenterX = this.player.x + this.player.width / 2;
-    const playerCenterY = this.player.y + this.player.height / 2;
+	getDefeatEffectPosition(reason) {
+		const playerCenterX = this.player.x + this.player.width / 2;
+		const playerCenterY = this.player.y + this.player.height / 2;
 
-    if (reason !== "fall") {
-      return {
-        x: playerCenterX,
-        y: playerCenterY,
-      };
-    }
+		if (reason !== 'fall') {
+			return {
+				x: playerCenterX,
+				y: playerCenterY,
+			};
+		}
 
-    const zoom = this.camera.zoom || 1;
+		const zoom = this.camera.zoom || 1;
 
-    const visibleLeft = this.camera.x;
-    const visibleRight = this.camera.x + GAME_CONFIG.width / zoom;
+		const visibleLeft = this.camera.x;
+		const visibleRight = this.camera.x + GAME_CONFIG.width / zoom;
 
-    const visibleTop = this.camera.y;
-    const visibleBottom = this.camera.y + GAME_CONFIG.height / zoom;
+		const visibleTop = this.camera.y;
+		const visibleBottom = this.camera.y + GAME_CONFIG.height / zoom;
 
-    return {
-      x: this.clampValue(playerCenterX, visibleLeft + 32, visibleRight - 32),
-      y: this.clampValue(playerCenterY, visibleTop + 32, visibleBottom - 8),
-    };
-  }
+		return {
+			x: this.clampValue(playerCenterX, visibleLeft + 32, visibleRight - 32),
+			y: this.clampValue(playerCenterY, visibleTop + 32, visibleBottom - 8),
+		};
+	}
+
+	createVictoryEffect() {
+		const centerX = this.goal.x + this.goal.width / 2;
+		const centerY = this.goal.y + this.goal.height / 2;
+
+		const particles = Array.from({ length: 26 }, (_, index) => {
+			const angle = (Math.PI * 2 * index) / 26;
+
+			return {
+				angle,
+				distance: 28 + Math.random() * 26,
+				radius: 2.5 + Math.random() * 2.5,
+			};
+		});
+
+		this.effects.push({
+			type: 'victoryBurst',
+			x: centerX,
+			y: centerY,
+			age: 0,
+			duration: 62,
+			color: '#2dd4bf',
+			particles,
+		});
+
+		this.effects.push({
+			type: 'floatingText',
+			text: 'Portal!',
+			x: centerX,
+			y: centerY - 20,
+			age: 0,
+			duration: 52,
+			color: '#2dd4bf',
+		});
+
+		this.effects.push({
+			type: 'screenFlash',
+			age: 0,
+			duration: 36,
+			color: '#2dd4bf',
+			opacity: 0.34,
+		});
+	}
 }
