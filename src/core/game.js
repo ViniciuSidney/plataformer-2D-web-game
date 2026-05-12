@@ -38,6 +38,7 @@ export class Game {
     this.collectedCount = 0;
     this.effects = [];
     this.coinHUDPulse = 0;
+    this.defeatScreenDelay = 0;
 
     this.state = GAME_CONFIG.debug.levelEditMode
       ? GAME_STATES.PLAYING
@@ -108,6 +109,7 @@ export class Game {
     this.collectedCount = 0;
     this.effects = [];
     this.coinHUDPulse = 0;
+    this.defeatScreenDelay = 0;
 
     this.player.reset(this.currentLevel.playerStart);
 
@@ -160,6 +162,7 @@ export class Game {
 
     this.updateEffects();
     this.updateHUDAnimations();
+    this.updateDefeatScreenDelay();
 
     if (this.shouldPauseGameplayUpdate()) return;
 
@@ -416,7 +419,15 @@ export class Game {
     }
 
     this.createDefeatEffect(reason);
+
+    this.defeatScreenDelay = 32;
     this.state = GAME_STATES.LOST;
+  }
+
+  updateDefeatScreenDelay() {
+    if (this.defeatScreenDelay > 0) {
+      this.defeatScreenDelay--;
+    }
   }
 
   /* =========================================================
@@ -596,7 +607,14 @@ export class Game {
 
     const screenData = createScreenData(this);
 
-    if (screenData && !GAME_CONFIG.debug.levelEditMode) {
+    const shouldHideDefeatScreen =
+      this.state === GAME_STATES.LOST && this.defeatScreenDelay > 0;
+
+    if (
+      screenData &&
+      !GAME_CONFIG.debug.levelEditMode &&
+      !shouldHideDefeatScreen
+    ) {
       this.renderer.drawPanelScreen(screenData);
     }
   }
@@ -743,13 +761,16 @@ export class Game {
     return Math.abs(a - b) <= tolerance;
   }
 
+  clampValue(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
+
   /* =========================================================
       Efeitos
    ========================================================= */
 
   createDefeatEffect(reason = "default") {
-    const centerX = this.player.x + this.player.width / 2;
-    const centerY = this.player.y + this.player.height / 2;
+    const effectPosition = this.getDefeatEffectPosition(reason);
 
     const particles = Array.from({ length: 14 }, (_, index) => {
       const angle = (Math.PI * 2 * index) / 14;
@@ -764,8 +785,8 @@ export class Game {
     this.effects.push({
       type: "defeatBurst",
       reason,
-      x: centerX,
-      y: centerY,
+      x: effectPosition.x,
+      y: effectPosition.y,
       age: 0,
       duration: 42,
       color: "#ff5c7a",
@@ -779,5 +800,30 @@ export class Game {
       color: "#ff5c7a",
       opacity: 0.28,
     });
+  }
+
+  getDefeatEffectPosition(reason) {
+    const playerCenterX = this.player.x + this.player.width / 2;
+    const playerCenterY = this.player.y + this.player.height / 2;
+
+    if (reason !== "fall") {
+      return {
+        x: playerCenterX,
+        y: playerCenterY,
+      };
+    }
+
+    const zoom = this.camera.zoom || 1;
+
+    const visibleLeft = this.camera.x;
+    const visibleRight = this.camera.x + GAME_CONFIG.width / zoom;
+
+    const visibleTop = this.camera.y;
+    const visibleBottom = this.camera.y + GAME_CONFIG.height / zoom;
+
+    return {
+      x: this.clampValue(playerCenterX, visibleLeft + 32, visibleRight - 32),
+      y: this.clampValue(playerCenterY, visibleTop + 32, visibleBottom - 8),
+    };
   }
 }
