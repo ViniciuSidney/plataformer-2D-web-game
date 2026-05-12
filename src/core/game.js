@@ -37,6 +37,7 @@ export class Game {
 
     this.collectedCount = 0;
     this.effects = [];
+    this.coinHUDPulse = 0;
 
     this.state = GAME_CONFIG.debug.levelEditMode
       ? GAME_STATES.PLAYING
@@ -106,6 +107,7 @@ export class Game {
 
     this.collectedCount = 0;
     this.effects = [];
+    this.coinHUDPulse = 0;
 
     this.player.reset(this.currentLevel.playerStart);
 
@@ -200,6 +202,7 @@ export class Game {
 
     this.handleCollectibles();
     this.updateEffects();
+    this.updateHUDAnimations();
 
     this.checkWinCondition();
     this.checkHazardCollision();
@@ -236,7 +239,12 @@ export class Game {
       this.collectibles,
     );
 
+    if (collectedItems.length === 0) {
+      return;
+    }
+
     this.collectedCount += collectedItems.length;
+    this.coinHUDPulse = 1;
 
     collectedItems.forEach((collectible) => {
       this.createCollectEffect(collectible);
@@ -286,6 +294,14 @@ export class Game {
     this.effects = this.effects.filter((effect) => {
       return effect.age < effect.duration;
     });
+  }
+
+  updateHUDAnimations() {
+    this.coinHUDPulse += (0 - this.coinHUDPulse) * 0.16;
+
+    if (this.coinHUDPulse < 0.01) {
+      this.coinHUDPulse = 0;
+    }
   }
 
   drawEffects() {

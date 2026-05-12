@@ -416,10 +416,26 @@ export class Renderer {
     context.restore();
   }
 
-  drawHUD(lines) {
+  drawHUD(items) {
     const { context, canvas } = this;
 
-    const lineHeight = 20;
+    const normalizedItems = items.map((item) => {
+      if (typeof item === "string") {
+        return {
+          text: item,
+          type: "normal",
+          pulse: 0,
+        };
+      }
+
+      return {
+        text: item.text,
+        type: item.type || "normal",
+        pulse: item.pulse || 0,
+      };
+    });
+
+    const lineHeight = 22;
     const paddingX = 18;
     const paddingY = 12;
     const minBoxWidth = 320;
@@ -431,11 +447,11 @@ export class Renderer {
     context.textBaseline = "top";
 
     const longestLineWidth = Math.max(
-      ...lines.map((line) => context.measureText(line).width),
+      ...normalizedItems.map((item) => context.measureText(item.text).width),
     );
 
     const boxWidth = Math.max(minBoxWidth, longestLineWidth + paddingX * 2);
-    const boxHeight = lines.length * lineHeight + paddingY * 2;
+    const boxHeight = normalizedItems.length * lineHeight + paddingY * 2;
 
     const boxX = (canvas.width - boxWidth) / 2;
     const boxY = 18;
@@ -443,14 +459,46 @@ export class Renderer {
     context.fillStyle = "rgba(0, 0, 0, 0.45)";
     context.fillRect(boxX, boxY, boxWidth, boxHeight);
 
-    lines.forEach((line, index) => {
+    normalizedItems.forEach((item, index) => {
+      const textX = canvas.width / 2;
       const textY = boxY + paddingY + index * lineHeight;
 
-      context.fillStyle = index === 0 ? "#f5f5f5" : "#ffd166";
-      context.fillText(line, canvas.width / 2, textY);
+      if (item.type === "coins") {
+        this.drawHUDPulseText(item.text, textX, textY, item.pulse, "#ffd166");
+
+        return;
+      }
+
+      context.fillStyle = index === 0 ? "#f5f5f5" : "#a5a5b5";
+      context.font = "600 14px JetBrains Mono";
+      context.fillText(item.text, textX, textY);
     });
 
     context.restore();
+  }
+
+  drawHUDPulseText(text, x, y, pulse = 0, color = "#ffd166") {
+    const safePulse = Math.max(0, Math.min(pulse, 1));
+
+    const scale = 1 + safePulse * 0.18;
+    const shake = Math.sin(performance.now() / 35) * safePulse * 2;
+
+    this.context.save();
+
+    this.context.translate(x + shake, y);
+    this.context.scale(scale, scale);
+
+    this.context.textAlign = "center";
+    this.context.textBaseline = "top";
+    this.context.font = "700 14px JetBrains Mono";
+
+    this.context.shadowColor = color;
+    this.context.shadowBlur = 10 * safePulse;
+
+    this.context.fillStyle = color;
+    this.context.fillText(text, 0, 0);
+
+    this.context.restore();
   }
 
   // Menu Scene -----
