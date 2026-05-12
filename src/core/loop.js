@@ -1,33 +1,49 @@
 export class Loop {
-  constructor(update, draw) {
-    this.update = update;
-    this.draw = draw;
+	constructor(update, draw) {
+		this.update = update;
+		this.draw = draw;
 
-    this.animationFrameId = null;
-    this.isRunning = false;
-  }
+		this.lastTime = 0;
+		this.accumulator = 0;
 
-  start() {
-    if (this.isRunning) return;
+		this.fixedTimeStep = 1000 / 60;
+		this.maxFrameTime = 250;
 
-    this.isRunning = true;
-    this.run();
-  }
+		this.isRunning = false;
+	}
 
-  stop() {
-    this.isRunning = false;
+	start() {
+		if (this.isRunning) return;
 
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-    }
-  }
+		this.isRunning = true;
+		this.lastTime = performance.now();
 
-  run() {
-    if (!this.isRunning) return;
+		requestAnimationFrame((currentTime) => this.run(currentTime));
+	}
 
-    this.update();
-    this.draw();
+	run(currentTime) {
+		if (!this.isRunning) return;
 
-    this.animationFrameId = requestAnimationFrame(() => this.run());
-  }
+		let frameTime = currentTime - this.lastTime;
+		this.lastTime = currentTime;
+
+		if (frameTime > this.maxFrameTime) {
+			frameTime = this.maxFrameTime;
+		}
+
+		this.accumulator += frameTime;
+
+		while (this.accumulator >= this.fixedTimeStep) {
+			this.update();
+			this.accumulator -= this.fixedTimeStep;
+		}
+
+		this.draw();
+
+		requestAnimationFrame((nextTime) => this.run(nextTime));
+	}
+
+	stop() {
+		this.isRunning = false;
+	}
 }
