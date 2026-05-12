@@ -266,6 +266,16 @@ export class Game {
       color: "#ffd166",
       particles,
     });
+
+    this.effects.push({
+      type: "floatingText",
+      text: "+1",
+      x: centerX,
+      y: centerY - 10,
+      age: 0,
+      duration: 38,
+      color: "#ffd166",
+    });
   }
 
   updateEffects() {
@@ -282,6 +292,10 @@ export class Game {
     this.effects.forEach((effect) => {
       if (effect.type === "coinCollect") {
         this.renderer.drawCoinCollectEffect(effect, this.camera);
+      }
+
+      if (effect.type === "floatingText") {
+        this.renderer.drawFloatingTextEffect(effect, this.camera);
       }
     });
   }

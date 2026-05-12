@@ -751,6 +751,36 @@ export class Renderer {
     this.context.restore();
   }
 
+  drawFloatingTextEffect(effect, camera = { x: 0, y: 0, zoom: 1 }) {
+    const zoom = camera.zoom || 1;
+
+    const progress = effect.age / effect.duration;
+    const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+    const opacity = 1 - progress;
+
+    const screenX = (effect.x - camera.x) * zoom;
+    const screenY = (effect.y - camera.y) * zoom - easedProgress * 22 * zoom;
+
+    const scale = 1 + (1 - progress) * 0.15;
+
+    this.context.save();
+
+    this.context.globalAlpha = opacity;
+    this.context.textAlign = "center";
+    this.context.textBaseline = "middle";
+
+    this.context.font = `700 ${14 * zoom * scale}px JetBrains Mono`;
+
+    this.context.shadowColor = effect.color || "#ffd166";
+    this.context.shadowBlur = 8 * opacity;
+
+    this.context.fillStyle = effect.color || "#ffd166";
+    this.context.fillText(effect.text, screenX, screenY);
+
+    this.context.restore();
+  }
+
   // World Objects ----
   drawPlayerCharacter(
     x,
