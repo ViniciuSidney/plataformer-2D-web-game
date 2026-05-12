@@ -44,9 +44,9 @@ export class Game {
       ? GAME_STATES.PLAYING
       : GAME_STATES.MENU;
 
-    this.previousState = this.state;
     this.screenTransitionAge = 0;
     this.screenTransitionDuration = 22;
+    this.previousVisibleScreenKey = this.getVisibleScreenKey();
 
     this.wasPausePressed = false;
     this.wasMenuPressed = false;
@@ -98,10 +98,40 @@ export class Game {
   }
 
   getScreenTransitionProgress() {
+    const visibleScreenKey = this.getVisibleScreenKey();
+
+    if (!visibleScreenKey) {
+      return 1;
+    }
+
     const rawProgress =
       this.screenTransitionAge / this.screenTransitionDuration;
 
     return Math.min(Math.max(rawProgress, 0), 1);
+  }
+
+  getVisibleScreenKey() {
+    if (GAME_CONFIG.debug.levelEditMode) {
+      return null;
+    }
+
+    if (this.state === GAME_STATES.MENU) {
+      return GAME_STATES.MENU;
+    }
+
+    if (this.state === GAME_STATES.PAUSED) {
+      return GAME_STATES.PAUSED;
+    }
+
+    if (this.state === GAME_STATES.WON) {
+      return GAME_STATES.WON;
+    }
+
+    if (this.state === GAME_STATES.LOST && this.defeatScreenDelay <= 0) {
+      return GAME_STATES.LOST;
+    }
+
+    return null;
   }
 
   /* =========================================================
@@ -143,7 +173,7 @@ export class Game {
   }
 
   goToMenu() {
-    this.state = GAME_STATES.MENU;
+    this.returnToMenu();
     this.currentLevelIndex = 0;
     this.loadLevel(this.currentLevelIndex);
   }
@@ -161,20 +191,32 @@ export class Game {
     this.loadLevel(nextLevelIndex);
   }
 
+  returnToMenu() {
+    this.state = GAME_STATES.MENU;
+
+    this.defeatScreenDelay = 0;
+    this.effects = [];
+    this.coinHUDPulse = 0;
+
+    this.screenTransitionAge = 0;
+    this.previousVisibleScreenKey = this.getVisibleScreenKey();
+  }
+
   /* =========================================================
       Update principal
    ========================================================= */
 
   update() {
     if (this.updateEditMode()) return;
-    if (this.updateMenu()) return;
 
-    this.handleStateInputs();
-
-    this.updateScreenTransition();
     this.updateEffects();
     this.updateHUDAnimations();
     this.updateDefeatScreenDelay();
+    this.updateScreenTransition();
+
+    if (this.updateMenu()) return;
+
+    this.handleStateInputs();
 
     if (this.shouldPauseGameplayUpdate()) return;
 
@@ -365,13 +407,18 @@ export class Game {
   }
 
   updateScreenTransition() {
-    if (this.state !== this.previousState) {
+    const currentVisibleScreenKey = this.getVisibleScreenKey();
+
+    if (currentVisibleScreenKey !== this.previousVisibleScreenKey) {
       this.screenTransitionAge = 0;
-      this.previousState = this.state;
+      this.previousVisibleScreenKey = currentVisibleScreenKey;
       return;
     }
 
-    if (this.screenTransitionAge < this.screenTransitionDuration) {
+    if (
+      currentVisibleScreenKey &&
+      this.screenTransitionAge < this.screenTransitionDuration
+    ) {
       this.screenTransitionAge++;
     }
   }
@@ -498,6 +545,11 @@ export class Game {
 
   draw() {
     this.renderer.clear();
+
+    if (this.state === GAME_STATES.MENU && !GAME_CONFIG.debug.levelEditMode) {
+      this.drawUI();
+      return;
+    }
 
     this.drawGoalGlow();
 
