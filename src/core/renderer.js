@@ -277,19 +277,29 @@ export class Renderer {
   }
 
   // Screens / UI -----
-  drawPanelScreen({
-    variant = "panel",
-    title,
-    subtitle = "",
-    primaryAction = "",
-    primaryActionEffect = "none",
-    lines = [],
-    accentColor = "#f5f5f5",
-    backgroundColor = "#000000",
-    backgroundOpacity = 0.55,
-    decoration = null,
-  }) {
+  drawPanelScreen(
+    {
+      variant = "panel",
+      title,
+      subtitle = "",
+      primaryAction = "",
+      primaryActionEffect = "none",
+      lines = [],
+      accentColor = "#f5f5f5",
+      backgroundColor = "#000000",
+      backgroundOpacity = 0.55,
+      decoration = null,
+    },
+    transitionProgress = 1,
+  ) {
     const { context, canvas } = this;
+
+    const safeProgress = Math.min(Math.max(transitionProgress, 0), 1);
+    const easedProgress = 1 - Math.pow(1 - safeProgress, 3);
+
+    const animatedOpacity = backgroundOpacity * easedProgress;
+    const panelScale = variant === "panel" ? 0.96 + easedProgress * 0.04 : 1;
+    const panelOffsetY = variant === "panel" ? (1 - easedProgress) * 14 : 0;
 
     const titleFont = "700 42px JetBrains Mono";
     const subtitleFont = "400 18px JetBrains Mono";
@@ -331,7 +341,7 @@ export class Renderer {
 
     context.save();
 
-    context.fillStyle = this.hexToRgba(backgroundColor, backgroundOpacity);
+    context.fillStyle = this.hexToRgba(backgroundColor, animatedOpacity);
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     if (variant === "fullscreen" && decoration?.type === "menu-scene") {
@@ -339,6 +349,13 @@ export class Renderer {
     }
 
     if (variant === "panel") {
+      const panelCenterX = panelX + panelWidth / 2;
+      const panelCenterY = panelY + panelHeight / 2;
+
+      context.translate(panelCenterX, panelCenterY + panelOffsetY);
+      context.scale(panelScale, panelScale);
+      context.translate(-panelCenterX, -panelCenterY);
+
       context.fillStyle = "rgba(24, 24, 32, 0.92)";
       context.fillRect(panelX, panelY, panelWidth, panelHeight);
 

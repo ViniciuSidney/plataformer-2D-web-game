@@ -44,6 +44,10 @@ export class Game {
       ? GAME_STATES.PLAYING
       : GAME_STATES.MENU;
 
+    this.previousState = this.state;
+    this.screenTransitionAge = 0;
+    this.screenTransitionDuration = 22;
+
     this.wasPausePressed = false;
     this.wasMenuPressed = false;
     this.wasRestartPressed = false;
@@ -91,6 +95,13 @@ export class Game {
     const lastLevelIndex = levels.length - 1;
 
     return Math.min(Math.max(requestedLevelIndex, 0), lastLevelIndex);
+  }
+
+  getScreenTransitionProgress() {
+    const rawProgress =
+      this.screenTransitionAge / this.screenTransitionDuration;
+
+    return Math.min(Math.max(rawProgress, 0), 1);
   }
 
   /* =========================================================
@@ -160,6 +171,7 @@ export class Game {
 
     this.handleStateInputs();
 
+    this.updateScreenTransition();
     this.updateEffects();
     this.updateHUDAnimations();
     this.updateDefeatScreenDelay();
@@ -350,6 +362,18 @@ export class Game {
 
   updateCamera() {
     this.camera.follow(this.player);
+  }
+
+  updateScreenTransition() {
+    if (this.state !== this.previousState) {
+      this.screenTransitionAge = 0;
+      this.previousState = this.state;
+      return;
+    }
+
+    if (this.screenTransitionAge < this.screenTransitionDuration) {
+      this.screenTransitionAge++;
+    }
   }
 
   /* =========================================================
@@ -615,7 +639,10 @@ export class Game {
       !GAME_CONFIG.debug.levelEditMode &&
       !shouldHideDefeatScreen
     ) {
-      this.renderer.drawPanelScreen(screenData);
+      this.renderer.drawPanelScreen(
+        screenData,
+        this.getScreenTransitionProgress(),
+      );
     }
   }
 
