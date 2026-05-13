@@ -973,13 +973,25 @@ export class Renderer {
 		}
 
 		if (isDefeated && defeatHitDirection === 'side') {
-			const bounceProgress = Math.sin(safeDefeatProgress * Math.PI);
+			const t = safeDefeatProgress;
 
-			defeatOffsetX = defeatPushDirection * bounceProgress * 22 * zoom;
+			// acelera o começo do movimento
+			const fastT = 1 - Math.pow(1 - t, 3.5);
 
-			defeatOffsetY = -bounceProgress * 14 * zoom;
+			const throwDistance = 36 * zoom;
+			const throwHeight = 20 * zoom;
 
-			defeatTilt = defeatPushDirection * bounceProgress * -10;
+			// X vai rápido para trás no começo
+			defeatOffsetX = defeatPushDirection * throwDistance * fastT;
+
+			// Y faz arco parabólico, mas também usando o progresso acelerado
+			defeatOffsetY = -4 * throwHeight * fastT * (1 - fastT);
+
+			const tiltStrength = 18;
+			defeatTilt = defeatPushDirection * (1 - fastT * 0.65) * -tiltStrength;
+
+			visualWidth -= 2 * (1 - fastT) * zoom;
+			visualHeight += 3 * (1 - fastT) * zoom;
 		}
 
 		if (isDefeated && defeatHitDirection === 'fall') {

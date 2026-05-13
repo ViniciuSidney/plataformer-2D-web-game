@@ -39,6 +39,7 @@ export class Game {
 		this.effects = [];
 		this.coinHUDPulse = 0;
 		this.defeatScreenDelay = 0;
+		this.defeatScreenDelayDuration = 44;
 		this.victoryScreenDelay = 0;
 		this.defeatHitDirection = null;
 		this.defeatPushDirection = 0;
@@ -515,7 +516,7 @@ export class Game {
 
 		this.createDefeatEffect(reason);
 
-		this.defeatScreenDelay = 32;
+		this.defeatScreenDelay = this.defeatScreenDelayDuration;
 		this.state = GAME_STATES.LOST;
 	}
 
@@ -668,7 +669,9 @@ export class Game {
 		}
 
 		const defeatProgress =
-			this.state === GAME_STATES.LOST ? 1 - this.defeatScreenDelay / 32 : 0;
+			this.state === GAME_STATES.LOST
+				? 1 - this.defeatScreenDelay / this.defeatScreenDelayDuration
+				: 0;
 
 		this.player.draw(this.renderer, this.camera, {
 			isDefeated: this.state === GAME_STATES.LOST,
