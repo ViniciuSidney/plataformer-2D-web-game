@@ -89,7 +89,7 @@ function createGameOverScreen() {
    return {
       variant: 'panel',
       title: 'Game Over!',
-      subtitle: 'Vish, você perdeu de algum jeito aí...',
+      subtitle: 'Vish, perdeu foi?',
 
       primaryAction: "'R' — tentar novamente",
       primaryActionEffect: 'glow',

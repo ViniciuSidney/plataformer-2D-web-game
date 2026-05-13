@@ -19,7 +19,7 @@ export const GAME_CONFIG = {
    },
 
    debug: {
-      showWorldGrid: true,
+      showWorldGrid: false,
       showCameraDeadZone: false,
       showDebugText: false,
 
@@ -27,7 +27,7 @@ export const GAME_CONFIG = {
       showGridRulerLabels: false,
 
       levelEditMode: false,
-      editLevelIndex: 0, // 0 = Level 01
+      editLevelIndex: 1, // 0 = Level 01
       hidePlayerInEditMode: false,
 
       editCamera: {

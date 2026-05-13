@@ -8,8 +8,19 @@ export class Renderer {
   }
 
   clear() {
+    this.context.save();
+
+    this.context.setTransform(1, 0, 0, 1, 0, 0);
+    this.context.globalAlpha = 1;
+    this.context.shadowBlur = 0;
+    this.context.shadowColor = "transparent";
+    this.context.filter = "none";
+    this.context.setLineDash([]);
+
     this.context.fillStyle = GAME_CONFIG.backgroundColor;
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.context.restore();
   }
 
   drawRect(x, y, width, height, color, camera = { x: 0, y: 0, zoom: 1 }) {
@@ -293,6 +304,12 @@ export class Renderer {
     transitionProgress = 1,
   ) {
     const { context, canvas } = this;
+
+    context.globalAlpha = 1;
+    context.shadowBlur = 0;
+    context.shadowColor = "transparent";
+    context.filter = "none";
+    context.setLineDash([]);
 
     const safeProgress = Math.min(Math.max(transitionProgress, 0), 1);
     const easedProgress = 1 - Math.pow(1 - safeProgress, 3);
@@ -605,6 +622,12 @@ export class Renderer {
     const staticCamera = { x: 0, y: 0, zoom: 1 };
 
     context.save();
+
+    this.context.globalAlpha = 1;
+    this.context.shadowBlur = 0;
+    this.context.shadowColor = "transparent";
+    this.context.filter = "none";
+    this.context.setLineDash([]);
 
     // grade de fundo alinhada ao tileSize
     context.strokeStyle = "rgba(255, 255, 255, 0.04)";

@@ -199,18 +199,12 @@ export class Game {
     this.loadLevel(this.currentLevelIndex);
   }
 
-  goToMenu() {
-    this.returnToMenu();
-    this.currentLevelIndex = 0;
-    this.loadLevel(this.currentLevelIndex);
-  }
-
   goToNextLevel() {
     const nextLevelIndex = this.currentLevelIndex + 1;
     const hasNextLevel = nextLevelIndex < levels.length;
 
     if (!hasNextLevel) {
-      this.state = GAME_STATES.WON;
+      this.triggerVictory();
       return;
     }
 
@@ -221,17 +215,32 @@ export class Game {
   returnToMenu() {
     this.state = GAME_STATES.MENU;
 
-    this.defeatScreenDelay = 0;
+    this.currentLevelIndex = 0;
+    this.currentLevel = levels[this.currentLevelIndex];
+
+    this.platforms = LevelSystem.createPlatforms(this.currentLevel);
+    this.goal = LevelSystem.createGoal(this.currentLevel);
+    this.hazards = LevelSystem.createHazards(this.currentLevel);
+    this.collectibles = LevelSystem.createCollectibles(this.currentLevel);
+
+    this.collectedCount = 0;
     this.effects = [];
     this.coinHUDPulse = 0;
+
+    this.defeatScreenDelay = 0;
     this.victoryScreenDelay = 0;
-    this.portalEnterTarget = null;
 
     this.defeatHitDirection = null;
     this.defeatPushDirection = 0;
 
-    this.screenTransitionAge = 0;
-    this.previousVisibleScreenKey = this.getVisibleScreenKey();
+    this.portalEnterTarget = null;
+
+    this.player.reset(this.currentLevel.playerStart);
+
+    this.camera = new Camera();
+
+    this.previousVisibleScreenKey = GAME_STATES.MENU;
+    this.screenTransitionAge = this.screenTransitionDuration;
   }
 
   /* =========================================================
@@ -492,7 +501,7 @@ export class Game {
       this.state === GAME_STATES.LOST;
 
     if (justPressedMenu && canReturnToMenu) {
-      this.goToMenu();
+      this.returnToMenu();
     }
 
     this.wasMenuPressed = isMenuPressed;
