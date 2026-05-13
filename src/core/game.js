@@ -636,6 +636,8 @@ export class Game {
     this.drawHazards();
     this.drawEffects();
 
+    this.renderer.drawBottomGradientOverlay();
+
     this.drawDebug();
     this.drawUI();
   }

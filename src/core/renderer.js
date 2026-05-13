@@ -857,6 +857,7 @@ export class Renderer {
       },
     );
   }
+  //
 
   drawCoinCollectEffect(effect, camera = { x: 0, y: 0, zoom: 1 }) {
     const zoom = camera.zoom || 1;
@@ -1761,6 +1762,39 @@ export class Renderer {
 
     this.context.fillStyle = this.hexToRgba(effect.color || "#ff5c7a", opacity);
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.context.restore();
+  }
+
+  // Fundo
+  drawBottomGradientOverlay() {
+    const gradientConfig = GAME_CONFIG.backgroundGradient;
+
+    if (!gradientConfig?.enabled) {
+      return;
+    }
+
+    const {
+      startRatio = 0.62,
+      endRatio = 1,
+      startOpacity = 0,
+      endOpacity = 0.42,
+      color = "#000000",
+    } = gradientConfig;
+
+    const startY = this.canvas.height * startRatio;
+    const endY = this.canvas.height * endRatio;
+
+    const gradient = this.context.createLinearGradient(0, startY, 0, endY);
+
+    gradient.addColorStop(0, this.hexToRgba(color, startOpacity));
+    gradient.addColorStop(1, this.hexToRgba(color, endOpacity));
+
+    this.context.save();
+
+    this.context.globalAlpha = 1;
+    this.context.fillStyle = gradient;
+    this.context.fillRect(0, startY, this.canvas.width, endY - startY);
 
     this.context.restore();
   }
