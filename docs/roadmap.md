@@ -73,10 +73,10 @@ A versão v0.1 foi considerada concluída porque o jogo possui:
 # v0.2 — Estrutura de jogo, fases e experiência inicial
 
 ### Objetivo
-Transformar a base jogável da v0.1 em uma experiência mais completa, com menu, fluxo de telas, sistema de fases, obstáculos, coletáveis, HUD, melhorias visuais minimalistas e criação de fases por mapas textuais.
+Transformar a base jogável da v0.1 em uma experiência mais completa, com menu inicial, fluxo de telas, sistema de fases, obstáculos, coletáveis, HUD, feedbacks visuais, melhorias minimalistas e criação de fases por mapas textuais.
 
 ### Status
-Em desenvolvimento avançado.
+Em fase de fechamento.
 
 ---
 
@@ -85,12 +85,15 @@ Em desenvolvimento avançado.
 - Menu inicial funcional ✅
 - Menu inicial em tela cheia ✅
 - Menu inicial com cenário decorativo ✅
+- Menu inicial criado por mapa textual ✅
+- Menu inicial alinhado à grade de tiles ✅
 - Ação principal do menu com destaque visual ✅
 - Tela de pausa ✅
 - Tela de vitória de fase ✅
 - Tela de derrota/Game Over ✅
 - Tela de jogo concluído ✅
 - Sistema centralizado de telas com `screens.js` ✅
+- Animação de entrada nas telas de estado ✅
 - Ações principais destacadas nas telas ✅
 - Opção de voltar ao menu inicial em telas de estado ✅
 - Restrição do comando de menu apenas para telas de estado ✅
@@ -99,16 +102,34 @@ Em desenvolvimento avançado.
 - Criação de pelo menos duas fases jogáveis ✅
 - Seleção de fase no modo edição ✅
 - Troca de fase por teclado no modo edição ✅
+- Sistema de atualização com fixed timestep ✅
+- Física estabilizada em diferentes taxas de FPS ✅
 - Obstáculos/perigos simples ✅
 - Entidade de perigo/dano ✅
 - Coletáveis opcionais de moeda ✅
 - Contador de coletáveis ✅
 - HUD centralizada no topo ✅
 - HUD escalável conforme a quantidade de linhas ✅
+- Animação no contador de moedas ao coletar ✅
+- Popup `+1` ao coletar moedas ✅
+- Efeito visual ao coletar moedas ✅
 - Portal energético como objetivo final ✅
+- Efeito visual de vitória ao tocar no portal ✅
+- Animação do player entrando no portal ✅
+- Efeito visual de derrota ao tocar perigo ou cair ✅
+- Reação visual do player ao tocar perigos ✅
+- Reação diferente ao tocar perigo por cima e pela lateral ✅
+- Knockback visual lateral em trajetória parabólica ✅
+- Animações visuais do player ✅
+- Idle visual do player ✅
+- Animação de movimento do player ✅
+- Animação visual de pulo e queda ✅
+- Impacto visual ao aterrissar ✅
+- Player ajustado para 1 tile de tamanho ✅
 - Moedas com brilho e flutuação visual ✅
 - Perigos com visual de espinhos ✅
 - Plataformas com topo destacado e corpo em camadas ✅
+- Gradiente inferior no cenário ✅
 - Melhorias visuais minimalistas dos elementos principais ✅
 - Sistema de criação de fases por mapa textual ✅
 - Parser de fases por caracteres ✅
@@ -116,28 +137,27 @@ Em desenvolvimento avançado.
 - Centralização dos símbolos dos mapas em `levelSymbols.js` ✅
 - Preparação de tiles para sprites lógicos ✅
 - Variações visuais por sprite no `renderer.js` ✅
-- Legenda oficial dos símbolos dos mapas ✅
+- Guia de símbolos dos mapas ✅
 - Conversão das fases para mapas textuais ✅
+- Correção de vazamentos visuais ao voltar ao menu ✅
+- Correção do painel transparente em telas de estado ✅
 
 ---
 
 ## Próximos passos da v0.2
 
+- Revisar fluxo completo do jogo
 - Revisar e balancear as fases 1 e 2
-- Melhorar a documentação de criação de fases
-- Criar guia de símbolos dos mapas
-- Refinar comportamento visual de tiles `B`, `P` e `S`
-- Melhorar feedback visual ao coletar moedas
-- Melhorar feedback visual ao vencer/perder
-- Revisar fluxo completo de estados do jogo
-- Limpar métodos antigos de tela no `renderer.js`
-- Remover ou arquivar sistemas antigos de criação manual de fases, se não forem mais usados
 - Ajustar textos finais das telas visuais
-- Finalizar polimento visual básico da v0.2
+- Fazer teste final de comandos
+- Fazer teste final dos efeitos visuais
+- Fazer teste final do modo edição
+- Atualizar documentação final da v0.2
+- Fechar a v0.2
 
 ---
 
-## Possível fechamento da v0.2
+## Fechamento da v0.2
 
 A versão v0.2 será considerada concluída quando o jogo tiver:
 
@@ -149,6 +169,11 @@ A versão v0.2 será considerada concluída quando o jogo tiver:
 - Coletáveis opcionais
 - Interface mínima de jogo
 - HUD funcional
+- Feedback visual ao coletar moedas
+- Feedback visual ao vencer
+- Feedback visual ao perder
+- Player com animações visuais básicas
+- Física estável independente da taxa de FPS
 - Debug controlável
 - Criação de fases por mapa textual
 - Símbolos de mapa documentados
