@@ -699,6 +699,10 @@ export class Game {
         ? 1 - this.defeatScreenDelay / this.defeatScreenDelayDuration
         : 0;
 
+    if (this.state === GAME_STATES.WON && this.victoryScreenDelay <= 0) {
+      return;
+    }
+
     this.player.draw(this.renderer, this.camera, {
       isDefeated: this.state === GAME_STATES.LOST,
       defeatHitDirection: this.defeatHitDirection,
