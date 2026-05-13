@@ -1,5 +1,5 @@
 export class CollisionSystem {
-  static checkAABBCollision(entityA, entityB) {
+  static checkCollision(entityA, entityB) {
     return (
       entityA.x < entityB.x + entityB.width &&
       entityA.x + entityA.width > entityB.x &&
@@ -10,7 +10,7 @@ export class CollisionSystem {
 
   static resolveHorizontalPlatformCollision(player, platforms) {
     for (const platform of platforms) {
-      const isColliding = this.checkAABBCollision(player, platform);
+      const isColliding = this.checkCollision(player, platform);
 
       if (!isColliding) continue;
 
@@ -30,7 +30,7 @@ export class CollisionSystem {
     player.isOnGround = false;
 
     for (const platform of platforms) {
-      const isColliding = this.checkAABBCollision(player, platform);
+      const isColliding = this.checkCollision(player, platform);
 
       if (!isColliding) continue;
 
@@ -48,12 +48,12 @@ export class CollisionSystem {
   }
 
   static checkGoalCollision(player, goal) {
-    return this.checkAABBCollision(player, goal);
+    return this.checkCollision(player, goal);
   }
 
   static checkHazardCollision(player, hazards) {
     return hazards.some((hazard) => {
-      return this.checkAABBCollision(player, hazard);
+      return this.checkCollision(player, hazard);
     });
   }
 
@@ -63,7 +63,7 @@ export class CollisionSystem {
     collectibles.forEach((collectible) => {
       if (collectible.isCollected) return;
 
-      if (this.checkAABBCollision(player, collectible)) {
+      if (this.checkCollision(player, collectible)) {
         collectible.collect();
         collectedItems.push(collectible);
       }

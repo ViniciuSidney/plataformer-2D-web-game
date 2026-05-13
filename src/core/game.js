@@ -40,6 +40,7 @@ export class Game {
 		this.coinHUDPulse = 0;
 		this.defeatScreenDelay = 0;
 		this.victoryScreenDelay = 0;
+		this.defeatHitDirection = null;
 
 		this.state = GAME_CONFIG.debug.levelEditMode
 			? GAME_STATES.PLAYING
@@ -153,6 +154,7 @@ export class Game {
 		this.coinHUDPulse = 0;
 		this.defeatScreenDelay = 0;
 		this.victoryScreenDelay = 0;
+		this.defeatHitDirection = null;
 
 		this.player.reset(this.currentLevel.playerStart);
 
@@ -200,6 +202,7 @@ export class Game {
 		this.effects = [];
 		this.coinHUDPulse = 0;
 		this.victoryScreenDelay = 0;
+		this.defeatHitDirection = null;
 
 		this.screenTransitionAge = 0;
 		this.previousVisibleScreenKey = this.getVisibleScreenKey();
@@ -399,14 +402,22 @@ export class Game {
 	}
 
 	checkHazardCollision() {
-		if (CollisionSystem.checkHazardCollision(this.player, this.hazards)) {
-			this.triggerDefeat('hazard');
+		const touchedHazard = this.hazards.find((hazard) => {
+			return CollisionSystem.checkCollision(this.player, hazard);
+		});
+
+		if (!touchedHazard) {
+			return;
 		}
+
+		const hitDirection = this.getHazardHitDirection(touchedHazard);
+
+		this.triggerDefeat('hazard', hitDirection);
 	}
 
 	checkPlayerDeath() {
 		if (this.player.y > GAME_CONFIG.deathZoneY) {
-			this.triggerDefeat('fall');
+			this.triggerDefeat('fall', 'fall');
 		}
 	}
 
@@ -502,10 +513,12 @@ export class Game {
 		}
 	}
 
-	triggerDefeat(reason = 'default') {
+	triggerDefeat(reason = 'default', hitDirection = null) {
 		if (this.state === GAME_STATES.LOST) {
 			return;
 		}
+
+		this.defeatHitDirection = hitDirection || reason;
 
 		this.createDefeatEffect(reason);
 
@@ -661,7 +674,14 @@ export class Game {
 			return;
 		}
 
-		this.player.draw(this.renderer, this.camera);
+		this.player.draw(this.renderer, this.camera, {
+			defeatHitDirection: this.defeatHitDirection,
+			isDefeated: this.state === GAME_STATES.LOST,
+			defeatProgress:
+				this.state === GAME_STATES.LOST
+					? 1 - this.defeatScreenDelay / 32
+					: 0,
+		});
 	}
 
 	drawGoalGlow() {
@@ -982,5 +1002,23 @@ export class Game {
 			color: '#2dd4bf',
 			opacity: 0.34,
 		});
+	}
+
+	// Hazard
+	getHazardHitDirection(hazard) {
+		const playerWasAbove =
+			this.player.previousY + this.player.height <= hazard.y;
+
+		const playerWasBelow = this.player.previousY >= hazard.y + hazard.height;
+
+		if (playerWasAbove) {
+			return 'top';
+		}
+
+		if (playerWasBelow) {
+			return 'bottom';
+		}
+
+		return 'side';
 	}
 }

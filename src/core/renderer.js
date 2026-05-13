@@ -887,6 +887,10 @@ export class Renderer {
 			landImpactAmount = 0,
 			landSquashAmount = 4,
 
+			isDefeated = false,
+			defeatHitDirection = null,
+			defeatProgress = 0,
+
 			bobSeed = 0,
 		} = options;
 
@@ -955,6 +959,24 @@ export class Renderer {
 		visualWidth = Math.max(screenWidth * 0.82, visualWidth);
 		visualHeight = Math.max(screenHeight * 0.82, visualHeight);
 
+		const safeDefeatProgress = Math.max(0, Math.min(defeatProgress, 1));
+		const defeatImpact = isDefeated ? 1 - safeDefeatProgress : 0;
+
+		if (isDefeated && defeatHitDirection === 'top') {
+			visualWidth += 5 * defeatImpact * zoom;
+			visualHeight -= 6 * defeatImpact * zoom;
+		}
+
+		if (isDefeated && defeatHitDirection === 'side') {
+			visualWidth -= 4 * defeatImpact * zoom;
+			visualHeight += 5 * defeatImpact * zoom;
+		}
+
+		if (isDefeated && defeatHitDirection === 'fall') {
+			visualWidth *= 1 - 0.25 * safeDefeatProgress;
+			visualHeight *= 1 - 0.25 * safeDefeatProgress;
+		}
+
 		const visualX = screenX - (visualWidth - screenWidth) / 2;
 		const visualY = screenY + screenHeight - visualHeight;
 
@@ -991,6 +1013,10 @@ export class Renderer {
 
 		const eyeY = visualY + visualHeight * 0.34;
 
+		const finalBodyColor = isDefeated
+			? this.mixColors(bodyColor, '#ff5c7a', 0.65 * defeatImpact)
+			: bodyColor;
+
 		this.context.save();
 
 		// sombra fixa no chão apenas quando está próximo/encostado no chão
@@ -1013,7 +1039,7 @@ export class Renderer {
 		);
 
 		// corpo principal
-		this.context.fillStyle = bodyColor;
+		this.context.fillStyle = finalBodyColor;
 		this.context.fillRect(visualX, visualY, visualWidth, visualHeight);
 
 		// brilho no topo
@@ -1386,6 +1412,25 @@ export class Renderer {
 			width: this.toMenuPixels(item.width),
 			height: this.toMenuPixels(item.height),
 		};
+	}
+
+	mixColors(hexA, hexB, amount = 0.5) {
+		const normalizedA = hexA.replace('#', '');
+		const normalizedB = hexB.replace('#', '');
+
+		const rA = parseInt(normalizedA.substring(0, 2), 16);
+		const gA = parseInt(normalizedA.substring(2, 4), 16);
+		const bA = parseInt(normalizedA.substring(4, 6), 16);
+
+		const rB = parseInt(normalizedB.substring(0, 2), 16);
+		const gB = parseInt(normalizedB.substring(2, 4), 16);
+		const bB = parseInt(normalizedB.substring(4, 6), 16);
+
+		const r = Math.round(rA + (rB - rA) * amount);
+		const g = Math.round(gA + (gB - gA) * amount);
+		const b = Math.round(bA + (bB - bA) * amount);
+
+		return `rgb(${r}, ${g}, ${b})`;
 	}
 	// ------------------
 

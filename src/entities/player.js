@@ -5,264 +5,268 @@ import { PHYSICS_CONFIG } from '../config/physicsConfig.js';
 import { clamp } from '../utils/math.js';
 
 export class Player extends Entity {
-   constructor() {
-      super({
-         x: PLAYER_CONFIG.x,
-         y: PLAYER_CONFIG.y,
-         width: PLAYER_CONFIG.width,
-         height: PLAYER_CONFIG.height,
-         color: PLAYER_CONFIG.color,
-      });
+	constructor() {
+		super({
+			x: PLAYER_CONFIG.x,
+			y: PLAYER_CONFIG.y,
+			width: PLAYER_CONFIG.width,
+			height: PLAYER_CONFIG.height,
+			color: PLAYER_CONFIG.color,
+		});
 
-      this.maxSpeed = PLAYER_CONFIG.maxSpeed;
-      this.acceleration = PLAYER_CONFIG.acceleration;
-      this.deceleration = PLAYER_CONFIG.deceleration;
-      this.airControl = PLAYER_CONFIG.airControl;
+		this.maxSpeed = PLAYER_CONFIG.maxSpeed;
+		this.acceleration = PLAYER_CONFIG.acceleration;
+		this.deceleration = PLAYER_CONFIG.deceleration;
+		this.airControl = PLAYER_CONFIG.airControl;
 
-      this.jumpForce = PLAYER_CONFIG.jumpForce;
-      this.jumpCutMultiplier = PLAYER_CONFIG.jumpCutMultiplier;
+		this.jumpForce = PLAYER_CONFIG.jumpForce;
+		this.jumpCutMultiplier = PLAYER_CONFIG.jumpCutMultiplier;
 
-      this.coyoteTime = PLAYER_CONFIG.coyoteTime;
-      this.coyoteTimeCounter = 0;
+		this.coyoteTime = PLAYER_CONFIG.coyoteTime;
+		this.coyoteTimeCounter = 0;
 
-      this.jumpBufferTime = PLAYER_CONFIG.jumpBufferTime;
-      this.jumpBufferCounter = 0;
+		this.jumpBufferTime = PLAYER_CONFIG.jumpBufferTime;
+		this.jumpBufferCounter = 0;
 
-      this.wasJumpPressed = false;
+		this.wasJumpPressed = false;
 
-      this.previousX = this.x;
-      this.previousY = this.y;
+		this.previousX = this.x;
+		this.previousY = this.y;
 
-      this.animationMoveBlend = 0;
-      this.animationAirBlend = 0;
+		this.animationMoveBlend = 0;
+		this.animationAirBlend = 0;
 
-      this.wasOnGround = false;
-      this.landImpactAmount = 0;
+		this.wasOnGround = false;
+		this.landImpactAmount = 0;
 
-      this.isOnGround = false;
-      this.facing = 1;
-   }
+		this.isOnGround = false;
+		this.facing = 1;
+	}
 
-   update(inputSystem) {
-      this.savePreviousPosition();
+	update(inputSystem) {
+		this.savePreviousPosition();
 
-      this.handleMovement(inputSystem);
-      this.updateJumpBuffer(inputSystem);
-      this.handleJump();
-      this.handleVariableJump(inputSystem);
-      this.applyGravity();
+		this.handleMovement(inputSystem);
+		this.updateJumpBuffer(inputSystem);
+		this.handleJump();
+		this.handleVariableJump(inputSystem);
+		this.applyGravity();
 
-      this.updateAnimationState();
-   }
+		this.updateAnimationState();
+	}
 
-   updateAnimationState() {
-      const targetMoveBlend = this.isMovingOnGround() ? 1 : 0;
-      const targetAirBlend = !this.isOnGround ? 1 : 0;
+	updateAnimationState() {
+		const targetMoveBlend = this.isMovingOnGround() ? 1 : 0;
+		const targetAirBlend = !this.isOnGround ? 1 : 0;
 
-      this.animationMoveBlend +=
-         (targetMoveBlend - this.animationMoveBlend) *
-         PLAYER_CONFIG.animationBlendSpeed;
+		this.animationMoveBlend +=
+			(targetMoveBlend - this.animationMoveBlend) *
+			PLAYER_CONFIG.animationBlendSpeed;
 
-      this.animationAirBlend +=
-         (targetAirBlend - this.animationAirBlend) *
-         PLAYER_CONFIG.airAnimationBlendSpeed;
-   }
+		this.animationAirBlend +=
+			(targetAirBlend - this.animationAirBlend) *
+			PLAYER_CONFIG.airAnimationBlendSpeed;
+	}
 
-   updateLandingAnimation() {
-      const justLanded = !this.wasOnGround && this.isOnGround;
+	updateLandingAnimation() {
+		const justLanded = !this.wasOnGround && this.isOnGround;
 
-      if (justLanded) {
-         this.landImpactAmount = 1;
-      }
+		if (justLanded) {
+			this.landImpactAmount = 1;
+		}
 
-      this.landImpactAmount +=
-         (0 - this.landImpactAmount) * PLAYER_CONFIG.landImpactDecay;
+		this.landImpactAmount +=
+			(0 - this.landImpactAmount) * PLAYER_CONFIG.landImpactDecay;
 
-      if (this.landImpactAmount < 0.01) {
-         this.landImpactAmount = 0;
-      }
+		if (this.landImpactAmount < 0.01) {
+			this.landImpactAmount = 0;
+		}
 
-      this.wasOnGround = this.isOnGround;
-   }
+		this.wasOnGround = this.isOnGround;
+	}
 
-   isMovingOnGround() {
-      return this.isOnGround && Math.abs(this.velocityX) > 0.2;
-   }
+	isMovingOnGround() {
+		return this.isOnGround && Math.abs(this.velocityX) > 0.2;
+	}
 
-   isIdle() {
-      return this.isOnGround && Math.abs(this.velocityX) < 0.15;
-   }
+	isIdle() {
+		return this.isOnGround && Math.abs(this.velocityX) < 0.15;
+	}
 
-   savePreviousPosition() {
-      this.previousX = this.x;
-      this.previousY = this.y;
-   }
+	savePreviousPosition() {
+		this.previousX = this.x;
+		this.previousY = this.y;
+	}
 
-   handleMovement(inputSystem) {
-      const movingLeft = inputSystem.isPressed('left');
-      const movingRight = inputSystem.isPressed('right');
+	handleMovement(inputSystem) {
+		const movingLeft = inputSystem.isPressed('left');
+		const movingRight = inputSystem.isPressed('right');
 
-      const controlMultiplier = this.isOnGround ? 1 : this.airControl;
+		const controlMultiplier = this.isOnGround ? 1 : this.airControl;
 
-      if (movingLeft && !movingRight) {
-         this.velocityX -= this.acceleration * controlMultiplier;
-         this.facing = -1;
-      }
+		if (movingLeft && !movingRight) {
+			this.velocityX -= this.acceleration * controlMultiplier;
+			this.facing = -1;
+		}
 
-      if (movingRight && !movingLeft) {
-         this.velocityX += this.acceleration * controlMultiplier;
-         this.facing = 1;
-      }
+		if (movingRight && !movingLeft) {
+			this.velocityX += this.acceleration * controlMultiplier;
+			this.facing = 1;
+		}
 
-      if ((!movingLeft && !movingRight) || (movingLeft && movingRight)) {
-         this.applyDeceleration();
-      }
+		if ((!movingLeft && !movingRight) || (movingLeft && movingRight)) {
+			this.applyDeceleration();
+		}
 
-      this.velocityX = clamp(this.velocityX, -this.maxSpeed, this.maxSpeed);
-   }
+		this.velocityX = clamp(this.velocityX, -this.maxSpeed, this.maxSpeed);
+	}
 
-   applyDeceleration() {
-      if (this.velocityX > 0) {
-         this.velocityX -= this.deceleration;
-      }
+	applyDeceleration() {
+		if (this.velocityX > 0) {
+			this.velocityX -= this.deceleration;
+		}
 
-      if (this.velocityX < 0) {
-         this.velocityX += this.deceleration;
-      }
+		if (this.velocityX < 0) {
+			this.velocityX += this.deceleration;
+		}
 
-      if (Math.abs(this.velocityX) < this.deceleration) {
-         this.velocityX = 0;
-      }
-   }
+		if (Math.abs(this.velocityX) < this.deceleration) {
+			this.velocityX = 0;
+		}
+	}
 
-   handleJump() {
-      const hasBufferedJump = this.jumpBufferCounter > 0;
-      const canUseCoyoteTime = this.coyoteTimeCounter > 0;
+	handleJump() {
+		const hasBufferedJump = this.jumpBufferCounter > 0;
+		const canUseCoyoteTime = this.coyoteTimeCounter > 0;
 
-      if (hasBufferedJump && canUseCoyoteTime) {
-         this.velocityY = -this.jumpForce;
-         this.isOnGround = false;
+		if (hasBufferedJump && canUseCoyoteTime) {
+			this.velocityY = -this.jumpForce;
+			this.isOnGround = false;
 
-         this.jumpBufferCounter = 0;
-         this.coyoteTimeCounter = 0;
-      }
-   }
+			this.jumpBufferCounter = 0;
+			this.coyoteTimeCounter = 0;
+		}
+	}
 
-   handleVariableJump(inputSystem) {
-      const isJumpPressed = inputSystem.isPressed('jump');
+	handleVariableJump(inputSystem) {
+		const isJumpPressed = inputSystem.isPressed('jump');
 
-      if (!isJumpPressed && this.velocityY < 0) {
-         this.velocityY *= this.jumpCutMultiplier;
-      }
-   }
+		if (!isJumpPressed && this.velocityY < 0) {
+			this.velocityY *= this.jumpCutMultiplier;
+		}
+	}
 
-   updateCoyoteTime() {
-      if (this.isOnGround) {
-         this.coyoteTimeCounter = this.coyoteTime;
-      } else if (this.coyoteTimeCounter > 0) {
-         this.coyoteTimeCounter--;
-      }
-   }
+	updateCoyoteTime() {
+		if (this.isOnGround) {
+			this.coyoteTimeCounter = this.coyoteTime;
+		} else if (this.coyoteTimeCounter > 0) {
+			this.coyoteTimeCounter--;
+		}
+	}
 
-   updateJumpBuffer(inputSystem) {
-      const isJumpPressed = inputSystem.isPressed('jump');
-      const justPressedJump = isJumpPressed && !this.wasJumpPressed;
+	updateJumpBuffer(inputSystem) {
+		const isJumpPressed = inputSystem.isPressed('jump');
+		const justPressedJump = isJumpPressed && !this.wasJumpPressed;
 
-      if (justPressedJump) {
-         this.jumpBufferCounter = this.jumpBufferTime;
-      } else if (this.jumpBufferCounter > 0) {
-         this.jumpBufferCounter--;
-      }
+		if (justPressedJump) {
+			this.jumpBufferCounter = this.jumpBufferTime;
+		} else if (this.jumpBufferCounter > 0) {
+			this.jumpBufferCounter--;
+		}
 
-      this.wasJumpPressed = isJumpPressed;
-   }
+		this.wasJumpPressed = isJumpPressed;
+	}
 
-   applyGravity() {
-      const isFalling = this.velocityY > 0;
-      const gravityMultiplier = isFalling
-         ? PHYSICS_CONFIG.fallGravityMultiplier
-         : 1;
+	applyGravity() {
+		const isFalling = this.velocityY > 0;
+		const gravityMultiplier = isFalling
+			? PHYSICS_CONFIG.fallGravityMultiplier
+			: 1;
 
-      this.velocityY += PHYSICS_CONFIG.gravity * gravityMultiplier;
+		this.velocityY += PHYSICS_CONFIG.gravity * gravityMultiplier;
 
-      if (this.velocityY > PHYSICS_CONFIG.maxFallSpeed) {
-         this.velocityY = PHYSICS_CONFIG.maxFallSpeed;
-      }
-   }
+		if (this.velocityY > PHYSICS_CONFIG.maxFallSpeed) {
+			this.velocityY = PHYSICS_CONFIG.maxFallSpeed;
+		}
+	}
 
-   moveX() {
-      this.x += this.velocityX;
+	moveX() {
+		this.x += this.velocityX;
 
-      this.x = clamp(this.x, 0, GAME_CONFIG.worldWidth - this.width);
-   }
+		this.x = clamp(this.x, 0, GAME_CONFIG.worldWidth - this.width);
+	}
 
-   moveY() {
-      this.y += this.velocityY;
+	moveY() {
+		this.y += this.velocityY;
 
-      this.y = Math.max(this.y, 0);
-   }
+		this.y = Math.max(this.y, 0);
+	}
 
-   isIdle() {
-      return (
-         this.isOnGround &&
-         Math.abs(this.velocityX) < 0.15 &&
-         Math.abs(this.velocityY) < 0.15
-      );
-   }
+	isIdle() {
+		return (
+			this.isOnGround &&
+			Math.abs(this.velocityX) < 0.15 &&
+			Math.abs(this.velocityY) < 0.15
+		);
+	}
 
-   draw(renderer, camera) {
-      renderer.drawPlayerCharacter(
-         this.x,
-         this.y,
-         this.width,
-         this.height,
-         {
-            bodyColor: PLAYER_CONFIG.color,
-            topColor: PLAYER_CONFIG.topColor,
-            shadeColor: PLAYER_CONFIG.shadeColor,
-            eyeColor: PLAYER_CONFIG.eyeColor,
+	draw(renderer, camera, visualState = {}) {
+		renderer.drawPlayerCharacter(
+			this.x,
+			this.y,
+			this.width,
+			this.height,
+			{
+				bodyColor: PLAYER_CONFIG.color,
+				topColor: PLAYER_CONFIG.topColor,
+				shadeColor: PLAYER_CONFIG.shadeColor,
+				eyeColor: PLAYER_CONFIG.eyeColor,
 
-            idle: this.isIdle(),
-            moving: this.isMovingOnGround(),
+				idle: this.isIdle(),
+				moving: this.isMovingOnGround(),
 
-            moveBlend: this.animationMoveBlend,
-            airBlend: this.animationAirBlend,
+				moveBlend: this.animationMoveBlend,
+				airBlend: this.animationAirBlend,
 
-            velocityY: this.velocityY,
-            facing: this.facing,
+				velocityY: this.velocityY,
+				facing: this.facing,
 
-            idleStretchAmplitude: PLAYER_CONFIG.idleStretchAmplitude,
-            idleStretchSpeed: PLAYER_CONFIG.idleStretchSpeed,
+				idleStretchAmplitude: PLAYER_CONFIG.idleStretchAmplitude,
+				idleStretchSpeed: PLAYER_CONFIG.idleStretchSpeed,
 
-            walkSquashAmplitude: PLAYER_CONFIG.walkSquashAmplitude,
-            walkSquashSpeed: PLAYER_CONFIG.walkSquashSpeed,
-            walkTiltAmplitude: PLAYER_CONFIG.walkTiltAmplitude,
+				walkSquashAmplitude: PLAYER_CONFIG.walkSquashAmplitude,
+				walkSquashSpeed: PLAYER_CONFIG.walkSquashSpeed,
+				walkTiltAmplitude: PLAYER_CONFIG.walkTiltAmplitude,
 
-            jumpStretchAmount: PLAYER_CONFIG.jumpStretchAmount,
-            fallSquashAmount: PLAYER_CONFIG.fallSquashAmount,
+				jumpStretchAmount: PLAYER_CONFIG.jumpStretchAmount,
+				fallSquashAmount: PLAYER_CONFIG.fallSquashAmount,
 
-            landImpactAmount: this.landImpactAmount,
-            landSquashAmount: PLAYER_CONFIG.landSquashAmount,
-         },
-         camera,
-      );
-   }
+				landImpactAmount: this.landImpactAmount,
+				landSquashAmount: PLAYER_CONFIG.landSquashAmount,
 
-   reset(startPosition) {
-      this.x = startPosition.x;
-      this.y = startPosition.y;
+				isDefeated: visualState.isDefeated || false,
+				defeatHitDirection: visualState.defeatHitDirection || null,
+				defeatProgress: visualState.defeatProgress || 0,
+			},
+			camera,
+		);
+	}
 
-      this.velocityX = 0;
-      this.velocityY = 0;
+	reset(startPosition) {
+		this.x = startPosition.x;
+		this.y = startPosition.y;
 
-      this.isOnGround = false;
-      this.coyoteTimeCounter = 0;
-      this.jumpBufferCounter = 0;
-      this.wasJumpPressed = false;
+		this.velocityX = 0;
+		this.velocityY = 0;
 
-      this.wasOnGround = false;
-      this.landImpactAmount = 0;
-      this.animationMoveBlend = 0;
-      this.animationAirBlend = 0;
-   }
+		this.isOnGround = false;
+		this.coyoteTimeCounter = 0;
+		this.jumpBufferCounter = 0;
+		this.wasJumpPressed = false;
+
+		this.wasOnGround = false;
+		this.landImpactAmount = 0;
+		this.animationMoveBlend = 0;
+		this.animationAirBlend = 0;
+	}
 }
