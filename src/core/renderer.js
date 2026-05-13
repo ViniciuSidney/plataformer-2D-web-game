@@ -629,7 +629,7 @@ export class Renderer {
     this.context.filter = "none";
     this.context.setLineDash([]);
 
-    // grade de fundo alinhada ao tileSize
+    /* grade de fundo alinhada ao tileSize
     context.strokeStyle = "rgba(255, 255, 255, 0.04)";
     context.lineWidth = 1;
 
@@ -648,6 +648,7 @@ export class Renderer {
       context.lineTo(canvas.width, y);
       context.stroke();
     }
+    */
 
     // portal glow (atrás de tudo)
     if (scene.goal) {
