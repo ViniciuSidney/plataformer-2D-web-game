@@ -41,6 +41,7 @@ export class Game {
 		this.defeatScreenDelay = 0;
 		this.victoryScreenDelay = 0;
 		this.defeatHitDirection = null;
+		this.defeatPushDirection = 0;
 
 		this.state = GAME_CONFIG.debug.levelEditMode
 			? GAME_STATES.PLAYING
@@ -155,6 +156,7 @@ export class Game {
 		this.defeatScreenDelay = 0;
 		this.victoryScreenDelay = 0;
 		this.defeatHitDirection = null;
+		this.defeatPushDirection = 0;
 
 		this.player.reset(this.currentLevel.playerStart);
 
@@ -203,6 +205,7 @@ export class Game {
 		this.coinHUDPulse = 0;
 		this.victoryScreenDelay = 0;
 		this.defeatHitDirection = null;
+		this.defeatPushDirection = 0;
 
 		this.screenTransitionAge = 0;
 		this.previousVisibleScreenKey = this.getVisibleScreenKey();
@@ -401,23 +404,12 @@ export class Game {
 		}
 	}
 
-	checkHazardCollision() {
-		const touchedHazard = this.hazards.find((hazard) => {
-			return CollisionSystem.checkCollision(this.player, hazard);
-		});
-
-		if (!touchedHazard) {
-			return;
-		}
-
-		const hitDirection = this.getHazardHitDirection(touchedHazard);
-
-		this.triggerDefeat('hazard', hitDirection);
-	}
-
 	checkPlayerDeath() {
 		if (this.player.y > GAME_CONFIG.deathZoneY) {
-			this.triggerDefeat('fall', 'fall');
+			this.triggerDefeat('fall', {
+				hitDirection: 'fall',
+				pushDirection: 0,
+			});
 		}
 	}
 
@@ -513,12 +505,13 @@ export class Game {
 		}
 	}
 
-	triggerDefeat(reason = 'default', hitDirection = null) {
+	triggerDefeat(reason = 'default', hitInfo = {}) {
 		if (this.state === GAME_STATES.LOST) {
 			return;
 		}
 
-		this.defeatHitDirection = hitDirection || reason;
+		this.defeatHitDirection = hitInfo.hitDirection || reason;
+		this.defeatPushDirection = hitInfo.pushDirection || 0;
 
 		this.createDefeatEffect(reason);
 
@@ -674,13 +667,14 @@ export class Game {
 			return;
 		}
 
+		const defeatProgress =
+			this.state === GAME_STATES.LOST ? 1 - this.defeatScreenDelay / 32 : 0;
+
 		this.player.draw(this.renderer, this.camera, {
-			defeatHitDirection: this.defeatHitDirection,
 			isDefeated: this.state === GAME_STATES.LOST,
-			defeatProgress:
-				this.state === GAME_STATES.LOST
-					? 1 - this.defeatScreenDelay / 32
-					: 0,
+			defeatHitDirection: this.defeatHitDirection,
+			defeatPushDirection: this.defeatPushDirection,
+			defeatProgress,
 		});
 	}
 
@@ -1020,5 +1014,39 @@ export class Game {
 		}
 
 		return 'side';
+	}
+
+	getHazardHitInfo(hazard) {
+		const playerWasAbove =
+			this.player.previousY + this.player.height <= hazard.y;
+
+		if (playerWasAbove) {
+			return {
+				hitDirection: 'top',
+				pushDirection: 0,
+			};
+		}
+
+		const playerCenterX = this.player.x + this.player.width / 2;
+		const hazardCenterX = hazard.x + hazard.width / 2;
+
+		return {
+			hitDirection: 'side',
+			pushDirection: playerCenterX < hazardCenterX ? -1 : 1,
+		};
+	}
+
+	checkHazardCollision() {
+		const touchedHazard = this.hazards.find((hazard) => {
+			return CollisionSystem.checkCollision(this.player, hazard);
+		});
+
+		if (!touchedHazard) {
+			return;
+		}
+
+		const hitInfo = this.getHazardHitInfo(touchedHazard);
+
+		this.triggerDefeat('hazard', hitInfo);
 	}
 }

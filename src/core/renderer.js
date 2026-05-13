@@ -889,6 +889,7 @@ export class Renderer {
 
 			isDefeated = false,
 			defeatHitDirection = null,
+			defeatPushDirection = 0,
 			defeatProgress = 0,
 
 			bobSeed = 0,
@@ -962,14 +963,23 @@ export class Renderer {
 		const safeDefeatProgress = Math.max(0, Math.min(defeatProgress, 1));
 		const defeatImpact = isDefeated ? 1 - safeDefeatProgress : 0;
 
+		let defeatOffsetX = 0;
+		let defeatOffsetY = 0;
+		let defeatTilt = 0;
+
 		if (isDefeated && defeatHitDirection === 'top') {
 			visualWidth += 5 * defeatImpact * zoom;
 			visualHeight -= 6 * defeatImpact * zoom;
 		}
 
 		if (isDefeated && defeatHitDirection === 'side') {
-			visualWidth -= 4 * defeatImpact * zoom;
-			visualHeight += 5 * defeatImpact * zoom;
+			const bounceProgress = Math.sin(safeDefeatProgress * Math.PI);
+
+			defeatOffsetX = defeatPushDirection * bounceProgress * 22 * zoom;
+
+			defeatOffsetY = -bounceProgress * 14 * zoom;
+
+			defeatTilt = defeatPushDirection * bounceProgress * -10;
 		}
 
 		if (isDefeated && defeatHitDirection === 'fall') {
@@ -977,8 +987,8 @@ export class Renderer {
 			visualHeight *= 1 - 0.25 * safeDefeatProgress;
 		}
 
-		const visualX = screenX - (visualWidth - screenWidth) / 2;
-		const visualY = screenY + screenHeight - visualHeight;
+		const visualX = screenX - (visualWidth - screenWidth) / 2 + defeatOffsetX;
+		const visualY = screenY + screenHeight - visualHeight + defeatOffsetY;
 
 		const tilt =
 			walkCycle *
@@ -991,7 +1001,7 @@ export class Renderer {
 		const airTilt =
 			safeAirBlend * facing * (isJumping ? 1.2 : isFalling ? -0.8 : 0);
 
-		const finalTilt = tilt + airTilt;
+		const finalTilt = tilt + airTilt + defeatTilt;
 
 		const topHeight = Math.max(3, Math.min(visualHeight * 0.16, 6 * zoom));
 		const sideShadeWidth = Math.max(

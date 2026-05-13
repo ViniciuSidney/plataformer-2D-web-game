@@ -246,6 +246,7 @@ export class Player extends Entity {
 
 				isDefeated: visualState.isDefeated || false,
 				defeatHitDirection: visualState.defeatHitDirection || null,
+				defeatPushDirection: visualState.defeatPushDirection || 0,
 				defeatProgress: visualState.defeatProgress || 0,
 			},
 			camera,
