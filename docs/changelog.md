@@ -2,7 +2,14 @@
 
 Todas as mudanças importantes do projeto serão documentadas aqui.
 
-## [Unreleased] - v0.2
+## [Unreleased]
+
+### Planejado
+- Início do planejamento da v0.3.
+
+---
+
+## [v0.2] - Estrutura de jogo, fases e experiência inicial
 
 ### Adicionado
 - Menu inicial funcional.
@@ -99,14 +106,11 @@ Todas as mudanças importantes do projeto serão documentadas aqui.
 - Correção do efeito de derrota por queda aparecendo fora da visão da câmera.
 - Correção do repasse de direção do impacto ao tocar perigos.
 
-### Planejado
-- Revisar e balancear as fases iniciais.
-- Revisar fluxo completo de estados do jogo.
-- Ajustar textos finais das telas visuais.
-- Fazer teste final do modo edição.
-- Fazer teste final dos comandos.
-- Fazer teste final dos efeitos visuais.
-- Finalizar polimento visual básico da v0.2.
+### Fechamento
+- Revisão final do fluxo de jogo.
+- Revisão final dos comandos principais.
+- Revisão final dos efeitos visuais.
+- Fechamento da versão v0.2.
 
 ---
 

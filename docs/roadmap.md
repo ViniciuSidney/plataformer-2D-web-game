@@ -76,7 +76,7 @@ A versão v0.1 foi considerada concluída porque o jogo possui:
 Transformar a base jogável da v0.1 em uma experiência mais completa, com menu inicial, fluxo de telas, sistema de fases, obstáculos, coletáveis, HUD, feedbacks visuais, melhorias minimalistas e criação de fases por mapas textuais.
 
 ### Status
-Em fase de fechamento.
+Concluída.
 
 ---
 
@@ -144,22 +144,22 @@ Em fase de fechamento.
 
 ---
 
-## Próximos passos da v0.2
+## Concluído no fechamento da v0.2
 
-- Revisar fluxo completo do jogo
-- Revisar e balancear as fases 1 e 2
-- Ajustar textos finais das telas visuais
-- Fazer teste final de comandos
-- Fazer teste final dos efeitos visuais
-- Fazer teste final do modo edição
-- Atualizar documentação final da v0.2
-- Fechar a v0.2
+- Revisão do fluxo completo do jogo ✅
+- Revisão e balanceamento das fases 1 e 2 ✅
+- Ajuste dos textos finais das telas visuais ✅
+- Teste final de comandos ✅
+- Teste final dos efeitos visuais ✅
+- Teste final do modo edição ✅
+- Atualização da documentação final da v0.2 ✅
+- Fechamento da v0.2 ✅
 
 ---
 
 ## Fechamento da v0.2
 
-A versão v0.2 será considerada concluída quando o jogo tiver:
+A versão v0.2 foi considerada concluída porque o jogo possui:
 
 - Menu inicial funcional e visualmente definido
 - Fluxo básico de telas

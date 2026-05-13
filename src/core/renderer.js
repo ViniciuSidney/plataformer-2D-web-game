@@ -1155,8 +1155,8 @@ export class Renderer {
       Math.min(visualHeight * 0.14, 4 * zoom),
     );
 
-    const eyeWidth = Math.max(4, visualWidth * 0.18);
-    const eyeHeight = Math.max(2, visualHeight * 0.1);
+    const eyeWidth = Math.max(4, visualWidth * 0.1);
+    const eyeHeight = Math.max(2, visualHeight * 0.2);
 
     const eyeX =
       facing >= 0 ? visualX + visualWidth * 0.56 : visualX + visualWidth * 0.26;
